@@ -19,13 +19,13 @@ public class KopisService {
 
     private final KopisFeignClient kopisFeignClient;
 
-    public List<PerformanceResponse> getPerformanceFromKopis() {
+    public List<PerformanceResponse> getPerformanceFromKopis(LocalDate from, LocalDate to) {
         KopisPerformanceRequest performanceRequest = KopisPerformanceRequest.builder()
             .service(apiKey)
-            .stdate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .eddate(LocalDate.now().plusMonths(3).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .stdate(from.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .eddate(to.plusMonths(3).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .cpage(1)
-            .rows(10)
+            .rows(100)
             .build();
 
         return kopisFeignClient.getPerformances(performanceRequest);

@@ -2,8 +2,6 @@ package com.heyticket.backend.performances.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
@@ -19,9 +17,7 @@ import lombok.NoArgsConstructor;
 public class Performance extends BaseTime {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String mt20id; // 공연 ID
+    private String id; // 공연 ID
     private String mt10id; // 공연시설 ID
     private String title; // 공연명
     private LocalDate startDate; // 공연시작일

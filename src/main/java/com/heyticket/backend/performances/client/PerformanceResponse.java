@@ -18,7 +18,7 @@ public record PerformanceResponse(
 
     public Performance toEntity() {
         return Performance.builder()
-            .mt20id(mt20id())
+            .id(mt20id())
             .title(prfnm())
             .startDate(LocalDate.parse(prfpdfrom(), DateTimeFormatter.ofPattern("yyyy.MM.dd")))
             .endDate(LocalDate.parse(prfpdto(), DateTimeFormatter.ofPattern("yyyy.MM.dd")))
