@@ -1,0 +1,16 @@
+kopis:
+  api-key: fce47dff5c8040bc906ea1e29823a18a
+  performance:
+    url: https://www.kopis.or.kr/openApi/restful
+    token: c48ac57fdf5347408aa0eb10d029dd12
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/heyticket?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: password
+
+  jpa:
+    hibernate:
+      ddl-auto: update
