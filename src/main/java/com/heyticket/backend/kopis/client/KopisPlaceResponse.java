@@ -1,4 +1,4 @@
-package com.heyticket.backend.performances.client;
+package com.heyticket.backend.kopis.client;
 
 public record KopisPlaceResponse(
         String fcltynm, // 	공연시설명	올림픽공원

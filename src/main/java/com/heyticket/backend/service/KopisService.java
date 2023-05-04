@@ -1,10 +1,9 @@
 package com.heyticket.backend.service;
 
-import com.heyticket.backend.performances.client.KopisFeignClient;
-import com.heyticket.backend.performances.client.KopisPerformanceRequest;
-import com.heyticket.backend.performances.client.PerformanceResponse;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import com.heyticket.backend.kopis.client.BoxOfficeRequest;
+import com.heyticket.backend.kopis.client.KopisFeignClient;
+import com.heyticket.backend.kopis.client.PerformanceRequest;
+import com.heyticket.backend.kopis.client.PerformanceResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,16 +18,14 @@ public class KopisService {
 
     private final KopisFeignClient kopisFeignClient;
 
-    public List<PerformanceResponse> getPerformanceFromKopis(LocalDate from, LocalDate to) {
-        KopisPerformanceRequest performanceRequest = KopisPerformanceRequest.builder()
-            .service(apiKey)
-            .stdate(from.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .eddate(to.plusMonths(3).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .cpage(1)
-            .rows(100)
-            .build();
-
+    public List<PerformanceResponse> getPerformance(PerformanceRequest performanceRequest) {
+        performanceRequest.updateApiKey(apiKey);
         return kopisFeignClient.getPerformances(performanceRequest);
+    }
+
+    public List<BoxOfficeRequest> getBoxOffice(BoxOfficeRequest boxOfficeRequest) {
+        boxOfficeRequest.updateApiKey(apiKey);
+        return kopisFeignClient.getBoxOffice(boxOfficeRequest);
     }
 
 }

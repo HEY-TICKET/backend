@@ -1,4 +1,4 @@
-package com.heyticket.backend.performances.domain;
+package com.heyticket.backend.kopis.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Performance extends BaseTime {
+public class Performance extends BaseTimeEntity {
 
     @Id
     private String id; // 공연 ID

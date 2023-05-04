@@ -1,4 +1,4 @@
-package com.heyticket.backend.performances.client;
+package com.heyticket.backend.kopis.client;
 
 import com.heyticket.backend.config.FeignConfiguration;
 import java.util.List;
@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 public interface KopisFeignClient {
 
     @GetMapping(value = "/pblprfr", produces = "application/xml;charset=UTF-8")
-    List<PerformanceResponse> getPerformances(@SpringQueryMap KopisPerformanceRequest request);
+    List<PerformanceResponse> getPerformances(@SpringQueryMap PerformanceRequest request);
+
+    @GetMapping(value = "/boxoffice", produces = "application/xml;charset=UTF-8")
+    List<BoxOfficeRequest> getBoxOffice(@SpringQueryMap BoxOfficeRequest request);
 
 //    @GetMapping(value = "/pblprfr?prfstate=02", produces = "application/xml;charset=UTF-8")
 //    List<KopisPerformanceResponse> getOnGoingPerformances(@SpringQueryMap KopisPerformanceRequest request);

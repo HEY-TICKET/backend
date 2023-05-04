@@ -1,5 +1,7 @@
 package com.heyticket.backend.config;
 
+import feign.Logger;
+import feign.Logger.Level;
 import feign.codec.Decoder;
 import feign.form.FormEncoder;
 import org.springframework.beans.factory.ObjectFactory;
@@ -18,6 +20,11 @@ public class FeignConfiguration {
 
     public FeignConfiguration(final ObjectFactory<HttpMessageConverters> messageConverters) {
         this.messageConverters = messageConverters;
+    }
+
+    @Bean
+    public Logger.Level feignLoggerLevel() {
+        return Level.FULL;
     }
 
     @Bean
