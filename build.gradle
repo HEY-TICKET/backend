@@ -43,6 +43,9 @@ dependencies {
 	annotationProcessor "org.mapstruct:mapstruct-processor:$mapstructVersion"
 	implementation "org.mapstruct:mapstruct:$mapstructVersion"
 
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 dependencyManagement {
