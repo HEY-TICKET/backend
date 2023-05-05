@@ -25,6 +25,8 @@ public class QPerformance extends EntityPathBase<Performance> {
 
     public final StringPath cast = createString("cast");
 
+    public final StringPath company = createString("company");
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdDate = _super.createdDate;
 
@@ -34,8 +36,6 @@ public class QPerformance extends EntityPathBase<Performance> {
 
     public final DatePath<java.time.LocalDate> endDate = createDate("endDate", java.time.LocalDate.class);
 
-    public final StringPath entrpsnm = createString("entrpsnm");
-
     public final StringPath genre = createString("genre");
 
     public final StringPath id = createString("id");
@@ -43,15 +43,15 @@ public class QPerformance extends EntityPathBase<Performance> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> modifiedDate = _super.modifiedDate;
 
-    public final StringPath mt10id = createString("mt10id");
-
-    public final BooleanPath openrun = createBoolean("openrun");
-
-    public final StringPath pcseguidance = createString("pcseguidance");
+    public final BooleanPath openRun = createBoolean("openRun");
 
     public final StringPath place = createString("place");
 
+    public final StringPath placeId = createString("placeId");
+
     public final StringPath poster = createString("poster");
+
+    public final StringPath price = createString("price");
 
     public final StringPath runtime = createString("runtime");
 
@@ -59,7 +59,11 @@ public class QPerformance extends EntityPathBase<Performance> {
 
     public final StringPath state = createString("state");
 
-    public final StringPath sty = createString("sty");
+    public final StringPath story = createString("story");
+
+    public final StringPath storyUrls = createString("storyUrls");
+
+    public final StringPath styUrls = createString("styUrls");
 
     public final StringPath title = createString("title");
 

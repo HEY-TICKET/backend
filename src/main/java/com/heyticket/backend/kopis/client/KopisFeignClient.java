@@ -19,7 +19,7 @@ public interface KopisFeignClient {
     List<BoxOfficeRequest> getBoxOffice(@SpringQueryMap BoxOfficeRequest request);
 
     @GetMapping(value = "/pblprfr/{mt20id}", produces = "application/xml;charset=UTF-8")
-    List<PerformanceDetailResponse> getPerformanceDetail(@PathVariable("mt20id") final String mt20id, @RequestParam("service") final String service);
+    PerformanceDetailResponse getPerformanceDetail(@PathVariable("mt20id") String mt20id, @RequestParam("service") String service);
 
     //    @GetMapping(value = "/pblprfr?prfstate=02", produces = "application/xml;charset=UTF-8")
 //    List<KopisPerformanceResponse> getOnGoingPerformances(@SpringQueryMap KopisPerformanceRequest request);

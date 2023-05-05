@@ -1,12 +1,11 @@
 package com.heyticket.backend.service;
 
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@ActiveProfiles("test")
 class PerformanceServiceTest {
 
     @Autowired
@@ -14,7 +13,7 @@ class PerformanceServiceTest {
 
     @Test
     void savePerformance() {
-        performanceService.updatePerformances();
+        performanceService.updatePerformances(LocalDate.now(), LocalDate.now().plusDays(1));
     }
 
 }

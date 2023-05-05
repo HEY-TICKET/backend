@@ -19,13 +19,17 @@ public class KopisService {
 
     private final KopisFeignClient kopisFeignClient;
 
-    public List<PerformanceResponse> getPerformance(PerformanceRequest performanceRequest) {
+    public List<PerformanceResponse> getPerformances(PerformanceRequest performanceRequest) {
         performanceRequest.updateApiKey(apiKey);
         return kopisFeignClient.getPerformances(performanceRequest);
     }
 
-    public List<PerformanceDetailResponse> getPerformanceDetail(String performanceId) {
-        return kopisFeignClient.getPerformanceDetail(performanceId, apiKey);
+    public PerformanceDetailResponse getPerformanceDetail(String performanceId) {
+        PerformanceDetailResponse performanceDetail = kopisFeignClient.getPerformanceDetail(performanceId, apiKey);
+        if (performanceDetail.mt20id() == null) {
+            throw new IllegalStateException("Fail to get performance detail.");
+        }
+        return performanceDetail;
     }
 
     public List<BoxOfficeRequest> getBoxOffice(BoxOfficeRequest boxOfficeRequest) {

@@ -1,6 +1,9 @@
 package com.heyticket.backend.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.heyticket.backend.kopis.client.BoxOfficeRequest;
+import com.heyticket.backend.kopis.client.PerformanceDetailResponse;
 import com.heyticket.backend.kopis.client.PerformanceRequest;
 import com.heyticket.backend.kopis.client.PerformanceResponse;
 import java.time.LocalDate;
@@ -29,10 +32,21 @@ class KopisServiceTest {
             .build();
 
         //when
-        List<PerformanceResponse> performanceFromKopis = kopisService.getPerformance(performanceRequest);
+        List<PerformanceResponse> performanceFromKopis = kopisService.getPerformances(performanceRequest);
 
         //then
         System.out.println("performanceFromKopis.size() = " + performanceFromKopis.size());
+    }
+
+    @Test
+    void getPerformanceDetail() {
+        //given
+
+        //when
+        PerformanceDetailResponse performanceDetailResponse = kopisService.getPerformanceDetail("PF132236");
+
+        //then
+        assertThat(performanceDetailResponse.mt20id()).isNotNull();
     }
 
     @Test

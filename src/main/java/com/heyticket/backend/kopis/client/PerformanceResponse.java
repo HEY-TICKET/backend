@@ -26,7 +26,7 @@ public record PerformanceResponse(
             .poster(poster())
             .genre(genre())
             .state(prfstate())
-            .openrun(openrun().equals("Y"))
+            .openRun(openrun().equals("Y"))
             .build();
     }
 }
