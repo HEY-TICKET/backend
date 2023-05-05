@@ -19,10 +19,10 @@ public class PerformanceService {
 
     public void updatePerformances() {
         PerformanceRequest performanceRequest = PerformanceRequest.builder()
-            .stdate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .eddate(LocalDate.now().plusMonths(3).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .stdate(LocalDate.now().minusMonths(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .eddate(LocalDate.now().plusMonths(12).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .cpage(1)
-            .rows(9999)
+            .rows(100000)
             .build();
 
         List<PerformanceResponse> performanceResponseList = kopisService.getPerformance(performanceRequest);

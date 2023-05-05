@@ -22,10 +22,10 @@ class KopisServiceTest {
     void getPerformances() {
         //given
         PerformanceRequest performanceRequest = PerformanceRequest.builder()
-            .stdate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .eddate(LocalDate.now().plusMonths(3).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .stdate(LocalDate.now().minusMonths(6).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .eddate(LocalDate.now().plusMonths(12).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .cpage(1)
-            .rows(9999)
+            .rows(100000)
             .build();
 
         //when
