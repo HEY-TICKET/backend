@@ -14,7 +14,7 @@ class PerformanceServiceTest {
 
     @Test
     void savePerformance() {
-        performanceService.savePerformance();
+        performanceService.updatePerformances();
     }
 
 }

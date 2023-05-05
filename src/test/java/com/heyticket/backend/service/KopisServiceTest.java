@@ -25,7 +25,7 @@ class KopisServiceTest {
             .stdate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .eddate(LocalDate.now().plusMonths(3).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .cpage(1)
-            .rows(10)
+            .rows(9999)
             .build();
 
         //when

@@ -2,6 +2,7 @@ package com.heyticket.backend.service;
 
 import com.heyticket.backend.kopis.client.BoxOfficeRequest;
 import com.heyticket.backend.kopis.client.KopisFeignClient;
+import com.heyticket.backend.kopis.client.PerformanceDetailResponse;
 import com.heyticket.backend.kopis.client.PerformanceRequest;
 import com.heyticket.backend.kopis.client.PerformanceResponse;
 import java.util.List;
@@ -21,6 +22,10 @@ public class KopisService {
     public List<PerformanceResponse> getPerformance(PerformanceRequest performanceRequest) {
         performanceRequest.updateApiKey(apiKey);
         return kopisFeignClient.getPerformances(performanceRequest);
+    }
+
+    public List<PerformanceDetailResponse> getPerformanceDetail(String performanceId) {
+        return kopisFeignClient.getPerformanceDetail(performanceId, apiKey);
     }
 
     public List<BoxOfficeRequest> getBoxOffice(BoxOfficeRequest boxOfficeRequest) {

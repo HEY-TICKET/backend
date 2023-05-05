@@ -1,6 +1,11 @@
 package com.heyticket.backend.service;
 
+import com.heyticket.backend.kopis.client.PerformanceRequest;
+import com.heyticket.backend.kopis.client.PerformanceResponse;
 import com.heyticket.backend.repository.PerformanceRepository;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +17,15 @@ public class PerformanceService {
 
     private final KopisService kopisService;
 
-    public void savePerformance() {
-//        List<PerformanceResponse> performanceResponseList = kopisService.getPerformance(LocalDate.now().minusMonths(2), LocalDate.now().plusDays(2));
-//        List<Performance> performanceList = performanceResponseList.stream()
-//            .map(PerformanceResponse::toEntity)
-//            .collect(Collectors.toList());
-//        performanceRepository.saveAll(performanceList);
+    public void updatePerformances() {
+        PerformanceRequest performanceRequest = PerformanceRequest.builder()
+            .stdate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .eddate(LocalDate.now().plusMonths(3).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .cpage(1)
+            .rows(9999)
+            .build();
+
+        List<PerformanceResponse> performanceResponseList = kopisService.getPerformance(performanceRequest);
     }
 
 }
