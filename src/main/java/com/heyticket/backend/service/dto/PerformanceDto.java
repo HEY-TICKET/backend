@@ -1,8 +1,5 @@
-package com.heyticket.backend.kopis.domain;
+package com.heyticket.backend.service.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class Performance extends BaseTimeEntity {
+public class PerformanceDto {
 
-    @Id
     private String id; // 공연 ID
     private String placeId; // 공연 시설 ID
     private String title; // 공연명
@@ -30,12 +25,10 @@ public class Performance extends BaseTimeEntity {
     private String company; // 제작사
     private String price; // 티켓 가격
     private String poster; // 포스터 이미지 경로
-    @Column(length = 1000)
     private String story; // 줄거리
     private String genre; // 장르
     private String state; // 공연상태
     private Boolean openRun; // 오픈런 여부
-    @Column(length = 700)
     private String storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
 

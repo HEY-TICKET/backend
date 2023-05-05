@@ -1,22 +1,27 @@
 package com.heyticket.backend.service;
 
-import com.heyticket.backend.kopis.client.PerformanceDetailResponse;
-import com.heyticket.backend.kopis.client.PerformanceRequest;
-import com.heyticket.backend.kopis.client.PerformanceResponse;
+import com.heyticket.backend.kopis.client.dto.PerformanceDetailResponse;
+import com.heyticket.backend.kopis.client.dto.PerformanceRequest;
+import com.heyticket.backend.kopis.client.dto.PerformanceResponse;
 import com.heyticket.backend.kopis.domain.Performance;
+import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.repository.PerformanceRepository;
+import com.heyticket.backend.service.dto.PerformanceDto;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PerformanceService {
 
     private final PerformanceRepository performanceRepository;
@@ -39,8 +44,8 @@ public class PerformanceService {
 
         List<Performance> newPerformanceList = new ArrayList<>();
 
-        for (PerformanceResponse performanceResponse : performanceResponseList) {
-            String performanceId = performanceResponse.mt20id();
+        for (int i = 0; i < 30; i++) {
+            String performanceId = performanceResponseList.get(i).mt20id();
             if (!idSet.contains(performanceId)) {
                 PerformanceDetailResponse performanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
                 Performance performance = performanceDetailResponse.toEntity();
@@ -50,6 +55,13 @@ public class PerformanceService {
 
         performanceRepository.saveAll(newPerformanceList);
         log.info("Success to update performance list. size : {}", newPerformanceList.size());
+    }
+
+    public List<PerformanceDto> getNewPerformances() {
+        List<Performance> performanceList = performanceRepository.findNewPerformances();
+        return performanceList.stream()
+            .map(PerformanceMapper.INSTANCE::toPerformanceDto)
+            .collect(Collectors.toList());
     }
 
 }

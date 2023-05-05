@@ -63,8 +63,6 @@ public class QPerformance extends EntityPathBase<Performance> {
 
     public final StringPath storyUrls = createString("storyUrls");
 
-    public final StringPath styUrls = createString("styUrls");
-
     public final StringPath title = createString("title");
 
     public QPerformance(String variable) {

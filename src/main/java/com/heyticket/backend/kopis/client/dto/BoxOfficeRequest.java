@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.client;
+package com.heyticket.backend.kopis.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

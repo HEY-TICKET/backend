@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.client;
+package com.heyticket.backend.kopis.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,17 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public final class PerformanceDetailRequest {
+public final class PerformanceRequest {
 
     private String service;
 
-    private String mt20id;
+    private String stdate;
+
+    private String eddate;
+
+    private int cpage;
+
+    private int rows;
 
     public void updateApiKey(String apiKey) {
         this.service = apiKey;

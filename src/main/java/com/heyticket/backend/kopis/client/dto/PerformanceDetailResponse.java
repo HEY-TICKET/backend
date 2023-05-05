@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.client;
+package com.heyticket.backend.kopis.client.dto;
 
 import com.heyticket.backend.kopis.domain.Performance;
 import java.time.LocalDate;
@@ -22,11 +22,12 @@ public record PerformanceDetailResponse(
     String genrenm, // 장르
     String prfstate, // 공연 상태
     String openrun, // 오픈런
-    String styurls, // 소개이미지 목록
+    String[] styurls, // 소개이미지 목록
     String dtguidance // 공연 시간
 ) {
 
     public Performance toEntity() {
+
         return Performance.builder()
             .id(this.mt20id)
             .placeId(this.mt10id)
@@ -45,6 +46,11 @@ public record PerformanceDetailResponse(
             .genre(this.genrenm)
             .state(this.prfstate)
             .openRun(this.openrun.equals("Y"))
+            .storyUrls(
+                this.styurls != null ?
+                    String.join("|", this.styurls) : null
+            )
+            .dtguidance(this.dtguidance)
             .build();
     }
 

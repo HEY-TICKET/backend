@@ -6,6 +6,7 @@ import static com.heyticket.backend.kopis.domain.QPerformance.performance;
 import com.heyticket.backend.kopis.domain.Performance;
 import com.heyticket.backend.kopis.domain.QPerformance;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,15 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
     public List<String> findAllIds() {
         return queryFactory.select(performance.id)
             .from(performance)
+            .fetch();
+    }
+
+    @Override
+    public List<Performance> findNewPerformances() {
+        return queryFactory.selectFrom(performance)
+            .where(performance.createdDate.goe(LocalDateTime.now().minusDays(7)))
+            .orderBy(performance.createdDate.desc())
+            .limit(20)
             .fetch();
     }
 

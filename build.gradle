@@ -20,7 +20,7 @@ repositories {
 
 ext {
     springCloudVersion = '2022.0.1'
-    mapstructVersion = '1.5.1.Final'
+    mapstructVersion = '1.5.3.Final'
 }
 
 dependencies {
@@ -42,7 +42,6 @@ dependencies {
     // Mapstruct
 	annotationProcessor "org.mapstruct:mapstruct-processor:$mapstructVersion"
 	implementation "org.mapstruct:mapstruct:$mapstructVersion"
-
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'

@@ -10,4 +10,6 @@ public interface PerformanceCustomRepository {
 
     List<String> findAllIds();
 
+    List<Performance> findNewPerformances();
+
 }

@@ -2,10 +2,10 @@ package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.heyticket.backend.kopis.client.BoxOfficeRequest;
-import com.heyticket.backend.kopis.client.PerformanceDetailResponse;
-import com.heyticket.backend.kopis.client.PerformanceRequest;
-import com.heyticket.backend.kopis.client.PerformanceResponse;
+import com.heyticket.backend.kopis.client.dto.BoxOfficeRequest;
+import com.heyticket.backend.kopis.client.dto.PerformanceDetailResponse;
+import com.heyticket.backend.kopis.client.dto.PerformanceRequest;
+import com.heyticket.backend.kopis.client.dto.PerformanceResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
