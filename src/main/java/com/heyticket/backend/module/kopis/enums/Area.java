@@ -7,20 +7,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Area {
 
-    SEOUL("AAAA", "연극", 1),
-    DAEJEON("BBBC", "무용", 2),
-    CONTEMPORARY_DANCE("BBBE", "대중무용", 3),
-    CLASSIC("CCCA", "클래식", 4),
-    KOREAN_TRADITIONAL_MUSIC("CCCC", "국악", 5),
-    POPULAR_MUSIC("CCCD", "대중음악", 6),
-    MIXED_GENRE("EEEA", "복합", 7),
-    CIRCUS_AND_MAGIC("EEEB", "서커스/마술", 8),
-    MUSICAL("GGGA", "뮤지컬", 9);
+    SEOUL("11"),
+    INCHEON("28"),
+    DAEJEON("30"),
+    DAEGU("27"),
+    GWANGJU("29"),
+    BUSAN("26"),
+    ULSAN("31"),
+    SEJONG("36"),
+    GYEONGGI("41"),
+    CHUNGCHEONG("43|44"),
+    GYEONGSANG("47|48"),
+    JEOLLA("45|46"),
+    GANGWON("42"),
+    JEJU("50"),
+    UNI("UNI");
 
-    private final String code;
-
-    private final String name;
-
-    private final int number;
+    private final String value;
 
 }
