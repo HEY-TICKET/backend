@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.client.dto;
+package com.heyticket.backend.module.kopis.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public final class PerformanceRequest {
 
-    private String service;
-
     private String stdate;
 
     private String eddate;
@@ -20,9 +18,5 @@ public final class PerformanceRequest {
     private int cpage;
 
     private int rows;
-
-    public void updateApiKey(String apiKey) {
-        this.service = apiKey;
-    }
 
 }

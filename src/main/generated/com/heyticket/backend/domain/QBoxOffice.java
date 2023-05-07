@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.domain;
+package com.heyticket.backend.domain;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -15,7 +15,7 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QBoxOffice extends EntityPathBase<BoxOffice> {
 
-    private static final long serialVersionUID = -1484133182L;
+    private static final long serialVersionUID = -1123297974L;
 
     public static final QBoxOffice boxOffice = new QBoxOffice("boxOffice");
 

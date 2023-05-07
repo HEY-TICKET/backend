@@ -1,10 +1,10 @@
 package com.heyticket.backend.repository;
 
 
-import static com.heyticket.backend.kopis.domain.QPerformance.performance;
+import static com.heyticket.backend.domain.QPerformance.performance;
 
-import com.heyticket.backend.kopis.domain.Performance;
-import com.heyticket.backend.kopis.domain.QPerformance;
+import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.domain.QPerformance;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;

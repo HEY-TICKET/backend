@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.domain;
+package com.heyticket.backend.domain;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -15,7 +15,7 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultSupertypeSerializer")
 public class QBaseTimeEntity extends EntityPathBase<BaseTimeEntity> {
 
-    private static final long serialVersionUID = -1418174650L;
+    private static final long serialVersionUID = -1426420802L;
 
     public static final QBaseTimeEntity baseTimeEntity = new QBaseTimeEntity("baseTimeEntity");
 

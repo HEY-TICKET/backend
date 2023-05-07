@@ -1,12 +1,12 @@
 package com.heyticket.backend.module.mapper;
 
-import com.heyticket.backend.kopis.domain.Performance;
+import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.service.dto.PerformanceDto;
 import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2023-05-05T23:30:55+0900",
+    date = "2023-05-05T23:56:53+0900",
     comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.7 (Amazon.com Inc.)"
 )
 public class PerformanceMapperImpl implements PerformanceMapper {

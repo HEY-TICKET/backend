@@ -1,6 +1,6 @@
-package com.heyticket.backend.kopis.client.dto;
+package com.heyticket.backend.module.kopis.client.dto;
 
-import com.heyticket.backend.kopis.domain.Performance;
+import com.heyticket.backend.domain.Performance;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 

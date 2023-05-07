@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.client.dto;
+package com.heyticket.backend.module.kopis.client.dto;
 
 public record BoxOfficeResponse(
     String area, // 지역

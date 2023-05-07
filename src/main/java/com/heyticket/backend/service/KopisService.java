@@ -1,10 +1,11 @@
 package com.heyticket.backend.service;
 
-import com.heyticket.backend.kopis.client.dto.BoxOfficeRequest;
-import com.heyticket.backend.kopis.client.KopisFeignClient;
-import com.heyticket.backend.kopis.client.dto.PerformanceDetailResponse;
-import com.heyticket.backend.kopis.client.dto.PerformanceRequest;
-import com.heyticket.backend.kopis.client.dto.PerformanceResponse;
+import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
+import com.heyticket.backend.module.kopis.client.KopisFeignClient;
+import com.heyticket.backend.module.kopis.client.dto.BoxOfficeResponse;
+import com.heyticket.backend.module.kopis.client.dto.PerformanceDetailResponse;
+import com.heyticket.backend.module.kopis.client.dto.PerformanceRequest;
+import com.heyticket.backend.module.kopis.client.dto.PerformanceResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,7 @@ public class KopisService {
     private final KopisFeignClient kopisFeignClient;
 
     public List<PerformanceResponse> getPerformances(PerformanceRequest performanceRequest) {
-        performanceRequest.updateApiKey(apiKey);
-        return kopisFeignClient.getPerformances(performanceRequest);
+        return kopisFeignClient.getPerformances(performanceRequest, apiKey);
     }
 
     public PerformanceDetailResponse getPerformanceDetail(String performanceId) {
@@ -32,9 +32,8 @@ public class KopisService {
         return performanceDetailResponse;
     }
 
-    public List<BoxOfficeRequest> getBoxOffice(BoxOfficeRequest boxOfficeRequest) {
-        boxOfficeRequest.updateApiKey(apiKey);
-        return kopisFeignClient.getBoxOffice(boxOfficeRequest);
+    public List<BoxOfficeResponse> getBoxOffice(KopisBoxOfficeRequest kopisBoxOfficeRequest) {
+        return kopisFeignClient.getBoxOffice(kopisBoxOfficeRequest, apiKey);
     }
 
 }

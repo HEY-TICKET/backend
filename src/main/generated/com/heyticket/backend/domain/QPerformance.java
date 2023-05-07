@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.domain;
+package com.heyticket.backend.domain;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -15,7 +15,7 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QPerformance extends EntityPathBase<Performance> {
 
-    private static final long serialVersionUID = 1389325771L;
+    private static final long serialVersionUID = 259609683L;
 
     public static final QPerformance performance = new QPerformance("performance");
 

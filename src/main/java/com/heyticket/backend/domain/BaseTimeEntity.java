@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.domain;
+package com.heyticket.backend.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

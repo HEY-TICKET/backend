@@ -1,4 +1,4 @@
-package com.heyticket.backend.kopis.client.dto;
+package com.heyticket.backend.module.kopis.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public final class BoxOfficeRequest {
-
-    private String service; // 인증키
+public final class KopisBoxOfficeRequest {
 
     private String ststype; // 요청 형태
 
@@ -20,9 +18,5 @@ public final class BoxOfficeRequest {
     private String catecode; // 장르 구분 코드, optional
 
     private String area; // 지역 코드, optional
-
-    public void updateApiKey(String apiKey) {
-        this.service = apiKey;
-    }
 
 }

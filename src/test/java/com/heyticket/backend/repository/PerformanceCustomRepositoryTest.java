@@ -1,6 +1,6 @@
 //package com.heyticket.backend.repository;
 //
-//import com.heyticket.backend.kopis.domain.Performance;
+//import com.heyticket.backend.domain.Performance;
 //import java.util.Optional;
 //import org.assertj.core.api.Assertions;
 //import org.junit.jupiter.api.Test;

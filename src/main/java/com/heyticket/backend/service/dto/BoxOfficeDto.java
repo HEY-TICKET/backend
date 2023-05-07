@@ -1,9 +1,5 @@
-package com.heyticket.backend.kopis.domain;
+package com.heyticket.backend.service.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,13 +8,10 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class BoxOffice extends BaseTimeEntity {
+@AllArgsConstructor
+public class BoxOfficeDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String area; // 지역
     private int prfdtcnt; // 상연횟수

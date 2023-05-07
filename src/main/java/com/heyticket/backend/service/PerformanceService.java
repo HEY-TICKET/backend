@@ -1,11 +1,15 @@
 package com.heyticket.backend.service;
 
-import com.heyticket.backend.kopis.client.dto.PerformanceDetailResponse;
-import com.heyticket.backend.kopis.client.dto.PerformanceRequest;
-import com.heyticket.backend.kopis.client.dto.PerformanceResponse;
-import com.heyticket.backend.kopis.domain.Performance;
+import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
+import com.heyticket.backend.module.kopis.client.dto.BoxOfficeResponse;
+import com.heyticket.backend.module.kopis.client.dto.PerformanceDetailResponse;
+import com.heyticket.backend.module.kopis.client.dto.PerformanceRequest;
+import com.heyticket.backend.module.kopis.client.dto.PerformanceResponse;
+import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.repository.PerformanceRepository;
+import com.heyticket.backend.service.dto.BoxOfficeRequest;
 import com.heyticket.backend.service.dto.PerformanceDto;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -62,6 +66,20 @@ public class PerformanceService {
         return performanceList.stream()
             .map(PerformanceMapper.INSTANCE::toPerformanceDto)
             .collect(Collectors.toList());
+    }
+
+    public List<BoxOfficeResponse> getUniBoxOffice() {
+        KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
+            .ststype(TimePeriod.DAY.getValue())
+            .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .area("UNI")
+            .build();
+
+        return kopisService.getBoxOffice(kopisBoxOfficeRequest);
+    }
+
+    public List<BoxOfficeResponse> getBoxOffice(BoxOfficeRequest request) {
+        return kopisService.getBoxOffice(request.toKopisBoxOfficeRequest());
     }
 
 }
