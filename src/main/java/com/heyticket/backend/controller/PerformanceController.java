@@ -7,7 +7,7 @@ import com.heyticket.backend.service.dto.PerformanceDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,8 +27,13 @@ public class PerformanceController {
     }
 
     @GetMapping("/performances/boxoffice")
-    public List<BoxOfficeResponse> getBoxOffice(@RequestBody BoxOfficeRequest request) {
+    public List<BoxOfficeResponse> getBoxOffice(BoxOfficeRequest request) {
         return performanceService.getBoxOffice(request);
+    }
+
+    @GetMapping("/performances/{id}")
+    public PerformanceDto getPerformance(@PathVariable String id) {
+        return performanceService.getPerformanceById(id);
     }
 
 }

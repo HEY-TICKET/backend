@@ -1,12 +1,15 @@
 package com.heyticket.backend.service.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,7 +32,7 @@ public class PerformanceDto {
     private String genre; // 장르
     private String state; // 공연상태
     private Boolean openRun; // 오픈런 여부
-    private String storyUrls; // 소개이미지 목록
+    private List<String> storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
 
 }

@@ -1,8 +1,8 @@
 package com.heyticket.backend.service;
 
 import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
 import com.heyticket.backend.module.kopis.client.dto.BoxOfficeResponse;
+import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
 import com.heyticket.backend.module.kopis.client.dto.PerformanceDetailResponse;
 import com.heyticket.backend.module.kopis.client.dto.PerformanceRequest;
 import com.heyticket.backend.module.kopis.client.dto.PerformanceResponse;
@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +79,18 @@ public class PerformanceService {
         return kopisService.getBoxOffice(kopisBoxOfficeRequest);
     }
 
+    public PerformanceDto getPerformanceById(String id) {
+        Performance performance = performanceRepository.findById(id).orElseThrow(() -> new NoSuchElementException("no such performance"));
+        String storyUrls = performance.getStoryUrls();
+        PerformanceDto performanceDto = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
+        performanceDto.setStoryUrls(List.of(storyUrls.split("\\|")));
+        return performanceDto;
+    }
+
     public List<BoxOfficeResponse> getBoxOffice(BoxOfficeRequest request) {
+//        if (!request.getDate().matches("\\d{4}-\\d{2}-\\d{2}")) {
+//            throw new IllegalStateException("Invalid date format.");
+//        }
         return kopisService.getBoxOffice(request.toKopisBoxOfficeRequest());
     }
 

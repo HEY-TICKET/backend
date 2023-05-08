@@ -6,7 +6,7 @@ import javax.annotation.processing.Generated;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2023-05-05T23:56:53+0900",
+    date = "2023-05-08T23:35:51+0900",
     comments = "version: 1.5.3.Final, compiler: javac, environment: Java 17.0.7 (Amazon.com Inc.)"
 )
 public class PerformanceMapperImpl implements PerformanceMapper {
@@ -36,7 +36,6 @@ public class PerformanceMapperImpl implements PerformanceMapper {
         performanceDto.genre( performance.getGenre() );
         performanceDto.state( performance.getState() );
         performanceDto.openRun( performance.getOpenRun() );
-        performanceDto.storyUrls( performance.getStoryUrls() );
         performanceDto.dtguidance( performance.getDtguidance() );
 
         return performanceDto.build();
