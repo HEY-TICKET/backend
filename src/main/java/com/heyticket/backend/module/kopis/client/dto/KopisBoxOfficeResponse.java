@@ -1,6 +1,6 @@
 package com.heyticket.backend.module.kopis.client.dto;
 
-public record BoxOfficeResponse(
+public record KopisBoxOfficeResponse(
     String area, // 지역
     Integer prfdtcnt, // 상영 횟수
     String prfpd, // 공연 기간

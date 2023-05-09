@@ -1,7 +1,11 @@
 logging:
   level:
-    com.heyticket.backend.performances.client.KopisFeignClient: DEBUG
-
+    com.heyticket.backend: DEBUG
+  org:
+    hibernate:
+      type:
+        descriptor:
+          sql: trace
 kopis:
   api-key: fce47dff5c8040bc906ea1e29823a18a
   performance:
@@ -18,6 +22,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+      type:
+        descriptor:
+          sql: trace
 
   data:
     redis:

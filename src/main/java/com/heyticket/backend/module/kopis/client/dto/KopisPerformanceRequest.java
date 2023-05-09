@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public final class PerformanceRequest {
+public final class KopisPerformanceRequest {
 
     private String stdate;
 

@@ -4,7 +4,7 @@ import com.heyticket.backend.domain.Performance;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public record PerformanceResponse(
+public record KopisPerformanceResponse(
     String mt20id,
     String prfnm,
     String prfpdfrom,

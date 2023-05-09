@@ -6,10 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,5 +32,9 @@ public class PerformanceDto {
     private Boolean openRun; // 오픈런 여부
     private List<String> storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
+
+    public void updateStoryUrls(String storyUrls) {
+        this.storyUrls = List.of(storyUrls.split("\\|"));
+    }
 
 }
