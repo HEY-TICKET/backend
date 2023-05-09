@@ -4,7 +4,7 @@ import com.heyticket.backend.domain.Performance;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public record PerformanceDetailResponse(
+public record KopisPerformanceDetailResponse(
     String mt20id, // 공연 ID
     String mt10id, // 공연시설 ID
     String prfnm, // 공연명

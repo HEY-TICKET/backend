@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public final class PerformanceDetailRequest {
+public final class KopisPerformanceDetailRequest {
 
     private String service;
 
