@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum Area {
+public enum BoxOfficeArea {
 
     SEOUL("11"),
     INCHEON("28"),

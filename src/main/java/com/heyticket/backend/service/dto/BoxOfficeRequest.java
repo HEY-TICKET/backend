@@ -1,8 +1,8 @@
 package com.heyticket.backend.service.dto;
 
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
-import com.heyticket.backend.module.kopis.enums.Area;
-import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
+import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -23,9 +23,9 @@ public class BoxOfficeRequest {
 
     private LocalDate date;
 
-    private Genre genre;
+    private BoxOfficeGenre genre;
 
-    private Area area;
+    private BoxOfficeArea area;
 
     public KopisBoxOfficeRequest toKopisBoxOfficeRequest() {
         return KopisBoxOfficeRequest.builder()
