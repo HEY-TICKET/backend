@@ -13,15 +13,19 @@ import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
-import com.heyticket.backend.service.dto.BoxOfficeRequest;
+import com.heyticket.backend.service.dto.BoxOfficeRankRequest;
+import com.heyticket.backend.service.dto.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.NewPerformanceRequest;
-import com.heyticket.backend.service.dto.PerformanceDto;
+import com.heyticket.backend.service.dto.PerformanceResponse;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Slf4j
 @Service
@@ -45,12 +50,12 @@ public class PerformanceService {
 
     private final KopisService kopisService;
 
-    public void updatePerformances(LocalDate from, LocalDate to) {
+    public void updatePerformances(LocalDate from, LocalDate to, int rows) {
         KopisPerformanceRequest kopisPerformanceRequest = KopisPerformanceRequest.builder()
             .stdate(from.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .eddate(to.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .cpage(1)
-            .rows(100000)
+            .rows(rows)
             .build();
 
         List<KopisPerformanceResponse> kopisPerformanceResponseList = kopisService.getPerformances(kopisPerformanceRequest);
@@ -61,8 +66,8 @@ public class PerformanceService {
 
         List<Performance> newPerformanceList = new ArrayList<>();
 
-        for (int i = 0; i < 30; i++) {
-            String performanceId = kopisPerformanceResponseList.get(i).mt20id();
+        for (KopisPerformanceResponse kopisPerformanceResponse : kopisPerformanceResponseList) {
+            String performanceId = kopisPerformanceResponse.mt20id();
             if (!allIdSet.contains(performanceId)) {
                 KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
                 Performance performance = kopisPerformanceDetailResponse.toEntity();
@@ -74,18 +79,18 @@ public class PerformanceService {
         log.info("Success to update performance list. size : {}", newPerformanceList.size());
     }
 
-    public PageResponse<PerformanceDto> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
+    public PageResponse<PerformanceResponse> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
         Page<Performance> performancePageResponse = performanceRepository.findNewPerformances(newPerformanceRequest, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
-        List<PerformanceDto> performanceDtoList = performanceList.stream()
+        List<PerformanceResponse> performanceResponseList = performanceList.stream()
             .map(performance -> {
-                PerformanceDto performanceDto = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-                performanceDto.updateStoryUrls(performance.getStoryUrls());
-                return performanceDto;
+                PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
+                performanceResponse.updateStoryUrls(performance.getStoryUrls());
+                return performanceResponse;
             })
             .collect(Collectors.toList());
 
-        return new PageResponse<>(performanceDtoList, pageable, performancePageResponse.getTotalPages());
+        return new PageResponse<>(performanceResponseList, pageable.getPageSize() + 1, pageable.getPageNumber(), performancePageResponse.getTotalPages());
     }
 
     public ResponseEntity<List<KopisBoxOfficeResponse>> getUniBoxOffice() {
@@ -100,19 +105,47 @@ public class PerformanceService {
         return new ResponseEntity<>(kopisBoxOfficeResponseList, HttpStatus.OK);
     }
 
-    public PerformanceDto getPerformanceById(String id) {
+    public PerformanceResponse getPerformanceById(String id) {
         Performance performance = performanceRepository.findById(id).orElseThrow(() -> new NoSuchElementException("no such performance"));
-        PerformanceDto performanceDto = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-        performanceDto.updateStoryUrls(performance.getStoryUrls());
-        return performanceDto;
+        PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
+        performanceResponse.updateStoryUrls(performance.getStoryUrls());
+        return performanceResponse;
     }
 
-    public ResponseEntity<List<KopisBoxOfficeResponse>> getBoxOffice(BoxOfficeRequest request) {
-//        if (!request.getDate().matches("\\d{4}-\\d{2}-\\d{2}")) {
-//            throw new IllegalStateException("Invalid date format.");
-//        }
-        List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(request.toKopisBoxOfficeRequest());
-        return new ResponseEntity<>(kopisBoxOfficeResponseList, HttpStatus.OK);
+    public PageResponse<BoxOfficeRankResponse> getBoxOfficeRank(BoxOfficeRankRequest request, Pageable pageable) {
+        BoxOfficeRank boxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(request)
+            .orElseThrow(() -> new NoSuchElementException("No such boxOfficeRank."));
+
+        int dataSize = pageable.getPageSize();
+        String[] idArray = boxOfficeRank.getPerformanceIds().split("\\|");
+        String[] truncatedIdArray = Arrays.copyOfRange(idArray, 0, dataSize);
+
+        List<Performance> performanceList = performanceRepository.findAllById(Arrays.asList(truncatedIdArray));
+        Map<String, Performance> performanceMap = new HashMap<>();
+        performanceList.forEach(performance -> performanceMap.put(performance.getId(), performance));
+
+        PerformanceMapper performanceMapper = PerformanceMapper.INSTANCE;
+
+        List<BoxOfficeRankResponse> boxOfficeRankResponseList = new ArrayList<>();
+        List<Performance> unsavedPerformanceList = new ArrayList<>();
+
+        for (int i = 0; i < truncatedIdArray.length; i++) {
+            String performanceId = truncatedIdArray[i];
+            Performance performance = performanceMap.get(performanceId);
+            if (ObjectUtils.isEmpty(performance)) {
+                KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
+                performance = kopisPerformanceDetailResponse.toEntity();
+                unsavedPerformanceList.add(performance);
+            }
+            BoxOfficeRankResponse boxOfficeRankResponse = performanceMapper.toBoxOfficeRankResponse(performance);
+            boxOfficeRankResponse.setRank(i + 1);
+            boxOfficeRankResponse.updateStoryUrls(performance.getStoryUrls());
+            boxOfficeRankResponseList.add(boxOfficeRankResponse);
+        }
+
+        performanceRepository.saveAll(unsavedPerformanceList);
+
+        return new PageResponse<>(boxOfficeRankResponseList, 1, dataSize, 1);
     }
 
     public void updateBoxOfficeRank() {
@@ -149,42 +182,6 @@ public class PerformanceService {
         }
 
         boxOfficeRankRepository.saveAll(boxOfficeRankList);
-
-    }
-
-    public void updateBoxOfficeRank2() {
-        BoxOfficeGenre[] genres = BoxOfficeGenre.values();
-        BoxOfficeArea[] areas = BoxOfficeArea.values();
-        TimePeriod[] timePeriods = TimePeriod.values();
-        BoxOfficeGenre genre = genres[0];
-        BoxOfficeArea area = areas[0];
-        TimePeriod timePeriod = timePeriods[0];
-        List<BoxOfficeRank> boxOfficeRankList = new ArrayList<>();
-
-        KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
-            .ststype(timePeriod.getValue())
-            .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .catecode(genre.getCode())
-            .area(area.getValue())
-            .build();
-
-        List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
-
-        String ids = kopisBoxOfficeResponseList.stream()
-            .map(KopisBoxOfficeResponse::mt20id)
-            .collect(Collectors.joining("|"));
-
-        BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
-            .genre(genre)
-            .area(area)
-            .timePeriod(timePeriod)
-            .performanceIds(ids)
-            .build();
-
-        boxOfficeRankList.add(boxOfficeRank);
-
-        boxOfficeRankRepository.saveAll(boxOfficeRankList);
-
     }
 
 }

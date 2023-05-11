@@ -1,22 +1,20 @@
-package com.heyticket.backend.domain;
+package com.heyticket.backend.service.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class Performance extends BaseTimeEntity {
+@AllArgsConstructor
+public class BoxOfficeRankResponse {
 
-    @Id
     private String id; // 공연 ID
     private String placeId; // 공연 시설 ID
     private String title; // 공연명
@@ -30,13 +28,16 @@ public class Performance extends BaseTimeEntity {
     private String company; // 제작사
     private String price; // 티켓 가격
     private String poster; // 포스터 이미지 경로
-    @Column(length = 2000)
     private String story; // 줄거리
     private String genre; // 장르
     private String state; // 공연상태
     private Boolean openRun; // 오픈런 여부
-    @Column(length = 700)
-    private String storyUrls; // 소개이미지 목록
+    private List<String> storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
+    private int rank; // 랭킹
+
+    public void updateStoryUrls(String storyUrls) {
+        this.storyUrls = List.of(storyUrls.split("\\|"));
+    }
 
 }

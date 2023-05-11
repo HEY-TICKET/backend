@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PerformanceDto {
+public class PerformanceResponse {
 
     private String id; // 공연 ID
     private String placeId; // 공연 시설 ID

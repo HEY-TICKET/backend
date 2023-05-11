@@ -17,7 +17,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoxOfficeRequest {
+public class BoxOfficeRankRequest {
 
     private TimePeriod timePeriod;
 
