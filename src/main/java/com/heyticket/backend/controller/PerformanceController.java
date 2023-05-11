@@ -3,8 +3,10 @@ package com.heyticket.backend.controller;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeResponse;
 import com.heyticket.backend.service.PerformanceService;
 import com.heyticket.backend.service.dto.BoxOfficeRequest;
-import com.heyticket.backend.service.dto.CommonResponse;
+import com.heyticket.backend.service.dto.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.PerformanceDto;
+import com.heyticket.backend.service.dto.pagable.PageRequest;
+import com.heyticket.backend.service.dto.pagable.PageResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +21,8 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     @GetMapping("/performances/new")
-    public CommonResponse<List<PerformanceDto>> getNewPerformances() {
-        return performanceService.getNewPerformances();
+    public PageResponse<PerformanceDto> getNewPerformances(NewPerformanceRequest newPerformanceRequest, PageRequest pageRequest) {
+        return performanceService.getNewPerformances(newPerformanceRequest, pageRequest.of());
     }
 
     @GetMapping("/performances/boxoffice/uni")

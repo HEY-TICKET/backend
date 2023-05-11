@@ -1,12 +1,15 @@
 package com.heyticket.backend.repository;
 
 import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.service.dto.NewPerformanceRequest;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface PerformanceCustomRepository {
 
     List<String> findAllIds();
 
-    List<Performance> findNewPerformances();
+    Page<Performance> findNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable);
 
 }

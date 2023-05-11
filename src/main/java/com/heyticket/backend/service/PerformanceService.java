@@ -14,8 +14,9 @@ import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.service.dto.BoxOfficeRequest;
-import com.heyticket.backend.service.dto.CommonResponse;
+import com.heyticket.backend.service.dto.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.PerformanceDto;
+import com.heyticket.backend.service.dto.pagable.PageResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -25,6 +26,8 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -71,8 +74,9 @@ public class PerformanceService {
         log.info("Success to update performance list. size : {}", newPerformanceList.size());
     }
 
-    public CommonResponse<List<PerformanceDto>> getNewPerformances() {
-        List<Performance> performanceList = performanceRepository.findNewPerformances();
+    public PageResponse<PerformanceDto> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
+        Page<Performance> performancePageResponse = performanceRepository.findNewPerformances(newPerformanceRequest, pageable);
+        List<Performance> performanceList = performancePageResponse.getContent();
         List<PerformanceDto> performanceDtoList = performanceList.stream()
             .map(performance -> {
                 PerformanceDto performanceDto = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
@@ -81,7 +85,7 @@ public class PerformanceService {
             })
             .collect(Collectors.toList());
 
-        return CommonResponse.ok("message", performanceDtoList);
+        return new PageResponse<>(performanceDtoList, pageable, performancePageResponse.getTotalPages());
     }
 
     public ResponseEntity<List<KopisBoxOfficeResponse>> getUniBoxOffice() {
@@ -143,6 +147,41 @@ public class PerformanceService {
                 }
             }
         }
+
+        boxOfficeRankRepository.saveAll(boxOfficeRankList);
+
+    }
+
+    public void updateBoxOfficeRank2() {
+        BoxOfficeGenre[] genres = BoxOfficeGenre.values();
+        BoxOfficeArea[] areas = BoxOfficeArea.values();
+        TimePeriod[] timePeriods = TimePeriod.values();
+        BoxOfficeGenre genre = genres[0];
+        BoxOfficeArea area = areas[0];
+        TimePeriod timePeriod = timePeriods[0];
+        List<BoxOfficeRank> boxOfficeRankList = new ArrayList<>();
+
+        KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
+            .ststype(timePeriod.getValue())
+            .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .catecode(genre.getCode())
+            .area(area.getValue())
+            .build();
+
+        List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
+
+        String ids = kopisBoxOfficeResponseList.stream()
+            .map(KopisBoxOfficeResponse::mt20id)
+            .collect(Collectors.joining("|"));
+
+        BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
+            .genre(genre)
+            .area(area)
+            .timePeriod(timePeriod)
+            .performanceIds(ids)
+            .build();
+
+        boxOfficeRankList.add(boxOfficeRank);
 
         boxOfficeRankRepository.saveAll(boxOfficeRankList);
 
