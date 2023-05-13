@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.util.StringUtils;
 
 @Getter
 @Setter
@@ -37,7 +38,9 @@ public class BoxOfficeRankResponse {
     private int rank; // 랭킹
 
     public void updateStoryUrls(String storyUrls) {
-        this.storyUrls = List.of(storyUrls.split("\\|"));
+        if (StringUtils.hasText(storyUrls)) {
+            this.storyUrls = List.of(storyUrls.split("\\|"));
+        }
     }
 
 }

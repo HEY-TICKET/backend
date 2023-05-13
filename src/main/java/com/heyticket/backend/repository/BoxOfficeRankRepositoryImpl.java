@@ -35,14 +35,14 @@ public class BoxOfficeRankRepositoryImpl implements BoxOfficeRankCustomRepositor
     }
 
     private BooleanExpression eqBoxOfficeGenre(BoxOfficeGenre boxOfficeGenre) {
-        if (ObjectUtils.isEmpty(boxOfficeGenre)) {
+        if (ObjectUtils.isEmpty(boxOfficeGenre) || boxOfficeGenre == BoxOfficeGenre.ALL) {
             return null;
         }
         return boxOfficeRank.genre.eq(boxOfficeGenre);
     }
 
     private BooleanExpression eqBoxOfficeArea(BoxOfficeArea boxOfficeArea) {
-        if (ObjectUtils.isEmpty(boxOfficeArea)) {
+        if (ObjectUtils.isEmpty(boxOfficeArea) || boxOfficeArea == BoxOfficeArea.ALL) {
             return null;
         }
         return boxOfficeRank.area.eq(boxOfficeArea);

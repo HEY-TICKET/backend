@@ -23,7 +23,8 @@ public enum BoxOfficeArea {
     JEOLLA("45|46", "전라"),
     GANGWON("42", "강원"),
     JEJU("50", "제주"),
-    UNI("UNI", "대학로");
+    UNI("UNI", "대학로"),
+    ALL("NONE", "전체");
 
     private final String code;
 

@@ -19,7 +19,8 @@ public enum BoxOfficeGenre {
     CIRCUS_AND_MAGIC("EEEB", "서커스/마술"),
     MIXED_GENRE("EEEA", "복합"),
     KID("KID", "아동"),
-    OPEN("OPEN", "오픈런");
+    OPEN("OPEN", "오픈런"),
+    ALL("NONE", "전체");
 
     private final String code;
 

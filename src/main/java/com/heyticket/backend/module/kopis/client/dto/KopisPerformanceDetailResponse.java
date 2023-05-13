@@ -51,6 +51,7 @@ public record KopisPerformanceDetailResponse(
                     String.join("|", this.styurls) : null
             )
             .dtguidance(this.dtguidance)
+            .views(0)
             .build();
     }
 

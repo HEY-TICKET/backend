@@ -31,7 +31,7 @@ public class Performance extends BaseTimeEntity {
     private String company; // 제작사
     private String price; // 티켓 가격
     private String poster; // 포스터 이미지 경로
-    @Column(length = 2000)
+    @Column(columnDefinition = "TEXT")
     private String story; // 줄거리
     private String genre; // 장르
     private String state; // 공연상태
