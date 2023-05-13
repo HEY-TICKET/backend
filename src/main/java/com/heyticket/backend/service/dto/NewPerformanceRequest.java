@@ -1,6 +1,8 @@
 package com.heyticket.backend.service.dto;
 
 import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.module.kopis.enums.SortOrder;
+import com.heyticket.backend.module.kopis.enums.SortType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,5 +17,9 @@ import lombok.Setter;
 public class NewPerformanceRequest {
 
     private Genre genre;
+
+    private SortType sortType;
+
+    private SortOrder sortOrder;
 
 }

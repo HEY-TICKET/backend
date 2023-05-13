@@ -107,6 +107,7 @@ public class PerformanceService {
 
     public PerformanceResponse getPerformanceById(String id) {
         Performance performance = performanceRepository.findById(id).orElseThrow(() -> new NoSuchElementException("no such performance"));
+        performance.addViews();
         PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
         performanceResponse.updateStoryUrls(performance.getStoryUrls());
         return performanceResponse;

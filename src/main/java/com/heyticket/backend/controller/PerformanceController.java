@@ -1,6 +1,5 @@
 package com.heyticket.backend.controller;
 
-import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeResponse;
 import com.heyticket.backend.service.PerformanceService;
 import com.heyticket.backend.service.dto.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.BoxOfficeRankResponse;
@@ -8,15 +7,15 @@ import com.heyticket.backend.service.dto.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.PerformanceResponse;
 import com.heyticket.backend.service.dto.pagable.PageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class PerformanceController {
 
     private final PerformanceService performanceService;
@@ -26,12 +25,7 @@ public class PerformanceController {
         return performanceService.getNewPerformances(request, pageRequest.of());
     }
 
-    @GetMapping("/performances/boxoffice/uni")
-    public ResponseEntity<List<KopisBoxOfficeResponse>> getUniBoxOffice() {
-        return performanceService.getUniBoxOffice();
-    }
-
-    @GetMapping("/performances/boxoffice")
+    @GetMapping("/performances/rank")
     public PageResponse<BoxOfficeRankResponse> getBoxOffice(BoxOfficeRankRequest request, PageRequest pageRequest) {
         return performanceService.getBoxOfficeRank(request, pageRequest.of());
     }

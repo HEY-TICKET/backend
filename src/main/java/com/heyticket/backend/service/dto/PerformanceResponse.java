@@ -32,6 +32,7 @@ public class PerformanceResponse {
     private Boolean openRun; // 오픈런 여부
     private List<String> storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
+    private Integer views;
 
     public void updateStoryUrls(String storyUrls) {
         this.storyUrls = List.of(storyUrls.split("\\|"));

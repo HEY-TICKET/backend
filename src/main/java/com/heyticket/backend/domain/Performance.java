@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Builder
@@ -38,5 +39,11 @@ public class Performance extends BaseTimeEntity {
     @Column(length = 700)
     private String storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
+    @ColumnDefault(value = "0")
+    private Integer views;
+
+    public void addViews() {
+        views++;
+    }
 
 }

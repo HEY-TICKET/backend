@@ -5,7 +5,10 @@ import static com.heyticket.backend.domain.QPerformance.performance;
 
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.module.kopis.enums.SortOrder;
+import com.heyticket.backend.module.kopis.enums.SortType;
 import com.heyticket.backend.service.dto.NewPerformanceRequest;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -36,7 +39,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
                 eqPerformanceGenre(newPerformanceRequest.getGenre()),
                 performance.createdDate.goe(LocalDateTime.now().minusDays(7))
             )
-            .orderBy(performance.createdDate.desc())
+            .orderBy(orderBy(newPerformanceRequest.getSortType(), newPerformanceRequest.getSortOrder()))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -56,6 +59,29 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             return null;
         }
         return performance.genre.eq(genre.getName());
+    }
+
+    private OrderSpecifier orderBy(SortType sortType, SortOrder sortOrder) {
+        if (ObjectUtils.isEmpty(sortOrder)) {
+            return performance.createdDate.desc();
+        }
+
+        switch (sortType) {
+            case TIME:
+                if (sortOrder == SortOrder.ASC) {
+                    return performance.createdDate.asc();
+                } else {
+                    return performance.createdDate.desc();
+                }
+            case VIEWS:
+                if (sortOrder == SortOrder.ASC) {
+                    return performance.views.asc();
+                } else {
+                    return performance.views.desc();
+                }
+            default:
+                return null;
+        }
     }
 
 }
