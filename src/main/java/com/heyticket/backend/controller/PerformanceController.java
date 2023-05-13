@@ -7,6 +7,7 @@ import com.heyticket.backend.service.dto.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.PerformanceResponse;
 import com.heyticket.backend.service.dto.pagable.PageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,11 @@ public class PerformanceController {
     @GetMapping("/performances/{id}")
     public PerformanceResponse getPerformance(@PathVariable String id) {
         return performanceService.getPerformanceById(id);
+    }
+
+    @GetMapping("/performances/{id}/recommendation")
+    public List<PerformanceResponse> getPerformanceRecommendation(@PathVariable String id) {
+        return performanceService.getPerformanceRecommendation(id);
     }
 
 }

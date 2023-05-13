@@ -1,5 +1,7 @@
 package com.heyticket.backend.module.kopis.enums;
 
+import java.util.Arrays;
+import java.util.NoSuchElementException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -22,5 +24,11 @@ public enum BoxOfficeGenre {
     private final String code;
 
     private final String name;
+
+    public static BoxOfficeGenre getByName(String name) {
+        return Arrays.stream(BoxOfficeGenre.values())
+            .filter(boxOfficeGenre -> boxOfficeGenre.getName().equals(name))
+            .findFirst().orElseThrow(() -> new NoSuchElementException("No such genre name. name : " + name));
+    }
 
 }

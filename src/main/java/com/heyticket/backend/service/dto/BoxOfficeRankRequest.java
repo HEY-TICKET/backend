@@ -31,7 +31,7 @@ public class BoxOfficeRankRequest {
         return KopisBoxOfficeRequest.builder()
             .ststype(this.timePeriod.getValue())
             .date(this.date.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .area(this.area.getValue())
+            .area(this.area.getCode())
             .build();
     }
 

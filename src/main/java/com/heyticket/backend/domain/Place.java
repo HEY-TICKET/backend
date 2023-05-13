@@ -29,4 +29,9 @@ public class Place extends BaseTimeEntity {
     private double latitude;    // 위도
     private double longitude;   // 경도
 
+    public void updateSidoGugun(String sidoName, String gugunName) {
+        this.sidoName = sidoName;
+        this.gugunName = gugunName;
+    }
+
 }

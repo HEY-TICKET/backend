@@ -13,6 +13,8 @@ public interface PerformanceMapper {
     PerformanceMapper INSTANCE = Mappers.getMapper(PerformanceMapper.class);
 
     @Mapping(source = "performance.storyUrls", target="storyUrls", ignore=true)
+    @Mapping(target="latitude", ignore=true)
+    @Mapping(target="longitude", ignore=true)
     PerformanceResponse toPerformanceDto(Performance performance);
 
     @Mapping(source = "performance.storyUrls", target="storyUrls", ignore=true)

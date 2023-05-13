@@ -2,6 +2,7 @@ package com.heyticket.backend.service;
 
 import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeResponse;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceDetailResponse;
@@ -13,6 +14,7 @@ import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
+import com.heyticket.backend.repository.PlaceRepository;
 import com.heyticket.backend.service.dto.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.NewPerformanceRequest;
@@ -32,8 +34,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -47,6 +47,8 @@ public class PerformanceService {
     private final PerformanceRepository performanceRepository;
 
     private final BoxOfficeRankRepository boxOfficeRankRepository;
+
+    private final PlaceRepository placeRepository;
 
     private final KopisService kopisService;
 
@@ -93,23 +95,15 @@ public class PerformanceService {
         return new PageResponse<>(performanceResponseList, pageable.getPageSize() + 1, pageable.getPageNumber(), performancePageResponse.getTotalPages());
     }
 
-    public ResponseEntity<List<KopisBoxOfficeResponse>> getUniBoxOffice() {
-        KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
-            .ststype(TimePeriod.DAY.getValue())
-            .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .area("UNI")
-            .build();
-
-        List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
-
-        return new ResponseEntity<>(kopisBoxOfficeResponseList, HttpStatus.OK);
-    }
-
-    public PerformanceResponse getPerformanceById(String id) {
-        Performance performance = performanceRepository.findById(id).orElseThrow(() -> new NoSuchElementException("no such performance"));
+    public PerformanceResponse getPerformanceById(String performanceId) {
+        Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performanceId));
         performance.addViews();
+
         PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
         performanceResponse.updateStoryUrls(performance.getStoryUrls());
+
+        Place place = placeRepository.findById(performance.getPlaceId()).orElseThrow(() -> new NoSuchElementException("no such place. performanceId : " + performance.getPlaceId()));
+        performanceResponse.updateLocation(place.getLatitude(), place.getLatitude());
         return performanceResponse;
     }
 
@@ -149,6 +143,41 @@ public class PerformanceService {
         return new PageResponse<>(boxOfficeRankResponseList, 1, dataSize, 1);
     }
 
+    public List<PerformanceResponse> getPerformanceRecommendation(String performanceId) {
+        Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performanceId));
+        BoxOfficeGenre boxOfficeGenre = BoxOfficeGenre.getByName(performance.getGenre());
+
+        BoxOfficeRankRequest genreBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
+            .genre(boxOfficeGenre)
+            .timePeriod(TimePeriod.WEEK)
+            .build();
+
+        BoxOfficeRank genreBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(genreBoxOfficeRankRequest).orElseThrow(() -> new NoSuchElementException("no such boxOfficeRank."));
+        String[] genrePerformanceIdArray = genreBoxOfficeRank.getPerformanceIds().split("\\|");
+        String firstGenrePerformanceId = genrePerformanceIdArray[0];
+        String secondGenrePerformanceId = genrePerformanceIdArray[1];
+
+        String placeId = performance.getPlaceId();
+        Place place = placeRepository.findById(placeId).orElseThrow(() -> new NoSuchElementException("no such place. id : " + placeId));
+        String sidoName = place.getSidoName();
+        BoxOfficeArea boxOfficeArea = BoxOfficeArea.getByName(sidoName);
+
+        BoxOfficeRankRequest areaBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
+            .area(boxOfficeArea)
+            .timePeriod(TimePeriod.WEEK)
+            .build();
+
+        BoxOfficeRank areaBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(areaBoxOfficeRankRequest).orElseThrow(() -> new NoSuchElementException("no such boxOfficeRank."));
+        String[] areaPerformanceIdArray = areaBoxOfficeRank.getPerformanceIds().split("\\|");
+        String firstAreaPerformanceId = areaPerformanceIdArray[0];
+        String secondAreaPerformanceId = areaPerformanceIdArray[1];
+
+        return List.of(getPerformanceById(firstGenrePerformanceId),
+            getPerformanceById(secondGenrePerformanceId),
+            getPerformanceById(firstAreaPerformanceId),
+            getPerformanceById(secondAreaPerformanceId));
+    }
+
     public void updateBoxOfficeRank() {
         BoxOfficeGenre[] genres = BoxOfficeGenre.values();
         BoxOfficeArea[] areas = BoxOfficeArea.values();
@@ -161,7 +190,7 @@ public class PerformanceService {
                         .ststype(timePeriod.getValue())
                         .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                         .catecode(genre.getCode())
-                        .area(area.getValue())
+                        .area(area.getCode())
                         .build();
 
                     List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);

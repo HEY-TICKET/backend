@@ -33,9 +33,16 @@ public class PerformanceResponse {
     private List<String> storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
     private Integer views;
+    private Double latitude;    // 위도
+    private Double longitude;   // 경도
 
     public void updateStoryUrls(String storyUrls) {
         this.storyUrls = List.of(storyUrls.split("\\|"));
+    }
+
+    public void updateLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
 }
