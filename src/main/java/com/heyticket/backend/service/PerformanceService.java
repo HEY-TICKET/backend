@@ -13,6 +13,7 @@ import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
+import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.repository.PlaceRepository;
@@ -86,6 +87,8 @@ public class PerformanceService {
     }
 
     public PageResponse<PerformanceResponse> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
+        String currentMemberId = SecurityUtil.getCurrentMemberId();
+        log.info("currentMemberId : {}", currentMemberId);
         Page<Performance> performancePageResponse = performanceRepository.findNewPerformances(newPerformanceRequest, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
         List<PerformanceResponse> performanceResponseList = performanceList.stream()
