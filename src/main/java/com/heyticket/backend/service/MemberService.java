@@ -12,13 +12,19 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MemberService {
 
     private final MemberRepository memberRepository;
+
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
     private final JwtTokenProvider jwtTokenProvider;
 
-    @Transactional
+    public void register(String memberId, String password) {
+
+    }
+
     public TokenInfo login(String memberId, String password) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberId, password);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);

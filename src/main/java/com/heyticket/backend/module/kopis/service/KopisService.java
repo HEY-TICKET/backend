@@ -1,4 +1,4 @@
-package com.heyticket.backend.service;
+package com.heyticket.backend.module.kopis.service;
 
 import com.heyticket.backend.module.kopis.client.KopisFeignClient;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;

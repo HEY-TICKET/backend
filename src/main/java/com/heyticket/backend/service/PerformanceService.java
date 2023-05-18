@@ -3,6 +3,7 @@ package com.heyticket.backend.service;
 import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.Place;
+import com.heyticket.backend.domain.enums.PerformanceState;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest.KopisBoxOfficeRequestBuilder;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeResponse;
@@ -12,6 +13,7 @@ import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceResponse;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.enums.TimePeriod;
+import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
@@ -99,7 +101,7 @@ public class PerformanceService {
             })
             .collect(Collectors.toList());
 
-        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize() , performancePageResponse.getTotalPages());
+        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
     }
 
     public PerformanceResponse getPerformanceById(String performanceId) {
@@ -264,4 +266,27 @@ public class PerformanceService {
         log.info("box office rank has been updated. size : {}", boxOfficeRankList.size());
     }
 
+    public void updatePerformanceState() {
+        List<Performance> performanceList = performanceRepository.findAll();
+        int updateCnt = 0;
+        for (Performance performance : performanceList) {
+            LocalDate today = LocalDate.now();
+            LocalDate startDate = performance.getStartDate();
+            LocalDate endDate = performance.getEndDate();
+            String performanceState;
+            if (today.isAfter(endDate)) {
+                performanceState = PerformanceState.COMPLETED.getName();
+            } else if (today.isBefore(startDate)) {
+                performanceState = PerformanceState.UPCOMING.getName();
+            } else {
+                performanceState = PerformanceState.ONGOING.getName();
+            }
+
+            if (!performance.getState().equals(performanceState)) {
+                performance.updateStatus(performanceState);
+                updateCnt++;
+            }
+        }
+        log.info("Performance state has been updated. updated count : {}", updateCnt);
+    }
 }

@@ -46,4 +46,8 @@ public class Performance extends BaseTimeEntity {
         views++;
     }
 
+    public void updateStatus(String status) {
+        this.state = status;
+    }
+
 }
