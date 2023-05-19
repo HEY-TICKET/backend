@@ -43,10 +43,9 @@ public class MailConfig {
 
     private Properties getMailProperties() {
         Properties properties = new Properties();
-        properties.put("mail.transport.protocol", "smtp"); // 프로토콜 설정
-        properties.put("mail.debug", "true"); // 디버그 사용
-        properties.put("mail.smtp.ssl.trust", "smtp.naver.com"); // ssl 인증 서버는 smtp.naver.com
-        properties.put("mail.smtp.ssl.enable", "true"); // ssl 사용
+        properties.put("mail.transport.protocol", "smtp");
+        properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+        properties.put("mail.smtp.ssl.enable", "true");
         properties.put("mail.smtp.socketFactory.port", socketPort);
         properties.put("mail.smtp.auth", auth);
         properties.put("mail.smtp.starttls.enable", starttls);
