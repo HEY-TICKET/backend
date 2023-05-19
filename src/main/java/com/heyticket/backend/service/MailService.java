@@ -18,16 +18,16 @@ public class MailService {
     private final JavaMailSender emailSender;
 
     public String sendSimpleMessage(String to) throws Exception {
-        String key = createKey();// 랜덤 인증번호 생성
-        MimeMessage message = createMessage(key, to); // 메일 발송
-        try {// 예외처리
+        String key = createKey();
+        MimeMessage message = createMessage(key, to);
+        try {
             emailSender.send(message);
         } catch (MailException es) {
             es.printStackTrace();
             throw new IllegalArgumentException();
         }
 
-        return key; // 메일로 보냈던 인증 코드를 서버로 반환
+        return key;
     }
 
     public MimeMessage createMessage(String key, String to) throws MessagingException, UnsupportedEncodingException {
