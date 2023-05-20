@@ -15,7 +15,7 @@ public class Scheduler {
 
     private final PerformanceService performanceService;
 
-    @Scheduled(cron = "0/30 * * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void updatePerformanceState() {
         performanceService.updatePerformanceState();
         log.info("The performance status update has been scheduled.");

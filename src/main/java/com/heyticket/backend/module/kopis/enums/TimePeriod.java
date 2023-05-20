@@ -12,5 +12,4 @@ public enum TimePeriod {
     MONTH("month");
 
     private final String value;
-
 }

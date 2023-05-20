@@ -9,5 +9,4 @@ public enum SortType {
 
     TIME,
     VIEWS
-
 }

@@ -22,9 +22,9 @@ public class MailConfig {
     private boolean startlls_required;
     @Value("${mail.smtp.socketFactory.fallback}")
     private boolean fallback;
-    @Value("${AdminMail.id}")
+    @Value("${mail.admin-id}")
     private String id;
-    @Value("${AdminMail.password}")
+    @Value("${mail.admin-pw}")
     private String password;
 
     @Bean

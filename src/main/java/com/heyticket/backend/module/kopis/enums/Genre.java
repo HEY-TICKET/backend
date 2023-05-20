@@ -22,5 +22,4 @@ public enum Genre {
     private final String name;
 
     private final int number;
-
 }

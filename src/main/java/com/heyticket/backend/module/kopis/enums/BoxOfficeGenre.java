@@ -31,5 +31,4 @@ public enum BoxOfficeGenre {
             .filter(boxOfficeGenre -> boxOfficeGenre.getName().equals(name))
             .findFirst().orElseThrow(() -> new NoSuchElementException("No such genre name. name : " + name));
     }
-
 }

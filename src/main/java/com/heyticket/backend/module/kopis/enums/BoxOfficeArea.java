@@ -31,11 +31,8 @@ public enum BoxOfficeArea {
     private final String name;
 
     public static BoxOfficeArea getByName(String name) {
-
-
         return Arrays.stream(BoxOfficeArea.values())
             .filter(boxOfficeArea -> boxOfficeArea.getName().equals(name))
             .findFirst().orElseThrow(() -> new NoSuchElementException("no such boxOfficeArea. name : " + name));
     }
-
 }
