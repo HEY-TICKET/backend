@@ -22,10 +22,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Member implements UserDetails {
+public class Member extends BaseTimeEntity implements UserDetails {
 
     @Id
-    private String memberId;
+    private String email;
 
     @Column(nullable = false)
     private String password;
@@ -43,7 +43,7 @@ public class Member implements UserDetails {
 
     @Override
     public String getUsername() {
-        return memberId;
+        return email;
     }
 
     @Override
