@@ -1,5 +1,7 @@
 package com.heyticket.backend.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.heyticket.backend.module.security.jwt.ExceptionHandlerFilter;
 import com.heyticket.backend.module.security.jwt.JwtAuthenticationFilter;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final ObjectMapper objectMapper;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -28,7 +32,8 @@ public class SecurityConfig {
             .httpBasic().disable()
             .formLogin().disable()
             .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new ExceptionHandlerFilter(objectMapper), JwtAuthenticationFilter.class);
         return http.build();
     }
 
@@ -39,6 +44,10 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer configure() {
-        return (web) -> web.ignoring().requestMatchers("/api/members/login");
+        return (web) -> web.ignoring()
+            .requestMatchers("/api/members/login")
+            .requestMatchers("/api/members/signup")
+            .requestMatchers("/api/members/email/send")
+            .requestMatchers("/api/members/email/verify");
     }
 }
