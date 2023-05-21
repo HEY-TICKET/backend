@@ -1,9 +1,10 @@
 package com.heyticket.backend.module.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.heyticket.backend.exception.ErrorResponse;
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.JwtValidationException;
+import com.heyticket.backend.service.dto.response.CommonResponse;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,21 +22,26 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
         try {
             filterChain.doFilter(request, response);
-        } catch (RuntimeException ex) {
+        } catch (Exception e) {
             log.error("runtime exception exception handler filter");
-            setErrorResponse(response, ex);
+            setErrorResponse(response, e);
         }
     }
 
     public void setErrorResponse(HttpServletResponse response, Throwable ex) {
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.setContentType("application/json; charset=UTF-8");
-        ErrorResponse errorResponse = new ErrorResponse((ex.getMessage()));
+        CommonResponse commonResponse;
+        if (ex instanceof JwtValidationException jwtValidationException) {
+            commonResponse = new CommonResponse<>(jwtValidationException.getCode(), jwtValidationException.getMessage());
+        } else {
+            commonResponse = new CommonResponse(InternalCode.SERVER_ERROR, ex.getMessage());
+        }
         try {
-            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+            response.getWriter().write(objectMapper.writeValueAsString(commonResponse));
         } catch (IOException e) {
             e.printStackTrace();
         }
