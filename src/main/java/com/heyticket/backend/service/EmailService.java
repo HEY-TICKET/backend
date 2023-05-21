@@ -1,6 +1,8 @@
 package com.heyticket.backend.service;
 
-import com.heyticket.backend.service.dto.EmailVerificationRequest;
+import com.heyticket.backend.service.dto.request.EmailSendRequest;
+import com.heyticket.backend.service.dto.request.VerificationRequest;
+import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -21,29 +23,31 @@ public class EmailService {
 
     private final CacheService cacheService;
 
-    private final MemberService memberService;
-
-    public String sendSimpleMessage(EmailVerificationRequest request) {
+    public String sendSimpleMessage(EmailSendRequest request) {
         String email = request.getEmail();
         String code = createCode();
-        memberService.checkIfExistingMember(email);
-        MimeMessage message = createMessage(email, code);
+        MimeMessage message;
+        if (request.getVerificationType() == VerificationType.SIGN_UP) {
+            message = createSignUpMessage(email, code);
+        } else {
+            message = createPasswordFindMessage(email, code);
+        }
         try {
             emailSender.send(message);
         } catch (MailException es) {
             es.printStackTrace();
             throw new IllegalArgumentException();
         }
-        cacheService.put(email, code);
+        cacheService.putCode(email, code);
 
-        return code;
+        return email;
     }
 
-    public boolean validateEmail(EmailVerificationRequest request) {
+    public boolean verifyCode(VerificationRequest request) {
         String email = request.getEmail();
-        String code = request.getVerificationCode();
+        String code = request.getCode();
 
-        String savedCode = cacheService.getIfPresent(email);
+        String savedCode = cacheService.getCodeIfPresent(email);
 
         if (savedCode == null) {
             throw new NoSuchElementException("해당 메일의 인증 내역이 없습니다.");
@@ -51,29 +55,12 @@ public class EmailService {
         return savedCode.equals(code);
     }
 
-    public void verifyCodeAndDiscard(String email, String code) {
-        String savedCode = cacheService.getIfPresent(email);
-
-        if (savedCode == null) {
-            throw new NoSuchElementException("해당 메일의 인증 내역이 없습니다.");
-        }
-
-        if (savedCode.equals(code)) {
-            cacheService.invalidate(email);
-        } else {
-            throw new IllegalArgumentException("인증이 만료되었습니다.");
-        }
+    public String expireCode(String email) {
+        cacheService.invalidateCode(email);
+        return email;
     }
 
-    public void expireCode(String email) {
-        String savedCode = cacheService.getIfPresent(email);
-        if (savedCode == null) {
-            throw new NoSuchElementException("이미 인증 만료된 email 입니다.");
-        }
-        cacheService.invalidate(email);
-    }
-
-    private MimeMessage createMessage(String email, String code) {
+    private MimeMessage createSignUpMessage(String email, String code) {
         MimeMessage message = emailSender.createMimeMessage();
         try {
             message.addRecipients(RecipientType.TO, email);
@@ -85,6 +72,33 @@ public class EmailService {
             stringBuilder.append("<br>");
             stringBuilder.append("<div align='center' width='400px' style='border:1px solid black; font-family:verdana';>");
             stringBuilder.append("<h3 style='color:blue;'>회원가입 인증 코드입니다.</h3>");
+            stringBuilder.append("<div style='font-size:130%'>");
+            stringBuilder.append("CODE : <strong>");
+            stringBuilder.append(code).append("</strong><div><br/> ");
+            stringBuilder.append("</div>");
+            message.setText(stringBuilder.toString(), "utf-8", "html");
+            message.setFrom(new InternetAddress("heyticket@gmail.com", "헤이티켓"));
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return message;
+    }
+
+    private MimeMessage createPasswordFindMessage(String email, String code) {
+        MimeMessage message = emailSender.createMimeMessage();
+        try {
+            message.addRecipients(RecipientType.TO, email);
+            message.setSubject("[헤이티켓] 비밀번호 찾기 인증 메일입니다.");
+
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("<div style='margin:100px;'>");
+            stringBuilder.append("<h1 align='center'> 안녕하세요</h1>");
+            stringBuilder.append("<br>");
+            stringBuilder.append("<div align='center' width='400px' style='border:1px solid black; font-family:verdana';>");
+            stringBuilder.append("<h3 style='color:blue;'>비밀번호 찾기 인증 코드입니다.</h3>");
             stringBuilder.append("<div style='font-size:130%'>");
             stringBuilder.append("CODE : <strong>");
             stringBuilder.append(code).append("</strong><div><br/> ");
