@@ -19,7 +19,7 @@ public class MailConfig {
     @Value("${mail.smtp.starttls.enable}")
     private boolean starttls;
     @Value("${mail.smtp.starttls.required}")
-    private boolean startlls_required;
+    private boolean startllsRequired;
     @Value("${mail.smtp.socketFactory.fallback}")
     private boolean fallback;
     @Value("${mail.admin-id}")
@@ -47,7 +47,7 @@ public class MailConfig {
         properties.put("mail.smtp.socketFactory.port", socketPort);
         properties.put("mail.smtp.auth", auth);
         properties.put("mail.smtp.starttls.enable", starttls);
-        properties.put("mail.smtp.starttls.required", startlls_required);
+        properties.put("mail.smtp.starttls.required", startllsRequired);
         properties.put("mail.smtp.socketFactory.fallback", fallback);
         properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         return properties;

@@ -7,6 +7,7 @@ import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -25,6 +26,7 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
+    @Profile("!noauth")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
@@ -34,6 +36,18 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new ExceptionHandlerFilter(objectMapper), JwtAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    @Profile("noauth")
+    public SecurityFilterChain ignoreFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .cors().disable()
+            .httpBasic().disable()
+            .formLogin().disable()
+            .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
         return http.build();
     }
 
