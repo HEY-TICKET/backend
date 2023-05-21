@@ -1,8 +1,8 @@
 package com.heyticket.backend.module.mapper;
 
 import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.service.dto.BoxOfficeRankResponse;
-import com.heyticket.backend.service.dto.PerformanceResponse;
+import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
+import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

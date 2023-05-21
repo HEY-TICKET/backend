@@ -8,7 +8,7 @@ import com.heyticket.backend.domain.QBoxOfficeRank;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.enums.TimePeriod;
-import com.heyticket.backend.service.dto.BoxOfficeRankRequest;
+import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Optional;

@@ -1,7 +1,7 @@
 package com.heyticket.backend.repository;
 
 import com.heyticket.backend.domain.BoxOfficeRank;
-import com.heyticket.backend.service.dto.BoxOfficeRankRequest;
+import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import java.util.Optional;
 
 public interface BoxOfficeRankCustomRepository {

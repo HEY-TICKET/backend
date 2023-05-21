@@ -7,7 +7,7 @@ import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.kopis.enums.SortOrder;
 import com.heyticket.backend.module.kopis.enums.SortType;
-import com.heyticket.backend.service.dto.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
