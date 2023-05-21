@@ -1,4 +1,4 @@
-package com.heyticket.backend.service.dto;
+package com.heyticket.backend.service.dto.request;
 
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;

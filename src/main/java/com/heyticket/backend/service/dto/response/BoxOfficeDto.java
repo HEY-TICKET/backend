@@ -1,4 +1,4 @@
-package com.heyticket.backend.service.dto;
+package com.heyticket.backend.service.dto.response;
 
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;

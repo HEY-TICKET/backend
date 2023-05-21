@@ -1,20 +1,20 @@
-package com.heyticket.backend.service.dto;
+package com.heyticket.backend.service.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.util.StringUtils;
 
 @Getter
+@Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@JsonInclude(Include.NON_NULL)
-public class PerformanceResponse {
+@AllArgsConstructor
+public class BoxOfficeRankResponse {
 
     private String id; // 공연 ID
     private String placeId; // 공연 시설 ID
@@ -35,17 +35,12 @@ public class PerformanceResponse {
     private Boolean openRun; // 오픈런 여부
     private List<String> storyUrls; // 소개이미지 목록
     private String dtguidance; // 공연 시간
-    private Integer views;
-    private Double latitude;    // 위도
-    private Double longitude;   // 경도
+    private int rank; // 랭킹
 
     public void updateStoryUrls(String storyUrls) {
-        this.storyUrls = List.of(storyUrls.split("\\|"));
-    }
-
-    public void updateLocation(double latitude, double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+        if (StringUtils.hasText(storyUrls)) {
+            this.storyUrls = List.of(storyUrls.split("\\|"));
+        }
     }
 
 }
