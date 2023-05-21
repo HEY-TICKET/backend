@@ -1,5 +1,7 @@
 package com.heyticket.backend.module.security.jwt;
 
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.JwtValidationException;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -50,11 +52,32 @@ public class JwtTokenProvider {
 
         long now = System.currentTimeMillis();
 
-        Date accessTokenExpiresIn = new Date(now + accessExpirationMillis);
         String accessToken = Jwts.builder()
             .setSubject(authentication.getName())
             .claim("auth", authorities)
-            .setExpiration(accessTokenExpiresIn)
+            .setExpiration(new Date(now + accessExpirationMillis))
+            .signWith(key, SignatureAlgorithm.HS256)
+            .compact();
+
+        String refreshToken = Jwts.builder()
+            .setExpiration(new Date(now + refreshExpirationMillis))
+            .signWith(key, SignatureAlgorithm.HS256)
+            .compact();
+
+        return TokenInfo.builder()
+            .grantType("Bearer")
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .build();
+    }
+
+    public TokenInfo regenerateToken(String email, String authorities) {
+        long now = System.currentTimeMillis();
+
+        String accessToken = Jwts.builder()
+            .setSubject(email)
+            .claim("auth", authorities)
+            .setExpiration(new Date(now + accessExpirationMillis))
             .signWith(key, SignatureAlgorithm.HS256)
             .compact();
 
@@ -74,7 +97,8 @@ public class JwtTokenProvider {
         Claims claims = parseClaims(accessToken);
 
         if (claims.get("auth") == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            log.info("Invalid JWT");
+            throw new JwtValidationException("JWT is invalid.", InternalCode.INVALID_JWT);
         }
 
         Collection<? extends GrantedAuthority> authorities =
@@ -91,17 +115,17 @@ public class JwtTokenProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
-            throw new IllegalArgumentException("인증되지 않은 JWT입니다.");
+            log.info("Invalid JWT", e);
+            throw new JwtValidationException("JWT is invalid.", InternalCode.INVALID_JWT);
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token", e);
-            throw new IllegalArgumentException("만료된 JWT입니다.");
+            log.info("Expired JWT", e);
+            throw new JwtValidationException("JWT is expired.", InternalCode.EXPIRED_JWT);
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
-            throw new IllegalArgumentException("지원되지 않는 JWT입니다.");
+            throw new JwtValidationException("JWT is unsupported.", InternalCode.INVALID_JWT);
         } catch (IllegalArgumentException e) {
             log.info("JWT claims string is empty.", e);
-            throw new IllegalArgumentException("JWT Claim 오류입니다.");
+            throw new JwtValidationException("JWT claims string is empty.", InternalCode.INVALID_JWT);
         }
     }
 

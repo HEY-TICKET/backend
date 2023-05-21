@@ -1,5 +1,9 @@
 package com.heyticket.backend.module.kopis.enums;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -22,4 +26,17 @@ public enum Genre {
     private final String name;
 
     private final int number;
+
+    public static List<Genre> getByNames(List<String> names) {
+        List<Genre> genres = new ArrayList<>();
+        for (String name : names) {
+            Genre[] values = Genre.values();
+            Genre genre = Arrays.stream(values)
+                .filter(value -> value.getName().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("No such genre name"));
+            genres.add(genre);
+        }
+        return genres;
+    }
 }

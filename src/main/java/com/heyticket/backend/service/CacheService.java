@@ -5,31 +5,53 @@ import com.google.common.cache.CacheBuilder;
 import jakarta.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CacheService {
 
-    private Cache<String, String> verificationCodeCache;
+    private Cache<String, String> emailVerificationCache;
+
+    private Cache<String, String> refreshTokenCache;
+
+    @Value("${jwt.expiration.refresh}")
+    private long RefreshTokenExpirationMillis;
 
     @PostConstruct
     public void setUpCache() {
-        verificationCodeCache = CacheBuilder.newBuilder()
+        emailVerificationCache = CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
+
+        refreshTokenCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(RefreshTokenExpirationMillis, TimeUnit.MILLISECONDS)
             .build();
     }
 
-    public void put(String key, String value) {
-        verificationCodeCache.put(key, value);
+    public void putCode(String email, String code) {
+        emailVerificationCache.put(email, code);
     }
 
-    public String getIfPresent(String key) {
-        return verificationCodeCache.getIfPresent(key);
+    public String getCodeIfPresent(String email) {
+        return emailVerificationCache.getIfPresent(email);
     }
 
-    public void invalidate(String key) {
-        verificationCodeCache.invalidate(key);
+    public void invalidateCode(String email) {
+        emailVerificationCache.invalidate(email);
+    }
+
+    public void putRefreshToken(String email, String token) {
+        refreshTokenCache.put(email, token);
+    }
+
+    public String getRefreshTokenIfPresent(String token) {
+        return refreshTokenCache.getIfPresent(token);
+    }
+
+    public void invalidateRefreshToken(String email) {
+        refreshTokenCache.invalidate(email);
     }
 
 }
