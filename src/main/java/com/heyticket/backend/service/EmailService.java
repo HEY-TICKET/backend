@@ -1,14 +1,13 @@
 package com.heyticket.backend.service;
 
+import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
-import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMessage.RecipientType;
 import java.io.UnsupportedEncodingException;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.MailException;
@@ -27,32 +26,24 @@ public class EmailService {
         String email = request.getEmail();
         String code = createCode();
         MimeMessage message;
+        VerificationCode verificationCode;
         if (request.getVerificationType() == VerificationType.SIGN_UP) {
             message = createSignUpMessage(email, code);
+            verificationCode = VerificationCode.of(code, System.currentTimeMillis() + 600000);
         } else {
             message = createPasswordFindMessage(email, code);
+            verificationCode = VerificationCode.of(code, System.currentTimeMillis() + 180000);
         }
+
         try {
             emailSender.send(message);
         } catch (MailException es) {
             es.printStackTrace();
             throw new IllegalArgumentException();
         }
-        cacheService.putCode(email, code);
+        cacheService.putVerificationCode(email, verificationCode);
 
         return email;
-    }
-
-    public boolean verifyCode(VerificationRequest request) {
-        String email = request.getEmail();
-        String code = request.getCode();
-
-        String savedCode = cacheService.getCodeIfPresent(email);
-
-        if (savedCode == null) {
-            throw new NoSuchElementException("해당 메일의 인증 내역이 없습니다.");
-        }
-        return savedCode.equals(code);
     }
 
     public String expireCode(String email) {

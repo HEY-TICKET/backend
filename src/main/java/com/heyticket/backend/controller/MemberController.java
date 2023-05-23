@@ -1,6 +1,7 @@
 package com.heyticket.backend.controller;
 
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
+import com.heyticket.backend.service.CacheService;
 import com.heyticket.backend.service.EmailService;
 import com.heyticket.backend.service.MemberService;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
@@ -30,6 +31,8 @@ public class MemberController {
 
     private final EmailService emailService;
 
+    private final CacheService cacheService;
+
     @PostMapping("/members/login")
     public ResponseEntity<CommonResponse> login(@RequestBody MemberLoginRequest request) {
         TokenInfo tokenInfo = memberService.login(request);
@@ -50,7 +53,7 @@ public class MemberController {
 
     @PostMapping("/members/verification/verify")
     public ResponseEntity<CommonResponse> verifyCode(@RequestBody @Valid VerificationRequest request) {
-        boolean isVerified = emailService.verifyCode(request);
+        boolean isVerified = cacheService.isValidCodeWithTime(request);
         return CommonResponse.ok("Email verification result.", isVerified);
     }
 

@@ -19,6 +19,7 @@ import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
+import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
 import java.security.InvalidParameterException;
@@ -121,7 +122,7 @@ public class MemberService {
     public String resetPassword(PasswordResetRequest request) {
         String email = request.getEmail();
         String code = request.getVerificationCode();
-        String savedCode = cacheService.getCodeIfPresent(email);
+        String savedCode = cacheService.getVerificationCodeIfPresent(email).getCode();
         if (savedCode == null) {
             throw new NoSuchElementException("인증 내역이 없습니다");
         }
@@ -188,12 +189,14 @@ public class MemberService {
     }
 
     private void validateCode(String email, String code) {
-        String savedCode = cacheService.getCodeIfPresent(email);
-        if (savedCode == null) {
-            throw new IllegalStateException("No such email verification info.");
-        }
-        if (!savedCode.equals(code)) {
-            throw new IllegalStateException("Validation code is wrong.");
+        VerificationRequest request = VerificationRequest.builder()
+            .email(email)
+            .code(code)
+            .build();
+
+        boolean validCode = cacheService.isValidCode(request);
+        if (!validCode) {
+            throw new IllegalStateException();
         }
         cacheService.invalidateCode(email);
     }
