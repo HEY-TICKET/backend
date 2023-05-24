@@ -29,6 +29,8 @@ application.yml
 application-local.yml
 application-prod.yml
 application-test.yml
+application-noauth.yml
+application-local.yml
 **/src/main/generated
 
 ### NetBeans ###
