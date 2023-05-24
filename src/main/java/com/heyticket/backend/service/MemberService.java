@@ -20,6 +20,7 @@ import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
+import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
 import java.security.InvalidParameterException;
@@ -56,6 +57,31 @@ public class MemberService {
     private final CacheService cacheService;
 
     private final EmailService emailService;
+
+    public MemberResponse getMemberByEmail(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("No such member"));
+
+        List<Genre> genres = member.getMemberGenres().stream()
+            .map(MemberGenre::getGenre)
+            .collect(Collectors.toList());
+
+        List<Area> areas = member.getMemberAreas().stream()
+            .map(MemberArea::getArea)
+            .collect(Collectors.toList());
+
+        List<String> keywords = member.getMemberKeywords().stream()
+            .map(MemberKeyword::getKeyword)
+            .collect(Collectors.toList());
+
+        return MemberResponse.builder()
+            .email(email)
+            .allowKeywordPush(member.isAllowKeywordPush())
+            .allowMarketing(member.isAllowMarketing())
+            .genres(genres)
+            .areas(areas)
+            .keywords(keywords)
+            .build();
+    }
 
     public String signUp(MemberSignUpRequest request) {
         String email = request.getEmail();

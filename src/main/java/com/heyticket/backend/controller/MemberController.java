@@ -5,17 +5,20 @@ import com.heyticket.backend.service.CacheService;
 import com.heyticket.backend.service.EmailService;
 import com.heyticket.backend.service.MemberService;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
-import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
+import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.CommonResponse;
+import com.heyticket.backend.service.dto.response.MemberResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +46,12 @@ public class MemberController {
     public ResponseEntity<CommonResponse> signUp(@RequestBody MemberSignUpRequest request) {
         String email = memberService.signUp(request);
         return CommonResponse.ok("Sign up successful.", email);
+    }
+
+    @GetMapping("/members/{email}")
+    public ResponseEntity<CommonResponse> getMember(@PathVariable String email) {
+        MemberResponse memberResponse = memberService.getMemberByEmail(email);
+        return CommonResponse.ok("Sign up successful.", memberResponse);
     }
 
     @PostMapping("/members/verification/send")
