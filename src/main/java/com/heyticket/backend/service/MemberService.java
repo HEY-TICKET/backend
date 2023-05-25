@@ -4,15 +4,20 @@ import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberArea;
 import com.heyticket.backend.domain.MemberGenre;
 import com.heyticket.backend.domain.MemberKeyword;
+import com.heyticket.backend.domain.MemberLike;
+import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
+import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
 import com.heyticket.backend.repository.MemberAreaRepository;
 import com.heyticket.backend.repository.MemberGenreRepository;
 import com.heyticket.backend.repository.MemberKeywordRepository;
+import com.heyticket.backend.repository.MemberLikeRepository;
 import com.heyticket.backend.repository.MemberRepository;
+import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
@@ -48,7 +53,11 @@ public class MemberService {
 
     private final MemberKeywordRepository memberKeywordRepository;
 
+    private final MemberLikeRepository memberLikeRepository;
+
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    private final PerformanceRepository performanceRepository;
 
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -179,6 +188,22 @@ public class MemberService {
         memberRepository.delete(member);
         cacheService.invalidateRefreshToken(email);
         return email;
+    }
+
+    public void likePerformance(String performanceId) {
+        Performance performance = performanceRepository.findById(performanceId)
+            .orElseThrow(() -> new NoSuchElementException("No such performance"));
+
+        String email = SecurityUtil.getCurrentMemberEmail();
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new NoSuchElementException("No such user"));
+
+        MemberLike memberLike = MemberLike.builder()
+            .member(member)
+            .performance(performance)
+            .build();
+
+        memberLikeRepository.save(memberLike);
     }
 
     private List<MemberGenre> getMemberGenres(Member member, List<Genre> genres) {

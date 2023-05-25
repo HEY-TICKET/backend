@@ -19,11 +19,11 @@ import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.repository.PlaceRepository;
-import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
-import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
-import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
-import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
+import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
+import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
+import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public class PerformanceService {
     }
 
     public PageResponse<PerformanceResponse> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
-        String currentMemberId = SecurityUtil.getCurrentMemberId();
+        String currentMemberId = SecurityUtil.getCurrentMemberEmail();
         log.info("currentMemberId : {}", currentMemberId);
         Page<Performance> performancePageResponse = performanceRepository.findNewPerformances(newPerformanceRequest, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
