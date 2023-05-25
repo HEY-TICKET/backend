@@ -25,7 +25,7 @@ public class MemberLike extends BaseTimeEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "performance_id")
     private Performance performance;
 
     @ManyToOne(fetch = FetchType.LAZY)
