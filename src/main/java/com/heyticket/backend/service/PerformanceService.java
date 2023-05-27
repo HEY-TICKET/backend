@@ -96,7 +96,9 @@ public class PerformanceService {
         List<PerformanceResponse> performanceResponseList = performanceList.stream()
             .map(performance -> {
                 PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-                performanceResponse.updateStoryUrls(performance.getStoryUrls());
+                if (performance.getStoryUrls() != null) {
+                    performanceResponse.updateStoryUrls(performance.getStoryUrls());
+                }
                 return performanceResponse;
             })
             .collect(Collectors.toList());
@@ -117,10 +119,14 @@ public class PerformanceService {
 
     private PerformanceResponse getPerformanceResponse(Performance performance) {
         PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-        performanceResponse.updateStoryUrls(performance.getStoryUrls());
+        if (performance.getStoryUrls() != null) {
+            performanceResponse.updateStoryUrls(performance.getStoryUrls());
+        }
 
         Place place = placeRepository.findById(performance.getPlaceId()).orElseThrow(() -> new NoSuchElementException("no such place. performanceId : " + performance.getPlaceId()));
         performanceResponse.updateLocation(place.getLatitude(), place.getLatitude());
+        performanceResponse.setAddress(place.getAddress());
+        performanceResponse.setPhoneNumber(place.getPhoneNumber());
         return performanceResponse;
     }
 
