@@ -36,6 +36,15 @@ public class MemberGenre extends BaseTimeEntity {
     @JoinColumn(name = "email")
     private Member member;
 
+    public static MemberGenre of(Genre genre, Member member) {
+        return new MemberGenre(genre, member);
+    }
+
+    public MemberGenre(Genre genre, Member member) {
+        this.genre = genre;
+        this.member = member;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

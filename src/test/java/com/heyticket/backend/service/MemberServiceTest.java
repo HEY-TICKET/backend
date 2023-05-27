@@ -17,6 +17,7 @@ import com.heyticket.backend.repository.MemberRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
+import com.heyticket.backend.service.dto.request.MemberLikeRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +61,8 @@ class MemberServiceTest {
 //    @AfterEach
 //    void deleteAll() {
 //        memberGenreRepository.deleteAll();
+//        memberLikeRepository.deleteAll();
+//        memberKeywordRepository.deleteAll();
 //        memberRepository.deleteAll();
 //    }
 
@@ -198,6 +201,46 @@ class MemberServiceTest {
         assertThat(keywords).extracting("keyword").containsOnly("keyword2", "keyword3");
     }
 
+    @Test
+    void hitLike() {
+        Member email = createMember("email");
+        memberRepository.save(email);
+
+        Performance perf = createPerformance("id");
+        performanceRepository.save(perf);
+
+        MemberLikeRequest request = MemberLikeRequest.builder()
+            .performanceId(perf.getId())
+            .email(email.getEmail())
+            .build();
+
+        memberService.hitLike(request);
+
+        List<MemberLike> all = memberLikeRepository.findAll();
+        assertThat(all).hasSize(1);
+        assertThat(all.get(0).getMember().getEmail()).isEqualTo(email.getEmail());
+        assertThat(all.get(0).getPerformance().getId()).isEqualTo(perf.getId());
+    }
+
+    @Test
+    void cancelLike() {
+        Member email = createMember("email");
+        memberRepository.save(email);
+
+        Performance perf = createPerformance("id");
+        performanceRepository.save(perf);
+
+        MemberLikeRequest request = MemberLikeRequest.builder()
+            .performanceId(perf.getId())
+            .email(email.getEmail())
+            .build();
+
+        memberService.cancelLike(request);
+
+        List<MemberLike> all = memberLikeRepository.findAll();
+        assertThat(all).hasSize(0);
+    }
+
     private Member createMember(String email) {
         return Member.builder()
             .email(email)
@@ -206,6 +249,13 @@ class MemberServiceTest {
             .memberGenres(new ArrayList<>())
             .memberLikes(new ArrayList<>())
             .memberKeywords(new ArrayList<>())
+            .build();
+    }
+
+    private Performance createPerformance(String id) {
+        return Performance.builder()
+            .id(id)
+            .title("title")
             .build();
     }
 }

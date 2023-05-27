@@ -8,6 +8,7 @@ import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
+import com.heyticket.backend.service.dto.request.MemberLikeRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -102,5 +103,17 @@ public class MemberController {
     public ResponseEntity<CommonResponse> updateKeyword(@RequestBody MemberKeywordUpdateRequest request) {
         memberService.updatePreferredKeyword(request);
         return CommonResponse.ok("Member keyword has been updated", true);
+    }
+
+    @PostMapping("/members/like")
+    public ResponseEntity<CommonResponse> hitLike(@RequestBody MemberLikeRequest request) {
+        memberService.hitLike(request);
+        return CommonResponse.ok("Member like " + request.getPerformanceId(), true);
+    }
+
+    @DeleteMapping("/members/like")
+    public ResponseEntity<CommonResponse> cancelLike(@RequestBody MemberLikeRequest request) {
+        memberService.cancelLike(request);
+        return CommonResponse.ok("Member cancel like " + request.getPerformanceId(), true);
     }
 }

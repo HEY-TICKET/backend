@@ -22,6 +22,7 @@ import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
+import com.heyticket.backend.service.dto.request.MemberLikeRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -33,6 +34,7 @@ import jakarta.transaction.Transactional;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -70,7 +72,7 @@ public class MemberService {
     private final EmailService emailService;
 
     public MemberResponse getMemberByEmail(String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("No such member"));
+        Member member = getMemberFromDb(email);
 
         List<Genre> genres = member.getMemberGenres().stream()
             .map(MemberGenre::getGenre)
@@ -147,7 +149,7 @@ public class MemberService {
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
             throw new NoSuchElementException("No such refresh token information.");
         }
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("No such user"));
+        Member member = getMemberFromDb(email);
         String authorities = member.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(","));
@@ -166,7 +168,7 @@ public class MemberService {
         if (!savedCode.equals(code)) {
             throw new IllegalStateException("인증 내역이 다릅니다.");
         }
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("No such member"));
+        Member member = getMemberFromDb(email);
         member.updatePassword(passwordEncoder.encode(request.getPassword()));
         cacheService.invalidateRefreshToken(email);
         return email;
@@ -183,7 +185,7 @@ public class MemberService {
 
     public String deleteMember(MemberDeleteRequest request) {
         String email = request.getEmail();
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("No such member email"));
+        Member member = getMemberFromDb(email);
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
             throw new InvalidParameterException("Wrong password.");
         }
@@ -196,9 +198,7 @@ public class MemberService {
         Performance performance = performanceRepository.findById(performanceId)
             .orElseThrow(() -> new NoSuchElementException("No such performance"));
 
-        String email = SecurityUtil.getCurrentMemberEmail();
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new NoSuchElementException("No such user"));
+        Member member = getCurrentMember();
 
         MemberLike memberLike = MemberLike.builder()
             .member(member)
@@ -209,8 +209,7 @@ public class MemberService {
     }
 
     public void updatePreferredCategory(MemberCategoryUpdateRequest request) {
-        String email = request.getEmail();
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("No such user"));
+        Member member = getMemberFromDb(request.getEmail());
 
         if (request.getGenres() != null) {
             List<MemberGenre> memberGenres = member.getMemberGenres();
@@ -239,8 +238,7 @@ public class MemberService {
     }
 
     public void updatePreferredKeyword(MemberKeywordUpdateRequest request) {
-        Member member = memberRepository.findById(request.getEmail())
-            .orElseThrow(() -> new NoSuchElementException("No such member."));
+        Member member = getMemberFromDb(request.getEmail());
 
         if (request.getKeywords() != null) {
             List<MemberKeyword> memberKeywords = member.getMemberKeywords();
@@ -255,36 +253,56 @@ public class MemberService {
         }
     }
 
+    public void hitLike(MemberLikeRequest request) {
+        Member member = getMemberFromDb(request.getEmail());
+        String performanceId = request.getPerformanceId();
+        Performance performance = performanceRepository.findById(performanceId)
+            .orElseThrow(() -> new NoSuchElementException("No such performance."));
+        Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
+        if (optionalMemberLike.isPresent()) {
+            return;
+        }
+        MemberLike memberLike = MemberLike.of(member, performance);
+        memberLikeRepository.save(memberLike);
+    }
+
+    public void cancelLike(MemberLikeRequest request) {
+        Member member = getMemberFromDb(request.getEmail());
+        String performanceId = request.getPerformanceId();
+        Performance performance = performanceRepository.findById(performanceId)
+            .orElseThrow(() -> new NoSuchElementException("No such performance."));
+        Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
+        if (optionalMemberLike.isEmpty()) {
+            return;
+        }
+        memberLikeRepository.deleteByMemberAndPerformance(member, performance);
+    }
+
+    private Member getMemberFromDb(String email) {
+        return memberRepository.findById(email)
+            .orElseThrow(() -> new NoSuchElementException("No such member."));
+    }
+
+    private Member getCurrentMember() {
+        String email = SecurityUtil.getCurrentMemberEmail();
+        return getMemberFromDb(email);
+    }
+
     private List<MemberGenre> getMemberGenres(Member member, List<Genre> genres) {
         return genres.stream()
-            .map(genre ->
-                MemberGenre.builder()
-                    .genre(genre)
-                    .member(member)
-                    .build()
-            )
+            .map(genre -> MemberGenre.of(genre, member))
             .collect(Collectors.toList());
     }
 
     private List<MemberArea> getMemberAreas(Member member, List<Area> areas) {
         return areas.stream()
-            .map(area ->
-                MemberArea.builder()
-                    .area(area)
-                    .member(member)
-                    .build()
-            )
+            .map(area -> MemberArea.of(area, member))
             .collect(Collectors.toList());
     }
 
     private List<MemberKeyword> getMemberKeywords(Member member, List<String> keywords) {
         return keywords.stream()
-            .map(keyword ->
-                MemberKeyword.builder()
-                    .keyword(keyword)
-                    .member(member)
-                    .build()
-            )
+            .map(keyword -> MemberKeyword.of(keyword, member))
             .collect(Collectors.toList());
     }
 

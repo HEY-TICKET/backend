@@ -32,6 +32,15 @@ public class MemberKeyword extends BaseTimeEntity {
     @JoinColumn(name = "email")
     private Member member;
 
+    public static MemberKeyword of(String keyword, Member member) {
+        return new MemberKeyword(keyword, member);
+    }
+
+    public MemberKeyword(String keyword, Member member) {
+        this.keyword = keyword;
+        this.member = member;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

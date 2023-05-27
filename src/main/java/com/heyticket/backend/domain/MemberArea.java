@@ -37,6 +37,15 @@ public class MemberArea extends BaseTimeEntity {
     @JoinColumn(name = "email")
     private Member member;
 
+    public static MemberArea of(Area area, Member member) {
+        return new MemberArea(area, member);
+    }
+
+    public MemberArea(Area area, Member member) {
+        this.area = area;
+        this.member = member;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

@@ -7,7 +7,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,11 +23,20 @@ public class MemberLike extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "performance_id")
-    private Performance performance;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "email")
     private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "performance_id")
+    private Performance performance;
+
+    public static MemberLike of(Member member, Performance performance) {
+        return new MemberLike(member, performance);
+    }
+
+    public MemberLike(Member member, Performance performance) {
+        this.member = member;
+        this.performance = performance;
+    }
 }
