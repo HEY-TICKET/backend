@@ -27,10 +27,10 @@ out/
 !**/src/test/**/out/
 application.yml
 application-local.yml
+application-localnoauth.yml
 application-prod.yml
 application-test.yml
 application-noauth.yml
-application-local.yml
 **/src/main/generated
 
 ### NetBeans ###

@@ -8,8 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,6 +40,8 @@ public class PerformanceResponse {
     private Integer views;
     private Double latitude;    // 위도
     private Double longitude;   // 경도
+    private String address; // 주소
+    private String phoneNumber; // 전화 번호
 
     public void updateStoryUrls(String storyUrls) {
         this.storyUrls = List.of(storyUrls.split("\\|"));

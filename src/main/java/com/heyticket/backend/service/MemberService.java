@@ -19,7 +19,9 @@ import com.heyticket.backend.repository.MemberLikeRepository;
 import com.heyticket.backend.repository.MemberRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
+import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
+import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -204,6 +206,53 @@ public class MemberService {
             .build();
 
         memberLikeRepository.save(memberLike);
+    }
+
+    public void updatePreferredCategory(MemberCategoryUpdateRequest request) {
+        String email = request.getEmail();
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("No such user"));
+
+        if (request.getGenres() != null) {
+            List<MemberGenre> memberGenres = member.getMemberGenres();
+
+            List<Genre> genres = Genre.getByNames(request.getGenres());
+            List<MemberGenre> newMemberGenres = getMemberGenres(member, genres);
+
+            memberGenres.removeIf(memberGenre -> !newMemberGenres.contains(memberGenre));
+            newMemberGenres.stream()
+                .filter(newMemberGenre -> !memberGenres.contains(newMemberGenre))
+                .forEach(memberGenres::add);
+        }
+
+        if (request.getAreas() != null) {
+            List<MemberArea> memberAreas = member.getMemberAreas();
+
+            List<Area> areas = Area.getByNames(request.getAreas());
+            List<MemberArea> newMemberAreas = getMemberAreas(member, areas);
+
+            memberAreas.removeIf(memberArea -> !newMemberAreas.contains(memberArea));
+            newMemberAreas.stream()
+                .filter(newMemberArea -> !memberAreas.contains(newMemberArea))
+                .forEach(memberAreas::add);
+        }
+
+    }
+
+    public void updatePreferredKeyword(MemberKeywordUpdateRequest request) {
+        Member member = memberRepository.findById(request.getEmail())
+            .orElseThrow(() -> new NoSuchElementException("No such member."));
+
+        if (request.getKeywords() != null) {
+            List<MemberKeyword> memberKeywords = member.getMemberKeywords();
+
+            List<String> keywords = request.getKeywords();
+            List<MemberKeyword> newMemberKeywords = getMemberKeywords(member, keywords);
+
+            memberKeywords.removeIf(memberKeyword -> !newMemberKeywords.contains(memberKeyword));
+            newMemberKeywords.stream()
+                .filter(newMemberKeyword -> !memberKeywords.contains(newMemberKeyword))
+                .forEach(memberKeywords::add);
+        }
     }
 
     private List<MemberGenre> getMemberGenres(Member member, List<Genre> genres) {

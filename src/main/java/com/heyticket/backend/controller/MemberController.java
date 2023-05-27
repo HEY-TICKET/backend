@@ -5,7 +5,9 @@ import com.heyticket.backend.service.CacheService;
 import com.heyticket.backend.service.EmailService;
 import com.heyticket.backend.service.MemberService;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
+import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
+import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -88,5 +90,17 @@ public class MemberController {
     public ResponseEntity<CommonResponse> deleteMember(@RequestBody MemberDeleteRequest request) {
         String deletedEmail = memberService.deleteMember(request);
         return CommonResponse.ok("Member has been deleted", deletedEmail);
+    }
+
+    @PutMapping("/members/categories")
+    public ResponseEntity<CommonResponse> updateCategory(@RequestBody MemberCategoryUpdateRequest request) {
+        memberService.updatePreferredCategory(request);
+        return CommonResponse.ok("Member category has been updated", true);
+    }
+
+    @PutMapping("/members/keywords")
+    public ResponseEntity<CommonResponse> updateKeyword(@RequestBody MemberKeywordUpdateRequest request) {
+        memberService.updatePreferredKeyword(request);
+        return CommonResponse.ok("Member keyword has been updated", true);
     }
 }
