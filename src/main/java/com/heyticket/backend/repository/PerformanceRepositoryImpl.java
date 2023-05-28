@@ -8,7 +8,9 @@ import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.kopis.enums.SortOrder;
 import com.heyticket.backend.module.kopis.enums.SortType;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -52,6 +54,19 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             );
 
         return PageableExecutionUtils.getPage(performanceList, pageable, count::fetchOne);
+    }
+
+    @Override
+    public List<GenreCountResponse> findPerformanceGenreCount() {
+        return queryFactory.select(
+                Projections.fields(
+                    GenreCountResponse.class,
+                    performance.genre.as("genre"),
+                    performance.genre.count().as("count")
+                ))
+            .from(performance)
+            .groupBy(performance.genre)
+            .fetch();
     }
 
     private BooleanExpression eqPerformanceGenre(Genre genre) {

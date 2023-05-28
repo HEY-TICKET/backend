@@ -5,6 +5,7 @@ import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.response.CommonResponse;
+import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.heyticket.backend.service.dto.pagable.PageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@SuppressWarnings("rawtypes")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -47,4 +49,9 @@ public class PerformanceController {
         return CommonResponse.ok("Performance recommendation.", performanceRecommendation);
     }
 
+    @GetMapping("/performances/genres/count")
+    public ResponseEntity<CommonResponse> getPerformanceGenreCount() {
+        List<GenreCountResponse> performanceGenreCount = performanceService.getPerformanceGenreCount();
+        return CommonResponse.ok("Performance genre count.", performanceGenreCount);
+    }
 }

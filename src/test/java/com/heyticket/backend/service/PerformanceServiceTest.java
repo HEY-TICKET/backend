@@ -6,12 +6,14 @@ import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.repository.PlaceRepository;
+import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +31,12 @@ class PerformanceServiceTest {
 
     @Autowired
     private PlaceRepository placeRepository;
+
+    @AfterEach
+    void deleteAll() {
+        placeRepository.deleteAll();
+        performanceRepository.deleteAll();
+    }
 
     @Test
     void savePerformance() {
@@ -107,6 +115,21 @@ class PerformanceServiceTest {
         assertThat(actualViews).isEqualTo(expectedViews);
     }
 
+    @Test
+    void getGenreCount() {
+        Performance performance1 = createPerformanceWithGenre("1", "genre1");
+        Performance performance2 = createPerformanceWithGenre("2", "genre1");
+        Performance performance3 = createPerformanceWithGenre("3", "genre2");
+        Performance performance4 = createPerformanceWithGenre("4", "genre2");
+        Performance performance5 = createPerformanceWithGenre("5", "genre2");
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4, performance5));
+
+        List<GenreCountResponse> genreCount = performanceService.getPerformanceGenreCount();
+        assertThat(genreCount).hasSize(2);
+        assertThat(genreCount.get(0).getGenre()).isEqualTo(performance1.getGenre());
+        assertThat(genreCount.get(1).getGenre()).isEqualTo(performance3.getGenre());
+    }
+
     private int parsePrice(String price) {
         String replace = price.replace(",", "");
         String[] splitString = replace.split(" ");
@@ -121,6 +144,21 @@ class PerformanceServiceTest {
             }
         }
         return 0;
+    }
+
+    private Performance createPerformance(String id) {
+        return Performance.builder()
+            .id(id)
+            .views(0)
+            .build();
+    }
+
+    private Performance createPerformanceWithGenre(String id, String genre) {
+        return Performance.builder()
+            .id(id)
+            .genre(genre)
+            .views(0)
+            .build();
     }
 
 }

@@ -2,6 +2,7 @@ package com.heyticket.backend.service;
 
 import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.domain.enums.PerformanceState;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
@@ -17,17 +18,20 @@ import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
+import com.heyticket.backend.repository.PerformancePriceRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.repository.PlaceRepository;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
+import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +57,8 @@ public class PerformanceService {
 
     private final PerformanceRepository performanceRepository;
 
+    private final PerformancePriceRepository performancePriceRepository;
+
     private final BoxOfficeRankRepository boxOfficeRankRepository;
 
     private final PlaceRepository placeRepository;
@@ -73,19 +79,23 @@ public class PerformanceService {
         List<String> allIdList = performanceRepository.findAllIds();
         HashSet<String> allIdSet = new HashSet<>(allIdList);
 
-        List<Performance> newPerformanceList = new ArrayList<>();
+        List<Performance> newPerformances = new ArrayList<>();
+        List<PerformancePrice> newPerformancePrices = new ArrayList<>();
 
         for (KopisPerformanceResponse kopisPerformanceResponse : kopisPerformanceResponseList) {
             String performanceId = kopisPerformanceResponse.mt20id();
             if (!allIdSet.contains(performanceId)) {
                 KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
                 Performance performance = kopisPerformanceDetailResponse.toEntity();
-                newPerformanceList.add(performance);
+                List<PerformancePrice> performancePrices = getPerformancePrice(performance);
+                newPerformancePrices.addAll(performancePrices);
+                newPerformances.add(performance);
             }
         }
 
-        performanceRepository.saveAll(newPerformanceList);
-        log.info("Performance has been updated. updated size : {}, total size : {}", newPerformanceList.size(), kopisPerformanceResponseList.size());
+        performanceRepository.saveAll(newPerformances);
+        performancePriceRepository.saveAll(newPerformancePrices);
+        log.info("Performance has been updated. updated size : {}, total size : {}", newPerformances.size(), kopisPerformanceResponseList.size());
     }
 
     public PageResponse<PerformanceResponse> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
@@ -294,5 +304,25 @@ public class PerformanceService {
             }
         }
         log.info("Performance state has been updated. updated count : {}", updateCnt);
+    }
+
+    public List<GenreCountResponse> getPerformanceGenreCount() {
+        List<GenreCountResponse> performanceGenreCount = performanceRepository.findPerformanceGenreCount();
+        performanceGenreCount.sort(Comparator.comparing(GenreCountResponse::getGenre));
+        return performanceGenreCount;
+    }
+
+    public List<PerformancePrice> getPerformancePrice(Performance performance) {
+        String price = performance.getPrice();
+        String replacedPrice = price.replace(",", "");
+        String[] splitString = replacedPrice.split(" ");
+
+        return Arrays.stream(splitString)
+            .filter(str -> str.endsWith("00원"))
+            .map(str -> PerformancePrice.builder()
+                .price(Integer.getInteger(str.substring(0, str.length() - 1)))
+                .performance(performance)
+                .build())
+            .collect(Collectors.toList());
     }
 }
