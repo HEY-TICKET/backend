@@ -21,6 +21,7 @@ import com.heyticket.backend.service.dto.request.MemberLikeRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +59,13 @@ class MemberServiceTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-//    @AfterEach
-//    void deleteAll() {
-//        memberGenreRepository.deleteAll();
-//        memberLikeRepository.deleteAll();
-//        memberKeywordRepository.deleteAll();
-//        memberRepository.deleteAll();
-//    }
+    @AfterEach
+    void deleteAll() {
+        memberGenreRepository.deleteAll();
+        memberLikeRepository.deleteAll();
+        memberKeywordRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
 
     @Test
     void deleteMember() {
@@ -83,6 +84,8 @@ class MemberServiceTest {
             .password("pw")
             .build();
 
+        memberRepository.save(member);
+
         MemberGenre memberGenre = MemberGenre.builder()
             .genre(Genre.MIXED_GENRE)
             .member(member)
@@ -92,7 +95,6 @@ class MemberServiceTest {
 
         Optional<Member> byEmail = memberRepository.findByEmail(member.getEmail());
         assertThat(byEmail).isPresent();
-
     }
 
     @Test
