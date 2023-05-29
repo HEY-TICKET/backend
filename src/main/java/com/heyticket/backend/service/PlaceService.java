@@ -29,6 +29,7 @@ public class PlaceService {
     private final KopisService kopisService;
 
     public int updatePlacesBatch() {
+        log.info("Batch updating places.");
         KopisPlaceRequest kopisPlaceRequest = KopisPlaceRequest.builder()
             .cpage(1)
             .rows(5000)

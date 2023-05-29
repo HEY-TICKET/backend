@@ -1,5 +1,6 @@
 package com.heyticket.backend.service.dto.response;
 
+import com.heyticket.backend.module.kopis.enums.Genre;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class GenreCountResponse {
 
-    private String genre;
+    private Genre genre;
 
     private Long count;
 }

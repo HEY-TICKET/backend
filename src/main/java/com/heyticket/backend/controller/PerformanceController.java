@@ -1,7 +1,7 @@
 package com.heyticket.backend.controller;
 
 import com.heyticket.backend.service.PerformanceService;
-import com.heyticket.backend.service.dto.pagable.PageRequest;
+import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
@@ -25,14 +25,14 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     @GetMapping("/performances/new")
-    public ResponseEntity<CommonResponse> getNewPerformances(NewPerformanceRequest request, PageRequest pageRequest) {
-        PageResponse<PerformanceResponse> newPerformances = performanceService.getNewPerformances(request, pageRequest.of());
+    public ResponseEntity<CommonResponse> getNewPerformances(NewPerformanceRequest request, CustomPageRequest customPageRequest) {
+        PageResponse<PerformanceResponse> newPerformances = performanceService.getNewPerformances(request, customPageRequest.of());
         return CommonResponse.ok("New performances", newPerformances);
     }
 
     @GetMapping("/performances/rank")
-    public ResponseEntity<CommonResponse> getBoxOffice(BoxOfficeRankRequest request, PageRequest pageRequest) {
-        PageResponse<BoxOfficeRankResponse> boxOfficeRank = performanceService.getBoxOfficeRank(request, pageRequest.of());
+    public ResponseEntity<CommonResponse> getBoxOffice(BoxOfficeRankRequest request, CustomPageRequest customPageRequest) {
+        PageResponse<BoxOfficeRankResponse> boxOfficeRank = performanceService.getBoxOfficeRank(request, customPageRequest.of());
         return CommonResponse.ok("Performance rank.", boxOfficeRank);
     }
 

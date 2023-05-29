@@ -13,13 +13,14 @@ public enum Genre {
 
     THEATER("AAAA", "연극", BoxOfficeGenre.THEATER),
     MUSICAL("GGGA", "뮤지컬", BoxOfficeGenre.MUSICAL),
-    CLASSIC("CCCA", "클래식(서양음악)", BoxOfficeGenre.CLASSIC),
-    KOREAN_TRADITIONAL_MUSIC("CCCC", "국악(한국음악)", BoxOfficeGenre.KOREAN_TRADITIONAL_MUSIC),
+    CLASSIC("CCCA", "서양음악(클래식)", BoxOfficeGenre.CLASSIC),
+    KOREAN_TRADITIONAL_MUSIC("CCCC", "한국음악(국악)", BoxOfficeGenre.KOREAN_TRADITIONAL_MUSIC),
     POPULAR_MUSIC("CCCD", "대중음악", BoxOfficeGenre.POPULAR_MUSIC),
-    DANCE("BBBC", "무용(서양/한국무용)", BoxOfficeGenre.DANCE),
+    DANCE("BBBC", "무용", BoxOfficeGenre.DANCE),
     POPULAR_DANCE("BBBE", "대중무용", BoxOfficeGenre.POPULAR_DANCE),
     CIRCUS_AND_MAGIC("EEEB", "서커스/마술", BoxOfficeGenre.CIRCUS_AND_MAGIC),
-    MIXED_GENRE("EEEA", "복합", BoxOfficeGenre.MIXED_GENRE);
+    MIXED_GENRE("EEEA", "복합", BoxOfficeGenre.MIXED_GENRE),
+    ALL("ALL", "전체", null);
 
     private final String code;
 

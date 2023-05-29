@@ -11,7 +11,7 @@ public enum PerformanceStatus {
 
     UPCOMING("공연예정"),
     ONGOING("공연중"),
-    COMPLETED("공연종료");
+    COMPLETED("공연완료");
 
     private final String name;
 

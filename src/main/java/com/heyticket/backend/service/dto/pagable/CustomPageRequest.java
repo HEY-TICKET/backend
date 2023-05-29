@@ -1,6 +1,12 @@
 package com.heyticket.backend.service.dto.pagable;
 
-public class PageRequest {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.data.domain.PageRequest;
+
+@Getter
+@AllArgsConstructor
+public class CustomPageRequest {
 
     private static final int MAX_PAGE_SIZE = 50;
 
@@ -24,7 +30,7 @@ public class PageRequest {
         return (pageSize <= 0 || pageSize > MAX_PAGE_SIZE) ? MAX_PAGE_SIZE : pageSize;
     }
 
-    public org.springframework.data.domain.PageRequest of() {
-        return org.springframework.data.domain.PageRequest.of(getPage() - 1, getPageSize());
+    public PageRequest of() {
+        return PageRequest.of(getPage() - 1, getPageSize());
     }
 }

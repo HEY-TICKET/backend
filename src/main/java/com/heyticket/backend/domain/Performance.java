@@ -43,7 +43,9 @@ public class Performance extends BaseTimeEntity {
     private String poster; // 포스터 이미지 경로
     @Column(columnDefinition = "TEXT")
     private String story; // 줄거리
+    @Enumerated(EnumType.STRING)
     private Genre genre; // 장르
+    @Enumerated(EnumType.STRING)
     private PerformanceStatus status; // 공연상태
     private Boolean openRun; // 오픈런 여부
     @Enumerated(EnumType.STRING)
@@ -54,7 +56,7 @@ public class Performance extends BaseTimeEntity {
     @ColumnDefault(value = "0")
     private Integer views;
 
-    public void addViews() {
+    public void addViewCount() {
         views++;
     }
 

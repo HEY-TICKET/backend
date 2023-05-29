@@ -2,13 +2,17 @@ package com.heyticket.backend.service.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.module.kopis.enums.Genre;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.util.StringUtils;
 
 @Getter
 @Setter
@@ -32,8 +36,8 @@ public class PerformanceResponse {
     private String price; // 티켓 가격
     private String poster; // 포스터 이미지 경로
     private String story; // 줄거리
-    private String genre; // 장르
-    private String state; // 공연상태
+    private Genre genre; // 장르
+    private PerformanceStatus status; // 공연상태
     private Boolean openRun; // 오픈런 여부
     private List<String> storyUrls; // 소개이미지 목록
     private String schedule; // 공연 시간
@@ -44,12 +48,15 @@ public class PerformanceResponse {
     private String phoneNumber; // 전화 번호
 
     public void updateStoryUrls(String storyUrls) {
-        this.storyUrls = List.of(storyUrls.split("\\|"));
+        if (StringUtils.hasText(storyUrls)) {
+            this.storyUrls = List.of(storyUrls.split("\\|"));
+        } else {
+            this.storyUrls = Collections.emptyList();
+        }
     }
 
     public void updateLocation(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
     }
-
 }

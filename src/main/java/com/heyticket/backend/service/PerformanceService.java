@@ -4,19 +4,18 @@ import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
-import com.heyticket.backend.domain.enums.PerformanceState;
+import com.heyticket.backend.domain.enums.PerformanceStatus;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
-import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest.KopisBoxOfficeRequestBuilder;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeResponse;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceDetailResponse;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceResponse;
+import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
-import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformancePriceRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
@@ -24,6 +23,7 @@ import com.heyticket.backend.repository.PlaceRepository;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
@@ -31,12 +31,14 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,11 +66,15 @@ public class PerformanceService {
 
     private final PlaceRepository placeRepository;
 
+    private final PlaceService placeService;
+
     private final KopisService kopisService;
 
+    public void getFilteredPerformances(PerformanceFilterRequest request) {
+
+    }
+
     public PageResponse<PerformanceResponse> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
-        String currentMemberId = SecurityUtil.getCurrentMemberEmail();
-        log.info("currentMemberId : {}", currentMemberId);
         Page<Performance> performancePageResponse = performanceRepository.findNewPerformances(newPerformanceRequest, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
         List<PerformanceResponse> performanceResponseList = performanceList.stream()
@@ -85,26 +91,25 @@ public class PerformanceService {
     }
 
     public PerformanceResponse getPerformanceById(String performanceId) {
-        Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performanceId));
-        performance.addViews();
+        Performance performance = getPerformanceFromDb(performanceId);
+        performance.addViewCount();
         return getPerformanceResponse(performance);
     }
 
-    public PerformanceResponse getPerformanceByIdWithoutViewCount(String performanceId) {
-        Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performanceId));
+    public PerformanceResponse getPerformanceByIdWithoutUpdatingViewCount(String performanceId) {
+        Performance performance = getPerformanceFromDb(performanceId);
         return getPerformanceResponse(performance);
     }
 
     private PerformanceResponse getPerformanceResponse(Performance performance) {
         PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-        if (performance.getStoryUrls() != null) {
-            performanceResponse.updateStoryUrls(performance.getStoryUrls());
-        }
+        performanceResponse.updateStoryUrls(performance.getStoryUrls());
 
-        Place place = placeRepository.findById(performance.getPlaceId()).orElseThrow(() -> new NoSuchElementException("no such place. performanceId : " + performance.getPlaceId()));
-        performanceResponse.updateLocation(place.getLatitude(), place.getLatitude());
+        Place place = performance.getPlace();
+        performanceResponse.updateLocation(place.getLatitude(), place.getLongitude());
         performanceResponse.setAddress(place.getAddress());
         performanceResponse.setPhoneNumber(place.getPhoneNumber());
+        performanceResponse.setPlaceId(place.getId());
         return performanceResponse;
     }
 
@@ -113,27 +118,30 @@ public class PerformanceService {
             .orElseThrow(() -> new NoSuchElementException("No such boxOfficeRank."));
 
         int dataSize = pageable.getPageSize();
-        String[] idArray = boxOfficeRank.getPerformanceIds().split("\\|");
-        String[] truncatedIdArray = Arrays.copyOfRange(idArray, 0, dataSize);
+        if (!StringUtils.hasText(boxOfficeRank.getPerformanceIds())) {
+            return new PageResponse<>(Collections.emptyList(), 1, dataSize, 1);
+        }
+        String[] performanceIds = boxOfficeRank.getPerformanceIds().split("\\|");
+        if (performanceIds.length > dataSize) {
+            performanceIds = Arrays.copyOfRange(performanceIds, 0, dataSize);
+        }
 
-        List<Performance> performanceList = performanceRepository.findAllById(Arrays.asList(truncatedIdArray));
+        List<Performance> performanceList = performanceRepository.findAllById(Arrays.asList(performanceIds));
         Map<String, Performance> performanceMap = new HashMap<>();
         performanceList.forEach(performance -> performanceMap.put(performance.getId(), performance));
-
-        PerformanceMapper performanceMapper = PerformanceMapper.INSTANCE;
 
         List<BoxOfficeRankResponse> boxOfficeRankResponseList = new ArrayList<>();
         List<Performance> unsavedPerformanceList = new ArrayList<>();
 
-        for (int i = 0; i < truncatedIdArray.length; i++) {
-            String performanceId = truncatedIdArray[i];
+        for (int i = 0; i < performanceIds.length; i++) {
+            String performanceId = performanceIds[i];
             Performance performance = performanceMap.get(performanceId);
             if (ObjectUtils.isEmpty(performance)) {
                 KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
                 performance = kopisPerformanceDetailResponse.toEntity();
                 unsavedPerformanceList.add(performance);
             }
-            BoxOfficeRankResponse boxOfficeRankResponse = performanceMapper.toBoxOfficeRankResponse(performance);
+            BoxOfficeRankResponse boxOfficeRankResponse = PerformanceMapper.INSTANCE.toBoxOfficeRankResponse(performance);
             boxOfficeRankResponse.setRank(i + 1);
             boxOfficeRankResponse.updateStoryUrls(performance.getStoryUrls());
             boxOfficeRankResponseList.add(boxOfficeRankResponse);
@@ -145,8 +153,8 @@ public class PerformanceService {
     }
 
     public List<PerformanceResponse> getPerformanceRecommendation(String performanceId) {
-        Performance performance = performanceRepository.findById(performanceId).orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performanceId));
-        BoxOfficeGenre boxOfficeGenre = BoxOfficeGenre.getByName(performance.getGenre());
+        Performance performance = getPerformanceFromDb(performanceId);
+        BoxOfficeGenre boxOfficeGenre = BoxOfficeGenre.getByName(performance.getGenre().getName());
 
         BoxOfficeRankRequest genreBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
             .genre(boxOfficeGenre)
@@ -158,10 +166,8 @@ public class PerformanceService {
         String firstGenrePerformanceId = genrePerformanceIdArray[0];
         String secondGenrePerformanceId = genrePerformanceIdArray[1];
 
-        String placeId = performance.getPlaceId();
-        Place place = placeRepository.findById(placeId).orElseThrow(() -> new NoSuchElementException("no such place. id : " + placeId));
-        String sidoName = place.getSidoName();
-        BoxOfficeArea boxOfficeArea = BoxOfficeArea.getByName(sidoName);
+        Area area = performance.getArea();
+        BoxOfficeArea boxOfficeArea = area.getBoxOfficeArea();
 
         BoxOfficeRankRequest areaBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
             .area(boxOfficeArea)
@@ -173,13 +179,14 @@ public class PerformanceService {
         String firstAreaPerformanceId = areaPerformanceIdArray[0];
         String secondAreaPerformanceId = areaPerformanceIdArray[1];
 
-        return List.of(getPerformanceByIdWithoutViewCount(firstGenrePerformanceId),
-            getPerformanceByIdWithoutViewCount(secondGenrePerformanceId),
-            getPerformanceByIdWithoutViewCount(firstAreaPerformanceId),
-            getPerformanceByIdWithoutViewCount(secondAreaPerformanceId));
+        return List.of(getPerformanceByIdWithoutUpdatingViewCount(firstGenrePerformanceId),
+            getPerformanceByIdWithoutUpdatingViewCount(secondGenrePerformanceId),
+            getPerformanceByIdWithoutUpdatingViewCount(firstAreaPerformanceId),
+            getPerformanceByIdWithoutUpdatingViewCount(secondAreaPerformanceId));
     }
 
-    public void updatePerformances(LocalDate from, LocalDate to, int rows) {
+    public int updatePerformancesBatch(LocalDate from, LocalDate to, int rows) {
+        log.info("Batch updating performances.");
         KopisPerformanceRequest kopisPerformanceRequest = KopisPerformanceRequest.builder()
             .stdate(from.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .eddate(to.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
@@ -188,33 +195,45 @@ public class PerformanceService {
             .build();
 
         List<KopisPerformanceResponse> kopisPerformanceResponseList = kopisService.getPerformances(kopisPerformanceRequest);
-        log.info("Performance pull count : {}", kopisPerformanceResponseList.size());
 
         List<String> allIdList = performanceRepository.findAllIds();
         HashSet<String> allIdSet = new HashSet<>(allIdList);
 
         List<Performance> newPerformances = new ArrayList<>();
-        List<PerformancePrice> newPerformancePrices = new ArrayList<>();
 
         for (KopisPerformanceResponse kopisPerformanceResponse : kopisPerformanceResponseList) {
             String performanceId = kopisPerformanceResponse.mt20id();
             if (!allIdSet.contains(performanceId)) {
                 KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
                 Performance performance = kopisPerformanceDetailResponse.toEntity();
-                if (StringUtils.hasText(performance.getPrice())) {
-                    List<PerformancePrice> performancePrices = getPerformancePrice(performance);
-                    newPerformancePrices.addAll(performancePrices);
+                String placeId = kopisPerformanceDetailResponse.mt10id();
+                if (StringUtils.hasText(placeId)) {
+                    Optional<Place> optionalPlace = placeRepository.findById(placeId);
+                    if (optionalPlace.isEmpty()) {
+                        continue;
+                    }
+                    Place place = optionalPlace.get();
+                    Area area = place.getArea();
+                    performance.updateArea(area);
+                    performance.updatePlace(place);
                 }
                 newPerformances.add(performance);
             }
         }
 
-        performanceRepository.saveAll(newPerformances);
-        performancePriceRepository.saveAll(newPerformancePrices);
-        log.info("Performance has been updated. updated size : {}, total size : {}", newPerformances.size(), kopisPerformanceResponseList.size());
+        List<Performance> performances = performanceRepository.saveAll(newPerformances);
+        List<PerformancePrice> performancePrices = performances.stream()
+            .filter(performance -> StringUtils.hasText(performance.getPrice()))
+            .flatMap(performance -> getPerformancePrice(performance).stream())
+            .collect(Collectors.toList());
+
+        performancePriceRepository.saveAll(performancePrices);
+        log.info("Performance has been updated. total size : {}, updated size : {}", kopisPerformanceResponseList.size(), newPerformances.size());
+        return performances.size();
     }
 
-    public void updateBoxOfficeRank() {
+    public int updateBoxOfficeRankBatch() {
+        log.info("Batch updating performance rank.");
         boxOfficeRankRepository.deleteAll();
         BoxOfficeGenre[] genres = BoxOfficeGenre.values();
         BoxOfficeArea[] areas = BoxOfficeArea.values();
@@ -226,14 +245,15 @@ public class PerformanceService {
 
         for (TimePeriod timePeriod : timePeriods) {
             for (BoxOfficeGenre genre : genres) {
+                if (genre == BoxOfficeGenre.ALL) {
+                    continue;
+                }
                 CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
-                    KopisBoxOfficeRequestBuilder kopisBoxOfficeRequestBuilder = KopisBoxOfficeRequest.builder()
+                    KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
                         .ststype(timePeriod.getValue())
-                        .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-                    if (genre != BoxOfficeGenre.ALL) {
-                        kopisBoxOfficeRequestBuilder.catecode(genre.getCode());
-                    }
-                    KopisBoxOfficeRequest kopisBoxOfficeRequest = kopisBoxOfficeRequestBuilder.build();
+                        .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                        .catecode(genre.getCode())
+                        .build();
 
                     List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
 
@@ -242,7 +262,8 @@ public class PerformanceService {
                         .collect(Collectors.joining("|"));
 
                     return BoxOfficeRank.builder()
-                        .genre(genre != BoxOfficeGenre.ALL ? genre : null)
+                        .genre(genre)
+                        .area(BoxOfficeArea.ALL)
                         .timePeriod(timePeriod)
                         .performanceIds(ids)
                         .build();
@@ -252,14 +273,15 @@ public class PerformanceService {
             }
 
             for (BoxOfficeArea area : areas) {
+                if (area == BoxOfficeArea.ALL) {
+                    continue;
+                }
                 CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
-                    KopisBoxOfficeRequestBuilder kopisBoxOfficeRequestBuilder = KopisBoxOfficeRequest.builder()
+                    KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
                         .ststype(timePeriod.getValue())
-                        .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-                    if (area != BoxOfficeArea.ALL) {
-                        kopisBoxOfficeRequestBuilder.area(area.getCode());
-                    }
-                    KopisBoxOfficeRequest kopisBoxOfficeRequest = kopisBoxOfficeRequestBuilder.build();
+                        .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                        .area(area.getCode())
+                        .build();
 
                     List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
 
@@ -268,13 +290,36 @@ public class PerformanceService {
                         .collect(Collectors.joining("|"));
 
                     return BoxOfficeRank.builder()
-                        .area(area != BoxOfficeArea.ALL ? area : null)
+                        .area(area)
+                        .genre(BoxOfficeGenre.ALL)
                         .timePeriod(timePeriod)
                         .performanceIds(ids)
                         .build();
                 }, executorService);
                 futures.add(future);
             }
+
+            CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
+                KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
+                    .ststype(timePeriod.getValue())
+                    .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                    .build();
+
+                List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
+
+                String ids = kopisBoxOfficeResponseList.stream()
+                    .map(KopisBoxOfficeResponse::mt20id)
+                    .collect(Collectors.joining("|"));
+
+                return BoxOfficeRank.builder()
+                    .genre(BoxOfficeGenre.ALL)
+                    .area(BoxOfficeArea.ALL)
+                    .timePeriod(timePeriod)
+                    .performanceIds(ids)
+                    .build();
+            }, executorService);
+            futures.add(future);
+
         }
 
         List<BoxOfficeRank> boxOfficeRankList = futures.stream()
@@ -283,30 +328,33 @@ public class PerformanceService {
 
         boxOfficeRankRepository.saveAll(boxOfficeRankList);
         log.info("box office rank has been updated. size : {}", boxOfficeRankList.size());
+        return boxOfficeRankList.size();
     }
 
-    public void updatePerformanceState() {
+    public int updatePerformanceStatusBatch() {
+        log.info("Batch updating performance status.");
         List<Performance> performanceList = performanceRepository.findAll();
         int updateCnt = 0;
         for (Performance performance : performanceList) {
             LocalDate today = LocalDate.now();
             LocalDate startDate = performance.getStartDate();
             LocalDate endDate = performance.getEndDate();
-            String performanceState;
+            PerformanceStatus performanceStatus;
             if (today.isAfter(endDate)) {
-                performanceState = PerformanceState.COMPLETED.getName();
+                performanceStatus = PerformanceStatus.COMPLETED;
             } else if (today.isBefore(startDate)) {
-                performanceState = PerformanceState.UPCOMING.getName();
+                performanceStatus = PerformanceStatus.UPCOMING;
             } else {
-                performanceState = PerformanceState.ONGOING.getName();
+                performanceStatus = PerformanceStatus.ONGOING;
             }
 
-            if (!performance.getState().equals(performanceState)) {
-                performance.updateStatus(performanceState);
+            if (performance.getStatus() != performanceStatus) {
+                performance.updateStatus(performanceStatus);
                 updateCnt++;
             }
         }
         log.info("Performance state has been updated. updated count : {}", updateCnt);
+        return updateCnt;
     }
 
     public List<GenreCountResponse> getPerformanceGenreCount() {
@@ -327,5 +375,9 @@ public class PerformanceService {
                 .performance(performance)
                 .build())
             .collect(Collectors.toList());
+    }
+
+    private Performance getPerformanceFromDb(String performanceId) {
+        return performanceRepository.findById(performanceId).orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performanceId));
     }
 }

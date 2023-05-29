@@ -33,7 +33,11 @@ public class SecurityConfig {
             .cors().disable()
             .httpBasic().disable()
             .formLogin().disable()
-            .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+            .authorizeHttpRequests(authorize ->
+                authorize
+                    .requestMatchers("/api/**").permitAll()
+                    .requestMatchers("/batch/**").hasRole("ADMIN")
+            )
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new ExceptionHandlerFilter(objectMapper), JwtAuthenticationFilter.class);
         return http.build();

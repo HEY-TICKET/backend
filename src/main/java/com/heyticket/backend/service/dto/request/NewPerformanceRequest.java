@@ -21,5 +21,4 @@ public class NewPerformanceRequest {
     private SortType sortType;
 
     private SortOrder sortOrder;
-
 }
