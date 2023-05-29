@@ -25,31 +25,31 @@ public class PerformanceController {
     private final PerformanceService performanceService;
 
     @GetMapping("/performances/new")
-    public ResponseEntity<CommonResponse> getNewPerformances(NewPerformanceRequest request, CustomPageRequest customPageRequest) {
+    public ResponseEntity<?> getNewPerformances(NewPerformanceRequest request, CustomPageRequest customPageRequest) {
         PageResponse<PerformanceResponse> newPerformances = performanceService.getNewPerformances(request, customPageRequest.of());
         return CommonResponse.ok("New performances", newPerformances);
     }
 
     @GetMapping("/performances/rank")
-    public ResponseEntity<CommonResponse> getBoxOffice(BoxOfficeRankRequest request, CustomPageRequest customPageRequest) {
+    public ResponseEntity<?> getBoxOffice(BoxOfficeRankRequest request, CustomPageRequest customPageRequest) {
         PageResponse<BoxOfficeRankResponse> boxOfficeRank = performanceService.getBoxOfficeRank(request, customPageRequest.of());
         return CommonResponse.ok("Performance rank.", boxOfficeRank);
     }
 
     @GetMapping("/performances/{id}")
-    public ResponseEntity<CommonResponse> getPerformance(@PathVariable String id) {
+    public ResponseEntity<?> getPerformance(@PathVariable String id) {
         PerformanceResponse performanceResponse = performanceService.getPerformanceById(id);
         return CommonResponse.ok("Performance information.", performanceResponse);
     }
 
     @GetMapping("/performances/{id}/recommendation")
-    public ResponseEntity<CommonResponse> getPerformanceRecommendation(@PathVariable String id) {
+    public ResponseEntity<?> getPerformanceRecommendation(@PathVariable String id) {
         List<PerformanceResponse> performanceRecommendation = performanceService.getPerformanceRecommendation(id);
         return CommonResponse.ok("Performance recommendation.", performanceRecommendation);
     }
 
     @GetMapping("/performances/genres/count")
-    public ResponseEntity<CommonResponse> getPerformanceGenreCount() {
+    public ResponseEntity<?> getPerformanceGenreCount() {
         List<GenreCountResponse> performanceGenreCount = performanceService.getPerformanceGenreCount();
         return CommonResponse.ok("Performance genre count.", performanceGenreCount);
     }

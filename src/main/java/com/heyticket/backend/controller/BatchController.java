@@ -22,25 +22,25 @@ public class BatchController {
     private final PlaceService placeService;
 
     @GetMapping("/performances")
-    public ResponseEntity<CommonResponse> updatePerformancesBatch(PerformanceBatchUpdateRequest request) {
+    public ResponseEntity<?> updatePerformancesBatch(PerformanceBatchUpdateRequest request) {
         int count = performanceService.updatePerformancesBatch(request.getFrom(), request.getTo(), request.getRows());
         return CommonResponse.ok("Success in batch updating performances. Updated performances count in data", count);
     }
 
     @GetMapping("/performances/rank")
-    public ResponseEntity<CommonResponse> updateBoxOfficeRankBatch() {
+    public ResponseEntity<?> updateBoxOfficeRankBatch() {
         int count = performanceService.updateBoxOfficeRankBatch();
         return CommonResponse.ok("Success in batch updating performance rank. Updated performances count in data", count);
     }
 
     @GetMapping("/performances/status")
-    public ResponseEntity<CommonResponse> updatePerformanceStatusBatch() {
+    public ResponseEntity<?> updatePerformanceStatusBatch() {
         int count = performanceService.updatePerformanceStatusBatch();
         return CommonResponse.ok("Success in batch updating performance status. Updated performances count in data", count);
     }
 
     @GetMapping("/places")
-    public ResponseEntity<CommonResponse> updatePlacesBatch() {
+    public ResponseEntity<?> updatePlacesBatch() {
         int count = placeService.updatePlacesBatch();
         return CommonResponse.ok("Success in batch updating places. Updated performances count in data", count);
     }

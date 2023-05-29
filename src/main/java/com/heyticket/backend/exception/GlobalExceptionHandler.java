@@ -1,6 +1,7 @@
 package com.heyticket.backend.exception;
 
 import com.heyticket.backend.service.dto.response.CommonResponse;
+import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +16,13 @@ public class GlobalExceptionHandler {
         log.warn(e.getMessage());
         e.printStackTrace();
         return CommonResponse.serverError(InternalCode.SERVER_ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler(value = NoSuchElementException.class)
+    public ResponseEntity<?> noSuchElementExceptionHandler(Exception e) {
+        log.warn(e.getMessage());
+        e.printStackTrace();
+        return CommonResponse.notFound(InternalCode.SERVER_ERROR, e.getMessage());
     }
 
     @ExceptionHandler(value = JwtValidationException.class)

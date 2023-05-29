@@ -9,7 +9,8 @@ public enum InternalCode {
 
     OK("OK"),
     CREATED("CREATED"),
-    SERVER_ERROR("SERVER-ERROR"),
+    SERVER_ERROR("SERVER_ERROR"),
+    NOT_FOUND("NOT_FOUND"),
 
     INVALID_JWT("JWT-001"),
     EXPIRED_JWT("JWT-002");
