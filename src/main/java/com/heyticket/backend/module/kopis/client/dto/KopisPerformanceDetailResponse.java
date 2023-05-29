@@ -1,6 +1,8 @@
 package com.heyticket.backend.module.kopis.client.dto;
 
 import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.module.kopis.enums.Genre;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -30,11 +32,10 @@ public record KopisPerformanceDetailResponse(
 
         return Performance.builder()
             .id(this.mt20id)
-            .placeId(this.mt10id)
             .title(this.prfnm)
             .startDate(LocalDate.parse(this.prfpdfrom, DateTimeFormatter.ofPattern("yyyy.MM.dd")))
             .endDate(LocalDate.parse(this.prfpdto, DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-            .place(this.fcltynm)
+            .theater(this.fcltynm)
             .cast(this.prfcast)
             .crew(this.prfcrew)
             .runtime(this.prfruntime)
@@ -43,14 +44,14 @@ public record KopisPerformanceDetailResponse(
             .price(this.pcseguidance)
             .poster(this.poster)
             .story(this.sty)
-            .genre(this.genrenm)
-            .state(this.prfstate)
+            .genre(Genre.getByName(this.genrenm))
+            .status(PerformanceStatus.getByName(this.prfstate))
             .openRun(this.openrun.equals("Y"))
             .storyUrls(
                 this.styurls != null ?
                     String.join("|", this.styurls) : null
             )
-            .dtguidance(this.dtguidance)
+            .schedule(this.dtguidance)
             .views(0)
             .build();
     }

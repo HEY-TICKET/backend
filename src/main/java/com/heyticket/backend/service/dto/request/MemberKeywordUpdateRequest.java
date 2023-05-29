@@ -15,5 +15,6 @@ public class MemberKeywordUpdateRequest {
 
     private String email;
 
+    @Builder.Default
     private List<String> keywords = new ArrayList<>();
 }

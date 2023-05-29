@@ -15,7 +15,9 @@ public class MemberCategoryUpdateRequest {
 
     private String email;
 
+    @Builder.Default
     private List<String> genres = new ArrayList<>();
 
+    @Builder.Default
     private List<String> areas = new ArrayList<>();
 }

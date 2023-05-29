@@ -21,7 +21,7 @@ public class BoxOfficeRankResponse {
     private String title; // 공연명
     private LocalDate startDate; // 공연 시작일
     private LocalDate endDate; // 공연 종료일
-    private String place; // 공연 시설명(공연장명)
+    private String theater; // 공연 시설명(공연장명)
     private String cast; // 출연진
     private String crew; // 제작진
     private String runtime; // 공연 런타임
@@ -34,7 +34,7 @@ public class BoxOfficeRankResponse {
     private String state; // 공연상태
     private Boolean openRun; // 오픈런 여부
     private List<String> storyUrls; // 소개이미지 목록
-    private String dtguidance; // 공연 시간
+    private String schedule; // 공연 시간
     private int rank; // 랭킹
 
     public void updateStoryUrls(String storyUrls) {

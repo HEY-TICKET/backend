@@ -21,25 +21,25 @@ public class Scheduler {
 
     @Scheduled(cron = "0 10 0/3 * * *")
     public void updatePerformanceState() {
-        performanceService.updatePerformanceState();
+        performanceService.updatePerformanceStatusBatch();
         log.info("Performance state update has been scheduled.");
     }
 
     @Scheduled(cron = "0 20 0/3 * * *")
     public void updatePerformances() {
-        performanceService.updatePerformances(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), 1000);
+        performanceService.updatePerformancesBatch(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), 1000);
         log.info("Performances update has been scheduled.");
     }
 
     @Scheduled(cron = "0 30 0/3 * * *")
     public void updateBoxOfficeRank() {
-        performanceService.updateBoxOfficeRank();
+        performanceService.updateBoxOfficeRankBatch();
         log.info("BoxOfficeRank update has been scheduled.");
     }
 
     @Scheduled(cron = "0 40 0/3 * * *")
     public void updatePlace() {
-        placeService.updatePlace();
+        placeService.updatePlacesBatch();
         log.info("Places update has been scheduled.");
     }
 }
