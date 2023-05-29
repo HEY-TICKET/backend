@@ -1,164 +1,403 @@
 package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 
+import com.heyticket.backend.config.JpaConfig;
+import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.Place;
+import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.module.kopis.enums.Area;
+import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
+import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
+import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.module.kopis.enums.SortOrder;
+import com.heyticket.backend.module.kopis.enums.SortType;
+import com.heyticket.backend.module.kopis.enums.TimePeriod;
+import com.heyticket.backend.module.kopis.service.KopisService;
+import com.heyticket.backend.repository.BoxOfficeRankRepository;
+import com.heyticket.backend.repository.PerformancePriceRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.repository.PlaceRepository;
-import com.heyticket.backend.service.dto.response.GenreCountResponse;
+import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
+import com.heyticket.backend.service.dto.pagable.PageResponse;
+import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
+import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
+import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@ActiveProfiles("local")
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+@Import(value = JpaConfig.class)
+@ActiveProfiles("test")
 class PerformanceServiceTest {
 
-    @Autowired
     private PerformanceService performanceService;
 
     @Autowired
     private PerformanceRepository performanceRepository;
 
     @Autowired
+    private BoxOfficeRankRepository boxOfficeRankRepository;
+
+    @Autowired
     private PlaceRepository placeRepository;
+
+    @Autowired
+    private PerformancePriceRepository performancePriceRepository;
+
+    @Mock
+    private PlaceService placeService;
+
+    @Mock
+    private KopisService kopisService;
+
+    @BeforeEach
+    void init() {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("email", "password");
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        performanceService = new PerformanceService(performanceRepository, performancePriceRepository, boxOfficeRankRepository, placeRepository, placeService, kopisService);
+    }
 
     @AfterEach
     void deleteAll() {
-//        placeRepository.deleteAll();
-//        performanceRepository.deleteAll();
+        performanceRepository.deleteAll();
     }
 
     @Test
-    void savePerformance() {
-        performanceService.updatePerformances(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(12), 5000);
+    @DisplayName("NewPerformance 조회 - 장르 전체로 조회한다.")
+    void getNewPerformance_everyGenre() {
+        //given
+        Performance performance1 = createPerformanceWithGenre("1", Genre.DANCE);
+        Performance performance2 = createPerformanceWithGenre("2", Genre.CIRCUS_AND_MAGIC);
+        Performance performance3 = createPerformanceWithGenre("3", Genre.MIXED_GENRE);
+        Performance performance4 = createPerformanceWithGenre("4", Genre.POPULAR_DANCE);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4));
+
+        //when
+        NewPerformanceRequest request = NewPerformanceRequest.builder()
+            .genre(Genre.ALL)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getNewPerformances(request, pageRequest);
+
+        //then
+        assertThat(result.getPage()).isEqualTo(1);
+        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getContents()).hasSize(4);
+        assertThat(result.getContents()).extracting("id")
+            .containsOnly(performance1.getId(), performance2.getId(), performance3.getId(), performance4.getId());
     }
 
     @Test
-    void getUniBoxOffice() {
-//        List<BoxOfficeResponse> uniBoxOffice = performanceService.getUniBoxOffice();
-//        System.out.println("uniBoxOffice.size() = " + uniBoxOffice.size());
+    @DisplayName("NewPerformance 조회 - 특정 장르로 조회한다.")
+    void getNewPerformance_searchByGenre() {
+        //given
+        Performance performance1 = createPerformanceWithGenre("1", Genre.DANCE);
+        Performance performance2 = createPerformanceWithGenre("2", Genre.CIRCUS_AND_MAGIC);
+        Performance performance3 = createPerformanceWithGenre("3", Genre.MIXED_GENRE);
+        Performance performance4 = createPerformanceWithGenre("4", Genre.POPULAR_DANCE);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4));
+
+        //when
+        NewPerformanceRequest request = NewPerformanceRequest.builder()
+            .genre(Genre.MIXED_GENRE)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getNewPerformances(request, pageRequest);
+
+        //then
+        assertThat(result.getPage()).isEqualTo(1);
+        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getContents()).hasSize(1);
+        assertThat(result.getContents().get(0).getId()).isEqualTo(performance3.getId());
     }
 
     @Test
-    void updateBoxOfficeRank() {
-        performanceService.updateBoxOfficeRank();
+    @DisplayName("NewPerformance 조회 - 조회수 내림차순으로 정렬한다.")
+    void getNewPerformance_sortByType() {
+        //given
+        Performance performance1 = createPerformanceWithGenre("1", Genre.DANCE);
+        Performance performance2 = createPerformanceWithGenre("2", Genre.CIRCUS_AND_MAGIC);
+        Performance performance3 = createPerformanceWithGenre("3", Genre.MIXED_GENRE);
+        Performance performance4 = createPerformanceWithGenre("4", Genre.POPULAR_DANCE);
+
+        performance2.addViewCount();
+        performance3.addViewCount();
+        performance3.addViewCount();
+        performance3.addViewCount();
+        performance4.addViewCount();
+        performance4.addViewCount();
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4));
+
+        //when
+        NewPerformanceRequest request = NewPerformanceRequest.builder()
+            .genre(Genre.ALL)
+            .sortType(SortType.VIEWS)
+            .sortOrder(SortOrder.DESC)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getNewPerformances(request, pageRequest);
+
+        //then
+        assertThat(result.getPage()).isEqualTo(1);
+        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getContents()).hasSize(4);
+        assertThat(result.getContents()).extracting("id")
+            .containsExactly(performance3.getId(), performance4.getId(), performance2.getId(), performance1.getId());
     }
 
     @Test
-    void createPrice() {
-        List<Performance> performanceList = performanceRepository.findAll();
-        for (Performance performance : performanceList) {
-            String price = performance.getPrice();
-            System.out.println(price + " -> ");
-            parsePrice(price);
-        }
-    }
+    @DisplayName("NewPerformance 조회 - storyUrl 파싱을 확인한다.")
+    void getNewPerformance_updateStoryUrl() {
+        //given
+        String firstUrl = "http://www.kopis.or.kr/upload/pfmIntroImage/PF_PF214754_230310_0122231.jpg";
+        String secondUrl = "http://www.kopis.or.kr/upload/pfmIntroImage/PF_PF214754_230310_0122230.jpg";
 
-    @Test
-    void addViews() throws InterruptedException {
         Performance performance = Performance.builder()
             .id("id")
-            .views(0)
-            .placeId("placeId")
+            .title("title")
+            .storyUrls(firstUrl + "|" + secondUrl)
             .build();
 
         performanceRepository.save(performance);
 
-        Place place = Place.builder()
-            .id("placeId")
+        //when
+        NewPerformanceRequest request = NewPerformanceRequest.builder()
+            .genre(Genre.ALL)
             .build();
 
-        placeRepository.save(place);
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
 
-        // 동시에 실행할 스레드 수
-        int threadCount = 10;
+        PageResponse<PerformanceResponse> result = performanceService.getNewPerformances(request, pageRequest);
 
-        // 카운트다운 래치 생성 (모든 스레드 작업이 완료될 때까지 대기하기 위함)
-        CountDownLatch latch = new CountDownLatch(threadCount);
-
-        // 스레드 풀 생성
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-
-        // 스레드 작업 실행
-        for (int i = 0; i < threadCount; i++) {
-            executorService.submit(() -> {
-                try {
-                    // PerformanceService의 getPerformanceById 메서드 호출
-                    performanceService.getPerformanceById(performance.getId());
-                } finally {
-                    latch.countDown();
-                }
-            });
-//            Thread.sleep(500);
-        }
-
-        // 모든 스레드 작업이 완료될 때까지 대기
-        latch.await();
-
-        // Performance 엔티티 조회
-        Performance foundPerformance = performanceRepository.findById(performance.getId())
-            .orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performance.getId()));
-
-        // 검증: views 값이 스레드 작업 횟수와 일치하는지 확인
-        int expectedViews = threadCount;
-        int actualViews = foundPerformance.getViews();
-        assertThat(actualViews).isEqualTo(expectedViews);
+        //then
+        assertThat(result.getPage()).isEqualTo(1);
+        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getContents()).hasSize(1);
+        PerformanceResponse performanceResponse = result.getContents().get(0);
+        List<String> storyUrls = performanceResponse.getStoryUrls();
+        assertThat(storyUrls).hasSize(2);
+        assertThat(storyUrls).containsExactly(firstUrl, secondUrl);
     }
 
     @Test
-    void getGenreCount() {
-        Performance performance1 = createPerformanceWithGenre("1", "genre1");
-        Performance performance2 = createPerformanceWithGenre("2", "genre1");
-        Performance performance3 = createPerformanceWithGenre("3", "genre2");
-        Performance performance4 = createPerformanceWithGenre("4", "genre2");
-        Performance performance5 = createPerformanceWithGenre("5", "genre2");
-        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4, performance5));
+    @DisplayName("Performance 단일 조회 - 성공 데이터 확인.")
+    void getPerformanceById_success() {
+        //given
+        double latitude = 0.1;
+        double longitude = 0.2;
 
-        List<GenreCountResponse> genreCount = performanceService.getPerformanceGenreCount();
-        assertThat(genreCount).hasSize(2);
-        assertThat(genreCount.get(0).getGenre()).isEqualTo(performance1.getGenre());
-        assertThat(genreCount.get(1).getGenre()).isEqualTo(performance3.getGenre());
+        Place place = Place.builder()
+            .id("placeId")
+            .latitude(latitude)
+            .longitude(longitude)
+            .address("address")
+            .phoneNumber("phoneNumber")
+            .build();
+
+        Place savedPlace = placeRepository.save(place);
+
+        Performance performance = Performance.builder()
+            .id("performanceId")
+            .place(savedPlace)
+            .title("title")
+            .startDate(LocalDate.of(2023, 5, 1))
+            .endDate(LocalDate.of(2023, 5, 2))
+            .theater("theater")
+            .cast("cast")
+            .crew("crew")
+            .runtime("runtime")
+            .age("age")
+            .company("company")
+            .price("price")
+            .poster("poster")
+            .story("story")
+            .genre(Genre.DANCE)
+            .status(PerformanceStatus.ONGOING)
+            .openRun(true)
+            .area(Area.CHUNGBUK)
+            .storyUrls("storyUrls")
+            .schedule("schedule")
+            .views(0)
+            .build();
+
+        performanceRepository.save(performance);
+
+        //when
+        PerformanceResponse result = performanceService.getPerformanceById(performance.getId());
+
+        //then
+        assertThat(result.getId()).isEqualTo(performance.getId());
+        assertThat(result.getPlaceId()).isEqualTo(place.getId());
+        assertThat(result.getTitle()).isEqualTo(performance.getTitle());
+        assertThat(result.getStartDate()).isEqualTo(performance.getStartDate());
+        assertThat(result.getEndDate()).isEqualTo(performance.getEndDate());
+        assertThat(result.getTheater()).isEqualTo(performance.getTheater());
+        assertThat(result.getCast()).isEqualTo(performance.getCast());
+        assertThat(result.getCrew()).isEqualTo(performance.getCrew());
+        assertThat(result.getRuntime()).isEqualTo(performance.getRuntime());
+        assertThat(result.getAge()).isEqualTo(performance.getAge());
+        assertThat(result.getCompany()).isEqualTo(performance.getCompany());
+        assertThat(result.getPrice()).isEqualTo(performance.getPrice());
+        assertThat(result.getPoster()).isEqualTo(performance.getPoster());
+        assertThat(result.getStory()).isEqualTo(performance.getStory());
+        assertThat(result.getGenre()).isEqualTo(performance.getGenre());
+        assertThat(result.getStatus()).isEqualTo(performance.getStatus());
+        assertThat(result.getOpenRun()).isEqualTo(performance.getOpenRun());
+        assertThat(result.getStoryUrls()).hasSize(1);
+        assertThat(result.getSchedule()).isEqualTo(performance.getSchedule());
+        assertThat(result.getViews()).isEqualTo(performance.getViews() + 1);
+        assertThat(result.getLatitude()).isEqualTo(place.getLatitude());
+        assertThat(result.getLongitude()).isEqualTo(place.getLongitude());
+        assertThat(result.getAddress()).isEqualTo(place.getAddress());
+        assertThat(result.getPhoneNumber()).isEqualTo(place.getPhoneNumber());
     }
 
-    private int parsePrice(String price) {
-        String replace = price.replace(",", "");
-        String[] splitString = replace.split(" ");
-        for (String str : splitString) {
-            if (str.endsWith("원")) {
-                String substring = str.substring(0, str.length() - 1);
-                if (!substring.endsWith("0")) {
-                    continue;
-                }
-                System.out.println("parsed price = " + Integer.parseInt(substring));
-//                return Integer.parseInt(substring);
-            }
-        }
-        return 0;
+    @Test
+    @DisplayName("Performance 단일 조회 - 해당 id가 없는 경우 NoSuchElementException을 throw한다.")
+    void getPerformanceById_noSuchId() {
+        //given
+
+        //when
+        Throwable throwable = catchThrowable(() -> performanceService.getPerformanceById("randomId"));
+
+        //then
+        assertThat(throwable).isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    @DisplayName("BoxOffice rank 조회 - 성공 데이터 확인.")
+    void getBoxOfficeRank_success() {
+        //given
+        Performance performance2 = createPerformance("2");
+        Performance performance1 = createPerformance("1");
+        Performance performance3 = createPerformance("3");
+        Performance performance4 = createPerformance("4");
+
+        performanceRepository.saveAll(List.of(performance2, performance1, performance3, performance4));
+
+        BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
+            .performanceIds(performance2.getId() + "|" + performance1.getId() + "|" + performance3.getId() + "|" + performance4.getId())
+            .timePeriod(TimePeriod.DAY)
+            .area(BoxOfficeArea.BUSAN)
+            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        boxOfficeRankRepository.save(boxOfficeRank);
+
+        //when
+        BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
+            .timePeriod(TimePeriod.DAY)
+            .area(BoxOfficeArea.BUSAN)
+            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<BoxOfficeRankResponse> result = performanceService.getBoxOfficeRank(request, pageRequest);
+
+        //then
+        List<BoxOfficeRankResponse> contents = result.getContents();
+        assertThat(contents).hasSize(3);
+        assertThat(contents).extracting("id")
+            .containsExactly(performance2.getId(), performance1.getId(), performance3.getId());
+        assertThat(contents).extracting("rank")
+            .containsExactly(1, 2, 3);
+        assertThat(contents.get(0).getStoryUrls()).hasSize(0);
+    }
+
+    @Test
+    @DisplayName("BoxOffice rank 조회 - 순위 데이터가 없는 경우.")
+    void getBoxOfficeRank_noPerformanceIds() {
+        //given
+        Performance performance2 = createPerformance("2");
+        Performance performance1 = createPerformance("1");
+        Performance performance3 = createPerformance("3");
+        Performance performance4 = createPerformance("4");
+
+        performanceRepository.saveAll(List.of(performance2, performance1, performance3, performance4));
+
+        BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
+            .timePeriod(TimePeriod.DAY)
+            .area(BoxOfficeArea.BUSAN)
+            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        boxOfficeRankRepository.save(boxOfficeRank);
+
+        //when
+        BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
+            .timePeriod(TimePeriod.DAY)
+            .area(BoxOfficeArea.BUSAN)
+            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<BoxOfficeRankResponse> result = performanceService.getBoxOfficeRank(request, pageRequest);
+
+        //then
+        List<BoxOfficeRankResponse> contents = result.getContents();
+        assertThat(contents).hasSize(0);
     }
 
     private Performance createPerformance(String id) {
         return Performance.builder()
             .id(id)
+            .title("title")
             .views(0)
+            .status(PerformanceStatus.ONGOING)
             .build();
     }
 
-    private Performance createPerformanceWithGenre(String id, String genre) {
+    private Performance createPerformanceWithGenre(String id, Genre genre) {
         return Performance.builder()
             .id(id)
+            .title("title")
             .genre(genre)
             .views(0)
             .build();
     }
 
+    private Place createPlace(String id) {
+        return Place.builder()
+            .id(id)
+            .address("address")
+            .build();
+    }
 }
