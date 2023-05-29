@@ -35,13 +35,13 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
     }
 
     @Override
-    public Page<Performance> findNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
+    public Page<Performance> findNewPerformances(NewPerformanceRequest request, Pageable pageable) {
         List<Performance> performanceList = queryFactory.selectFrom(performance)
             .where(
-                eqPerformanceGenre(newPerformanceRequest.getGenre()),
+                eqPerformanceGenre(request.getGenre()),
                 performance.createdDate.goe(LocalDateTime.now().minusDays(7))
             )
-            .orderBy(orderBy(newPerformanceRequest.getSortType(), newPerformanceRequest.getSortOrder()))
+            .orderBy(orderBy(request.getSortType(), request.getSortOrder()))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -49,7 +49,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
         JPAQuery<Long> count = queryFactory.select(performance.count())
             .from(performance)
             .where(
-                eqPerformanceGenre(newPerformanceRequest.getGenre()),
+                eqPerformanceGenre(request.getGenre()),
                 performance.createdDate.goe(LocalDateTime.now().minusDays(7))
             );
 
@@ -76,7 +76,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
         return performance.genre.eq(genre.getName());
     }
 
-    private OrderSpecifier orderBy(SortType sortType, SortOrder sortOrder) {
+    private OrderSpecifier<?> orderBy(SortType sortType, SortOrder sortOrder) {
         if (ObjectUtils.isEmpty(sortOrder)) {
             return performance.createdDate.desc();
         }

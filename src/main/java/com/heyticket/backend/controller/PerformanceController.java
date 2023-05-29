@@ -1,14 +1,14 @@
 package com.heyticket.backend.controller;
 
 import com.heyticket.backend.service.PerformanceService;
+import com.heyticket.backend.service.dto.pagable.PageRequest;
+import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
-import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.CommonResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
-import com.heyticket.backend.service.dto.pagable.PageRequest;
-import com.heyticket.backend.service.dto.pagable.PageResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@SuppressWarnings("rawtypes")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")

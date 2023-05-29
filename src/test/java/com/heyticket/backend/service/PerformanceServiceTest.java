@@ -20,7 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("local")
 class PerformanceServiceTest {
 
     @Autowired
@@ -34,13 +34,13 @@ class PerformanceServiceTest {
 
     @AfterEach
     void deleteAll() {
-        placeRepository.deleteAll();
-        performanceRepository.deleteAll();
+//        placeRepository.deleteAll();
+//        performanceRepository.deleteAll();
     }
 
     @Test
     void savePerformance() {
-        performanceService.updatePerformances(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(12), 3000);
+        performanceService.updatePerformances(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(12), 5000);
     }
 
     @Test

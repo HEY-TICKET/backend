@@ -48,6 +48,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -87,8 +88,10 @@ public class PerformanceService {
             if (!allIdSet.contains(performanceId)) {
                 KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
                 Performance performance = kopisPerformanceDetailResponse.toEntity();
-                List<PerformancePrice> performancePrices = getPerformancePrice(performance);
-                newPerformancePrices.addAll(performancePrices);
+                if (StringUtils.hasText(performance.getPrice())) {
+                    List<PerformancePrice> performancePrices = getPerformancePrice(performance);
+                    newPerformancePrices.addAll(performancePrices);
+                }
                 newPerformances.add(performance);
             }
         }
@@ -320,7 +323,7 @@ public class PerformanceService {
         return Arrays.stream(splitString)
             .filter(str -> str.endsWith("00원"))
             .map(str -> PerformancePrice.builder()
-                .price(Integer.getInteger(str.substring(0, str.length() - 1)))
+                .price(Integer.parseInt(str.substring(0, str.length() - 1)))
                 .performance(performance)
                 .build())
             .collect(Collectors.toList());
