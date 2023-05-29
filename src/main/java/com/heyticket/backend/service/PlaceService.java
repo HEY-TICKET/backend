@@ -4,6 +4,7 @@ import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.module.kopis.client.dto.KopisPlaceDetailResponse;
 import com.heyticket.backend.module.kopis.client.dto.KopisPlaceRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisPlaceResponse;
+import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.repository.PlaceRepository;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class PlaceService {
 
     private final KopisService kopisService;
 
-    public List<KopisPlaceResponse> updatePlace() {
+    public int updatePlacesBatch() {
         KopisPlaceRequest kopisPlaceRequest = KopisPlaceRequest.builder()
             .cpage(1)
             .rows(5000)
@@ -42,12 +43,15 @@ public class PlaceService {
         ExecutorService executorService = Executors.newFixedThreadPool(20);
 
         for (KopisPlaceResponse placeResponse : placeResponseList) {
+            if (placeResponse.sidonm().equals("해외")) {
+                continue;
+            }
             String placeId = placeResponse.mt10id();
             if (!allIdSet.contains(placeId)) {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     KopisPlaceDetailResponse placeDetailResponse = kopisService.getPlaceDetail(placeId);
                     Place place = placeDetailResponse.toEntity();
-                    place.updateSidoGugun(placeResponse.sidonm(), placeResponse.gugunnm());
+                    place.updateSidoGugun(Area.getByName(placeResponse.sidonm()), placeResponse.gugunnm());
                     newPlaceList.add(place);
                 }, executorService);
                 futures.add(future);
@@ -60,7 +64,7 @@ public class PlaceService {
 
         log.info("Place information update. size : {}", newPlaceList.size());
 
-        return placeResponseList;
+        return newPlaceList.size();
     }
 
 }
