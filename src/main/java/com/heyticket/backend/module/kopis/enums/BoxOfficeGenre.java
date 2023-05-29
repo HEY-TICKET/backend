@@ -15,9 +15,10 @@ public enum BoxOfficeGenre {
     KOREAN_TRADITIONAL_MUSIC("CCCC", "국악"),
     POPULAR_MUSIC("CCCD", "대중음악"),
     DANCE("BBBC", "무용"),
-    CONTEMPORARY_DANCE("BBBR", "대중무용"),
+    POPULAR_DANCE("BBBR", "대중무용"),
     CIRCUS_AND_MAGIC("EEEB", "서커스/마술"),
     MIXED_GENRE("EEEA", "복합"),
+    // BoxOffice only
     KID("KID", "아동"),
     OPEN("OPEN", "오픈런"),
     ALL("NONE", "전체");

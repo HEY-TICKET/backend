@@ -11,21 +11,29 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Genre {
 
-    THEATER("AAAA", "연극", 1),
-    DANCE("BBBC", "무용(서양/한국무용)", 2),
-    POPULAR_DANCE("BBBE", "대중무용", 3),
-    CLASSIC("CCCA", "클래식(서양음악)", 4),
-    KOREAN_TRADITIONAL_MUSIC("CCCC", "국악(한국음악)", 5),
-    POPULAR_MUSIC("CCCD", "대중음악", 6),
-    MIXED_GENRE("EEEA", "복합", 7),
-    CIRCUS_AND_MAGIC("EEEB", "서커스/마술", 8),
-    MUSICAL("GGGA", "뮤지컬", 9);
+    THEATER("AAAA", "연극", BoxOfficeGenre.THEATER),
+    MUSICAL("GGGA", "뮤지컬", BoxOfficeGenre.MUSICAL),
+    CLASSIC("CCCA", "클래식(서양음악)", BoxOfficeGenre.CLASSIC),
+    KOREAN_TRADITIONAL_MUSIC("CCCC", "국악(한국음악)", BoxOfficeGenre.KOREAN_TRADITIONAL_MUSIC),
+    POPULAR_MUSIC("CCCD", "대중음악", BoxOfficeGenre.POPULAR_MUSIC),
+    DANCE("BBBC", "무용(서양/한국무용)", BoxOfficeGenre.DANCE),
+    POPULAR_DANCE("BBBE", "대중무용", BoxOfficeGenre.POPULAR_DANCE),
+    CIRCUS_AND_MAGIC("EEEB", "서커스/마술", BoxOfficeGenre.CIRCUS_AND_MAGIC),
+    MIXED_GENRE("EEEA", "복합", BoxOfficeGenre.MIXED_GENRE);
 
     private final String code;
 
     private final String name;
 
-    private final int number;
+    private final BoxOfficeGenre boxOfficeGenre;
+
+    public static Genre getByName(String name) {
+        Genre[] values = Genre.values();
+        return Arrays.stream(values)
+            .filter(value -> value.getName().equals(name))
+            .findFirst()
+            .orElseThrow(() -> new NoSuchElementException("No such genre name"));
+    }
 
     public static List<Genre> getByNames(List<String> names) {
         List<Genre> genres = new ArrayList<>();

@@ -10,19 +10,21 @@ import lombok.RequiredArgsConstructor;
 public enum BoxOfficeArea {
 
     SEOUL("11", "서울"),
-    INCHEON("28", "인천"),
-    DAEJEON("30", "대전"),
-    DAEGU("27", "대구"),
-    GWANGJU("29", "광주"),
     BUSAN("26", "부산"),
+    DAEGU("27", "대구"),
+    INCHEON("28", "인천"),
+    GWANGJU("29", "광주"),
+    DAEJEON("30", "대전"),
     ULSAN("31", "울산"),
     SEJONG("36", "세종"),
     GYEONGGI("41", "경기"),
-    CHUNGCHEONG("43|44", "충청"),
-    GYEONGSANG("47|48", "경상"),
-    JEOLLA("45|46", "전라"),
     GANGWON("42", "강원"),
+    // Merged in BoxOffice
+    CHUNGCHEONG("43|44", "충청"),
+    JEOLLA("45|46", "전라"),
+    GYEONGSANG("47|48", "경상"),
     JEJU("50", "제주"),
+    // BoxOffice only
     UNI("UNI", "대학로"),
     ALL("NONE", "전체");
 

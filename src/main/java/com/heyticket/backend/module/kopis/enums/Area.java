@@ -11,32 +11,34 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Area {
 
-    SEOUL("11", "서울"),
-    BUSAN("26", "부산"),
-    DAEGU("27", "대구"),
-    INCHEON("28", "인천"),
-    GWANGJU("29", "광주"),
-    DAEJEON("30", "대전"),
-    ULSAN("31", "울산"),
-    SEJONG("36", "세종"),
-    GYEONGGI("41", "경기"),
-    GANGWON("42", "강원"),
-    CHUNGBUK("43", "충청"),
-    CHUNGNAM("44", "충청"),
-    JEONBUK("45", "전라"),
-    JEONNAM("46", "전라"),
-    GYEONGBUK("47", "경상"),
-    GYEONGNAM("48", "경상"),
-    JEJU("50", "제주");
+    SEOUL("11", "서울", BoxOfficeArea.SEOUL),
+    BUSAN("26", "부산", BoxOfficeArea.BUSAN),
+    DAEGU("27", "대구", BoxOfficeArea.DAEGU),
+    INCHEON("28", "인천", BoxOfficeArea.INCHEON),
+    GWANGJU("29", "광주", BoxOfficeArea.GWANGJU),
+    DAEJEON("30", "대전", BoxOfficeArea.DAEJEON),
+    ULSAN("31", "울산", BoxOfficeArea.ULSAN),
+    SEJONG("36", "세종", BoxOfficeArea.SEJONG),
+    GYEONGGI("41", "경기", BoxOfficeArea.GYEONGGI),
+    GANGWON("42", "강원", BoxOfficeArea.GYEONGSANG),
+    CHUNGBUK("43", "충북", BoxOfficeArea.CHUNGCHEONG),
+    CHUNGNAM("44", "충남", BoxOfficeArea.CHUNGCHEONG),
+    JEONBUK("45", "전북", BoxOfficeArea.JEOLLA),
+    JEONNAM("46", "전남", BoxOfficeArea.JEOLLA),
+    GYEONGBUK("47", "경북", BoxOfficeArea.GYEONGSANG),
+    GYEONGNAM("48", "경남", BoxOfficeArea.GYEONGSANG),
+    JEJU("50", "제주", BoxOfficeArea.JEJU);
 
     private final String code;
 
     private final String name;
 
+    private final BoxOfficeArea boxOfficeArea;
+
     public static Area getByName(String name) {
         return Arrays.stream(Area.values())
             .filter(boxOfficeArea -> boxOfficeArea.getName().equals(name))
-            .findFirst().orElseThrow(() -> new NoSuchElementException("no such boxOfficeArea. name : " + name));
+            .findFirst().orElseThrow(() -> new NoSuchElementException("no such area. name : " + name));
     }
 
     public static List<Area> getByNames(List<String> names) {
