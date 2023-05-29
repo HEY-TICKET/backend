@@ -66,41 +66,6 @@ public class PerformanceService {
 
     private final KopisService kopisService;
 
-    public void updatePerformances(LocalDate from, LocalDate to, int rows) {
-        KopisPerformanceRequest kopisPerformanceRequest = KopisPerformanceRequest.builder()
-            .stdate(from.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .eddate(to.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .cpage(1)
-            .rows(rows)
-            .build();
-
-        List<KopisPerformanceResponse> kopisPerformanceResponseList = kopisService.getPerformances(kopisPerformanceRequest);
-        log.info("Performance pull count : {}", kopisPerformanceResponseList.size());
-
-        List<String> allIdList = performanceRepository.findAllIds();
-        HashSet<String> allIdSet = new HashSet<>(allIdList);
-
-        List<Performance> newPerformances = new ArrayList<>();
-        List<PerformancePrice> newPerformancePrices = new ArrayList<>();
-
-        for (KopisPerformanceResponse kopisPerformanceResponse : kopisPerformanceResponseList) {
-            String performanceId = kopisPerformanceResponse.mt20id();
-            if (!allIdSet.contains(performanceId)) {
-                KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
-                Performance performance = kopisPerformanceDetailResponse.toEntity();
-                if (StringUtils.hasText(performance.getPrice())) {
-                    List<PerformancePrice> performancePrices = getPerformancePrice(performance);
-                    newPerformancePrices.addAll(performancePrices);
-                }
-                newPerformances.add(performance);
-            }
-        }
-
-        performanceRepository.saveAll(newPerformances);
-        performancePriceRepository.saveAll(newPerformancePrices);
-        log.info("Performance has been updated. updated size : {}, total size : {}", newPerformances.size(), kopisPerformanceResponseList.size());
-    }
-
     public PageResponse<PerformanceResponse> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
         String currentMemberId = SecurityUtil.getCurrentMemberEmail();
         log.info("currentMemberId : {}", currentMemberId);
@@ -212,6 +177,41 @@ public class PerformanceService {
             getPerformanceByIdWithoutViewCount(secondGenrePerformanceId),
             getPerformanceByIdWithoutViewCount(firstAreaPerformanceId),
             getPerformanceByIdWithoutViewCount(secondAreaPerformanceId));
+    }
+
+    public void updatePerformances(LocalDate from, LocalDate to, int rows) {
+        KopisPerformanceRequest kopisPerformanceRequest = KopisPerformanceRequest.builder()
+            .stdate(from.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .eddate(to.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+            .cpage(1)
+            .rows(rows)
+            .build();
+
+        List<KopisPerformanceResponse> kopisPerformanceResponseList = kopisService.getPerformances(kopisPerformanceRequest);
+        log.info("Performance pull count : {}", kopisPerformanceResponseList.size());
+
+        List<String> allIdList = performanceRepository.findAllIds();
+        HashSet<String> allIdSet = new HashSet<>(allIdList);
+
+        List<Performance> newPerformances = new ArrayList<>();
+        List<PerformancePrice> newPerformancePrices = new ArrayList<>();
+
+        for (KopisPerformanceResponse kopisPerformanceResponse : kopisPerformanceResponseList) {
+            String performanceId = kopisPerformanceResponse.mt20id();
+            if (!allIdSet.contains(performanceId)) {
+                KopisPerformanceDetailResponse kopisPerformanceDetailResponse = kopisService.getPerformanceDetail(performanceId);
+                Performance performance = kopisPerformanceDetailResponse.toEntity();
+                if (StringUtils.hasText(performance.getPrice())) {
+                    List<PerformancePrice> performancePrices = getPerformancePrice(performance);
+                    newPerformancePrices.addAll(performancePrices);
+                }
+                newPerformances.add(performance);
+            }
+        }
+
+        performanceRepository.saveAll(newPerformances);
+        performancePriceRepository.saveAll(newPerformancePrices);
+        log.info("Performance has been updated. updated size : {}, total size : {}", newPerformances.size(), kopisPerformanceResponseList.size());
     }
 
     public void updateBoxOfficeRank() {

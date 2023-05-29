@@ -14,5 +14,4 @@ public interface PerformanceCustomRepository {
     Page<Performance> findNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable);
 
     List<GenreCountResponse> findPerformanceGenreCount();
-
 }

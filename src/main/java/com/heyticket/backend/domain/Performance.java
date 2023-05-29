@@ -38,7 +38,7 @@ public class Performance extends BaseTimeEntity {
     private Boolean openRun; // 오픈런 여부
     @Column(length = 700)
     private String storyUrls; // 소개이미지 목록
-    private String dtguidance; // 공연 시간
+    private String schedule; // 공연 시간
     @ColumnDefault(value = "0")
     private Integer views;
 
