@@ -26,6 +26,7 @@ import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
+import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import java.time.LocalDate;
 import java.util.List;
@@ -418,6 +419,37 @@ class PerformanceServiceTest {
         assertThat(result).hasSize(4);
         assertThat(result).extracting("id")
             .containsExactly(performance1.getId(), performance2.getId(), performance3.getId(), performance4.getId());
+    }
+
+    @Test
+    @DisplayName("Performance genre 개수 조회 - 장르별 개수순으로 내림차순 정렬")
+    void getPerformanceGenreCount() {
+        //given
+        Performance performance1 = createPerformanceWithGenre("id1", Genre.MIXED_GENRE);
+        Performance performance2 = createPerformanceWithGenre("id2", Genre.MIXED_GENRE);
+        Performance performance3 = createPerformanceWithGenre("id3", Genre.CIRCUS_AND_MAGIC);
+        Performance performance4 = createPerformanceWithGenre("id4", Genre.CIRCUS_AND_MAGIC);
+        Performance performance5 = createPerformanceWithGenre("id5", Genre.CLASSIC);
+        Performance performance6 = createPerformanceWithGenre("id6", Genre.CLASSIC);
+        Performance performance7 = createPerformanceWithGenre("id7", Genre.CLASSIC);
+        Performance performance8 = createPerformanceWithGenre("id8", Genre.MUSICAL);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4,
+            performance5, performance6, performance7, performance8));
+
+        //when
+        List<GenreCountResponse> result = performanceService.getPerformanceGenreCount();
+
+        //then
+        assertThat(result).hasSize(Genre.values().length);
+        assertThat(result.get(0).getGenre()).isEqualTo(Genre.CLASSIC);
+        assertThat(result.get(0).getCount()).isEqualTo(3L);
+        assertThat(result.get(1).getGenre()).isEqualTo(Genre.CIRCUS_AND_MAGIC);
+        assertThat(result.get(1).getCount()).isEqualTo(2L);
+        assertThat(result.get(2).getGenre()).isEqualTo(Genre.MIXED_GENRE);
+        assertThat(result.get(2).getCount()).isEqualTo(2L);
+        assertThat(result.get(3).getGenre()).isEqualTo(Genre.MUSICAL);
+        assertThat(result.get(3).getCount()).isEqualTo(1L);
     }
 
     private Performance createPerformance(String id) {

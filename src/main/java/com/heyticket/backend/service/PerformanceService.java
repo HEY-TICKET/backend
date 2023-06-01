@@ -13,6 +13,7 @@ import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceResponse;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
+import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -361,7 +363,18 @@ public class PerformanceService {
 
     public List<GenreCountResponse> getPerformanceGenreCount() {
         List<GenreCountResponse> performanceGenreCount = performanceRepository.findPerformanceGenreCount();
-        performanceGenreCount.sort(Comparator.comparing(GenreCountResponse::getGenre));
+        Set<Genre> countedGenreSet = performanceGenreCount.stream()
+            .map(GenreCountResponse::getGenre)
+            .collect(Collectors.toSet());
+
+        Arrays.stream(Genre.values())
+            .filter(genre -> !countedGenreSet.contains(genre))
+            .map(genre -> new GenreCountResponse(genre, 0L))
+            .forEach(performanceGenreCount::add);
+
+        performanceGenreCount.sort(Comparator.comparing(GenreCountResponse::getCount).reversed()
+            .thenComparing(GenreCountResponse::getGenre));
+
         return performanceGenreCount;
     }
 
