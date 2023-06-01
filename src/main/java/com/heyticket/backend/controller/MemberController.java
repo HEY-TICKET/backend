@@ -51,9 +51,9 @@ public class MemberController {
         return CommonResponse.ok("Sign up successful.", email);
     }
 
-    @GetMapping("/members/{email}")
-    public ResponseEntity<?> getMember(@PathVariable String email) {
-        MemberResponse memberResponse = memberService.getMemberByEmail(email);
+    @GetMapping("/members/{id}")
+    public ResponseEntity<?> getMember(@PathVariable String id) {
+        MemberResponse memberResponse = memberService.getMemberByEmail(id);
         return CommonResponse.ok("Sign up successful.", memberResponse);
     }
 

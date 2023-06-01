@@ -26,7 +26,7 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    @Profile({"!noauth & !localnoauth"})
+    @Profile({"!prodnoauth & !localnoauth"})
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
@@ -44,7 +44,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Profile({"noauth", "localnoauth"})
+    @Profile({"prodnoauth", "localnoauth"})
     public SecurityFilterChain ignoreFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf().disable()

@@ -368,6 +368,7 @@ public class PerformanceService {
             .collect(Collectors.toSet());
 
         Arrays.stream(Genre.values())
+            .filter(genre -> genre != Genre.ALL)
             .filter(genre -> !countedGenreSet.contains(genre))
             .map(genre -> new GenreCountResponse(genre, 0L))
             .forEach(performanceGenreCount::add);

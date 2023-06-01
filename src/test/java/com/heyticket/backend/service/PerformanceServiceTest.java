@@ -441,7 +441,7 @@ class PerformanceServiceTest {
         List<GenreCountResponse> result = performanceService.getPerformanceGenreCount();
 
         //then
-        assertThat(result).hasSize(Genre.values().length);
+        assertThat(result).hasSize(Genre.values().length - 1); // ALL인 경우는 제외
         assertThat(result.get(0).getGenre()).isEqualTo(Genre.CLASSIC);
         assertThat(result.get(0).getCount()).isEqualTo(3L);
         assertThat(result.get(1).getGenre()).isEqualTo(Genre.CIRCUS_AND_MAGIC);
