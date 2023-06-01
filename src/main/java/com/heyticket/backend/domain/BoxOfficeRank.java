@@ -27,10 +27,10 @@ public class BoxOfficeRank extends BaseTimeEntity {
     private Long id;
 
     @Enumerated(value = EnumType.STRING)
-    private BoxOfficeGenre genre;
+    private BoxOfficeGenre boxOfficeGenre;
 
     @Enumerated(value = EnumType.STRING)
-    private BoxOfficeArea area;
+    private BoxOfficeArea boxOfficeArea;
 
     @Enumerated(value = EnumType.STRING)
     private TimePeriod timePeriod;

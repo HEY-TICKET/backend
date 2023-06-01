@@ -106,10 +106,12 @@ public class PerformanceService {
         performanceResponse.updateStoryUrls(performance.getStoryUrls());
 
         Place place = performance.getPlace();
-        performanceResponse.updateLocation(place.getLatitude(), place.getLongitude());
-        performanceResponse.setAddress(place.getAddress());
-        performanceResponse.setPhoneNumber(place.getPhoneNumber());
-        performanceResponse.setPlaceId(place.getId());
+        if (!ObjectUtils.isEmpty(place)) {
+            performanceResponse.updateLocation(place.getLatitude(), place.getLongitude());
+            performanceResponse.setAddress(place.getAddress());
+            performanceResponse.setPhoneNumber(place.getPhoneNumber());
+            performanceResponse.setPlaceId(place.getId());
+        }
         return performanceResponse;
     }
 
@@ -154,7 +156,7 @@ public class PerformanceService {
 
     public List<PerformanceResponse> getPerformanceRecommendation(String performanceId) {
         Performance performance = getPerformanceFromDb(performanceId);
-        BoxOfficeGenre boxOfficeGenre = BoxOfficeGenre.getByName(performance.getGenre().getName());
+        BoxOfficeGenre boxOfficeGenre = performance.getGenre().getBoxOfficeGenre();
 
         BoxOfficeRankRequest genreBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
             .genre(boxOfficeGenre)
@@ -262,8 +264,8 @@ public class PerformanceService {
                         .collect(Collectors.joining("|"));
 
                     return BoxOfficeRank.builder()
-                        .genre(genre)
-                        .area(BoxOfficeArea.ALL)
+                        .boxOfficeGenre(genre)
+                        .boxOfficeArea(BoxOfficeArea.ALL)
                         .timePeriod(timePeriod)
                         .performanceIds(ids)
                         .build();
@@ -290,8 +292,8 @@ public class PerformanceService {
                         .collect(Collectors.joining("|"));
 
                     return BoxOfficeRank.builder()
-                        .area(area)
-                        .genre(BoxOfficeGenre.ALL)
+                        .boxOfficeArea(area)
+                        .boxOfficeGenre(BoxOfficeGenre.ALL)
                         .timePeriod(timePeriod)
                         .performanceIds(ids)
                         .build();
@@ -312,8 +314,8 @@ public class PerformanceService {
                     .collect(Collectors.joining("|"));
 
                 return BoxOfficeRank.builder()
-                    .genre(BoxOfficeGenre.ALL)
-                    .area(BoxOfficeArea.ALL)
+                    .boxOfficeGenre(BoxOfficeGenre.ALL)
+                    .boxOfficeArea(BoxOfficeArea.ALL)
                     .timePeriod(timePeriod)
                     .performanceIds(ids)
                     .build();

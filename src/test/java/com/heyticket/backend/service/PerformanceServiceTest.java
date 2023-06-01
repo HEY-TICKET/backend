@@ -312,8 +312,8 @@ class PerformanceServiceTest {
         BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
             .performanceIds(performance2.getId() + "|" + performance1.getId() + "|" + performance3.getId() + "|" + performance4.getId())
             .timePeriod(TimePeriod.DAY)
-            .area(BoxOfficeArea.BUSAN)
-            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
             .build();
 
         boxOfficeRankRepository.save(boxOfficeRank);
@@ -353,8 +353,8 @@ class PerformanceServiceTest {
 
         BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
             .timePeriod(TimePeriod.DAY)
-            .area(BoxOfficeArea.BUSAN)
-            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
             .build();
 
         boxOfficeRankRepository.save(boxOfficeRank);
@@ -376,6 +376,50 @@ class PerformanceServiceTest {
         assertThat(contents).hasSize(0);
     }
 
+    @Test
+    @DisplayName("Performance recommendation 조회")
+    void getPerformanceRecommendation() {
+        //given
+        Genre genre = Genre.CLASSIC;
+        Area area = Area.SEJONG;
+
+        Performance performance = Performance.builder()
+            .id("id")
+            .title("title")
+            .genre(genre)
+            .area(area)
+            .views(0)
+            .build();
+
+        Performance performance1 = createPerformanceWithGenre("genre1", genre);
+        Performance performance2 = createPerformanceWithGenre("genre2", genre);
+        Performance performance3 = createPerformanceWithArea("area1", area);
+        Performance performance4 = createPerformanceWithArea("area2", area);
+
+        BoxOfficeRank boxOfficeRankGenre = BoxOfficeRank.builder()
+            .boxOfficeGenre(genre.getBoxOfficeGenre())
+            .timePeriod(TimePeriod.WEEK)
+            .performanceIds(performance1.getId() + "|" + performance2.getId())
+            .build();
+
+        BoxOfficeRank boxOfficeRankArea = BoxOfficeRank.builder()
+            .boxOfficeArea(area.getBoxOfficeArea())
+            .timePeriod(TimePeriod.WEEK)
+            .performanceIds(performance3.getId() + "|" + performance4.getId())
+            .build();
+
+        performanceRepository.saveAll(List.of(performance, performance1, performance2, performance3, performance4));
+        boxOfficeRankRepository.saveAll(List.of(boxOfficeRankGenre, boxOfficeRankArea));
+
+        //when
+        List<PerformanceResponse> result = performanceService.getPerformanceRecommendation(performance.getId());
+
+        //then
+        assertThat(result).hasSize(4);
+        assertThat(result).extracting("id")
+            .containsExactly(performance1.getId(), performance2.getId(), performance3.getId(), performance4.getId());
+    }
+
     private Performance createPerformance(String id) {
         return Performance.builder()
             .id(id)
@@ -390,6 +434,15 @@ class PerformanceServiceTest {
             .id(id)
             .title("title")
             .genre(genre)
+            .views(0)
+            .build();
+    }
+
+    private Performance createPerformanceWithArea(String id, Area area) {
+        return Performance.builder()
+            .id(id)
+            .title("title")
+            .area(area)
             .views(0)
             .build();
     }
