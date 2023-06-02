@@ -5,6 +5,8 @@ import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
+import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.CommonResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
@@ -23,6 +25,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PerformanceController {
 
     private final PerformanceService performanceService;
+
+    @GetMapping("/performances")
+    public ResponseEntity<?> getPerformancesByCondition(PerformanceFilterRequest request, CustomPageRequest customPageRequest) {
+        PageResponse<PerformanceResponse> filteredPerformances = performanceService.getPerformancesByCondition(request, customPageRequest.of());
+        return CommonResponse.ok("Filtered performances", filteredPerformances);
+    }
+
+    @GetMapping("/performances/search")
+    public ResponseEntity<?> getPerformanceBySearchQuery(PerformanceSearchRequest request, CustomPageRequest customPageRequest) {
+        PageResponse<PerformanceResponse> filteredPerformances = performanceService.getPerformanceBySearchQuery(request, customPageRequest.of());
+        return CommonResponse.ok("Search query result.", filteredPerformances);
+    }
 
     @GetMapping("/performances/new")
     public ResponseEntity<?> getNewPerformances(NewPerformanceRequest request, CustomPageRequest customPageRequest) {

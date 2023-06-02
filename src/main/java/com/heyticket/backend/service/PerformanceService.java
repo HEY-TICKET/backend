@@ -25,6 +25,7 @@ import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
+import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
@@ -68,14 +69,43 @@ public class PerformanceService {
 
     private final PlaceRepository placeRepository;
 
-    private final PlaceService placeService;
-
     private final KopisService kopisService;
 
-    public void getFilteredPerformances(PerformanceFilterRequest request) {
+    @Transactional(readOnly = true)
+    public PageResponse<PerformanceResponse> getPerformancesByCondition(PerformanceFilterRequest request, Pageable pageable) {
+        Page<Performance> performancePageResponse = performanceRepository.findPerformanceByCondition(request, pageable);
+        List<Performance> performanceList = performancePageResponse.getContent();
+        List<PerformanceResponse> performanceResponseList = performanceList.stream()
+            .map(performance -> {
+                PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
+                if (performance.getStoryUrls() != null) {
+                    performanceResponse.updateStoryUrls(performance.getStoryUrls());
+                }
+                return performanceResponse;
+            })
+            .collect(Collectors.toList());
 
+        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<PerformanceResponse> getPerformanceBySearchQuery(PerformanceSearchRequest request, Pageable pageable) {
+        Page<Performance> performancePageResponse = performanceRepository.findPerformanceBySearchQuery(request, pageable);
+        List<Performance> performanceList = performancePageResponse.getContent();
+        List<PerformanceResponse> performanceResponseList = performanceList.stream()
+            .map(performance -> {
+                PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
+                if (performance.getStoryUrls() != null) {
+                    performanceResponse.updateStoryUrls(performance.getStoryUrls());
+                }
+                return performanceResponse;
+            })
+            .collect(Collectors.toList());
+
+        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
     public PageResponse<PerformanceResponse> getNewPerformances(NewPerformanceRequest newPerformanceRequest, Pageable pageable) {
         Page<Performance> performancePageResponse = performanceRepository.findNewPerformances(newPerformanceRequest, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
@@ -92,17 +122,19 @@ public class PerformanceService {
         return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
     }
 
+    @Transactional(readOnly = true)
     public PerformanceResponse getPerformanceById(String performanceId) {
         Performance performance = getPerformanceFromDb(performanceId);
         performance.addViewCount();
         return getPerformanceResponse(performance);
     }
 
+    @Transactional(readOnly = true)
     public PerformanceResponse getPerformanceByIdWithoutUpdatingViewCount(String performanceId) {
         Performance performance = getPerformanceFromDb(performanceId);
         return getPerformanceResponse(performance);
     }
-
+    
     private PerformanceResponse getPerformanceResponse(Performance performance) {
         PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
         performanceResponse.updateStoryUrls(performance.getStoryUrls());
@@ -117,6 +149,7 @@ public class PerformanceService {
         return performanceResponse;
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<BoxOfficeRankResponse> getBoxOfficeRank(BoxOfficeRankRequest request, Pageable pageable) {
         BoxOfficeRank boxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(request)
             .orElseThrow(() -> new NoSuchElementException("No such boxOfficeRank."));
@@ -156,6 +189,7 @@ public class PerformanceService {
         return new PageResponse<>(boxOfficeRankResponseList, 1, dataSize, 1);
     }
 
+    @Transactional(readOnly = true)
     public List<PerformanceResponse> getPerformanceRecommendation(String performanceId) {
         Performance performance = getPerformanceFromDb(performanceId);
         BoxOfficeGenre boxOfficeGenre = performance.getGenre().getBoxOfficeGenre();
@@ -214,6 +248,7 @@ public class PerformanceService {
                 if (StringUtils.hasText(placeId)) {
                     Optional<Place> optionalPlace = placeRepository.findById(placeId);
                     if (optionalPlace.isEmpty()) {
+                        log.info("PlaceId is empty. placeId : {}", placeId);
                         continue;
                     }
                     Place place = optionalPlace.get();
@@ -361,6 +396,7 @@ public class PerformanceService {
         return updateCnt;
     }
 
+    @Transactional(readOnly = true)
     public List<GenreCountResponse> getPerformanceGenreCount() {
         List<GenreCountResponse> performanceGenreCount = performanceRepository.findPerformanceGenreCount();
         Set<Genre> countedGenreSet = performanceGenreCount.stream()
@@ -379,7 +415,7 @@ public class PerformanceService {
         return performanceGenreCount;
     }
 
-    public List<PerformancePrice> getPerformancePrice(Performance performance) {
+    private List<PerformancePrice> getPerformancePrice(Performance performance) {
         String price = performance.getPrice();
         String replacedPrice = price.replace(",", "");
         String[] splitString = replacedPrice.split(" ");
