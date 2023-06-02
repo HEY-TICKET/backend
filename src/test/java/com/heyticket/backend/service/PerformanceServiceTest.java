@@ -7,7 +7,9 @@ import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTest
 import com.heyticket.backend.config.JpaConfig;
 import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
+import com.heyticket.backend.domain.enums.PerformancePriceLevel;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
@@ -25,6 +27,7 @@ import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
+import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
@@ -66,9 +69,6 @@ class PerformanceServiceTest {
     private PerformancePriceRepository performancePriceRepository;
 
     @Mock
-    private PlaceService placeService;
-
-    @Mock
     private KopisService kopisService;
 
     @BeforeEach
@@ -76,12 +76,15 @@ class PerformanceServiceTest {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("email", "password");
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        performanceService = new PerformanceService(performanceRepository, performancePriceRepository, boxOfficeRankRepository, placeRepository, placeService, kopisService);
+        performanceService = new PerformanceService(performanceRepository, performancePriceRepository, boxOfficeRankRepository, placeRepository, kopisService);
     }
 
     @AfterEach
     void deleteAll() {
+        placeRepository.deleteAll();
+        boxOfficeRankRepository.deleteAll();
         performanceRepository.deleteAll();
+        performancePriceRepository.deleteAll();
     }
 
     @Test
@@ -452,6 +455,82 @@ class PerformanceServiceTest {
         assertThat(result.get(3).getCount()).isEqualTo(1L);
     }
 
+    @Test
+    @DisplayName("Performance filter 조회 - 장르, 가격 조회")
+    void getFilteredPerformances_genre() {
+        //given
+        Performance performance1 = createPerformanceWithGenre("performance1", Genre.CLASSIC);
+        Performance performance2 = createPerformanceWithGenre("performance2", Genre.MUSICAL);
+        Performance performance3 = createPerformanceWithGenre("performance3", Genre.MUSICAL);
+        Performance performance4 = createPerformanceWithGenre("performance4", Genre.KOREAN_TRADITIONAL_MUSIC);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4));
+
+        PerformancePrice price1 = createPerformancePrice(performance1, 10000);
+        PerformancePrice price2 = createPerformancePrice(performance1, 30000);
+        PerformancePrice price3 = createPerformancePrice(performance2, 40000);
+        PerformancePrice price4 = createPerformancePrice(performance2, 70000);
+        PerformancePrice price5 = createPerformancePrice(performance3, 20000);
+        PerformancePrice price6 = createPerformancePrice(performance3, 90000);
+        PerformancePrice price7 = createPerformancePrice(performance4, 110000);
+
+        performancePriceRepository.saveAll(List.of(price1, price2, price3, price4, price5, price6, price7));
+        //when
+        PerformanceFilterRequest request = PerformanceFilterRequest.builder()
+            .genres(List.of(Genre.MUSICAL, Genre.KOREAN_TRADITIONAL_MUSIC))
+            .price(PerformancePriceLevel.PRICE2)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getPerformancesByCondition(request, pageRequest);
+
+        //then
+        List<PerformanceResponse> contents = result.getContents();
+        assertThat(contents).hasSize(2);
+        assertThat(contents).extracting("id").containsOnly(performance2.getId(), performance3.getId());
+    }
+
+    @Test
+    @DisplayName("Performance filter 조회 - 지역, 가격 조회")
+    void getFilteredPerformances_area() {
+        //given
+        System.out.println("2performancePriceRepository.findAll().size() = " + performancePriceRepository.findAll().size());
+        Performance performance1 = createPerformanceWithArea("performance1", Area.BUSAN);
+        Performance performance2 = createPerformanceWithArea("performance2", Area.BUSAN);
+        Performance performance3 = createPerformanceWithArea("performance3", Area.CHUNGBUK);
+        Performance performance4 = createPerformanceWithArea("performance4", Area.JEJU);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4));
+
+        PerformancePrice price1 = createPerformancePrice(performance1, 10000);
+        PerformancePrice price2 = createPerformancePrice(performance1, 30000);
+        PerformancePrice price3 = createPerformancePrice(performance2, 40000);
+        PerformancePrice price4 = createPerformancePrice(performance2, 70000);
+        PerformancePrice price5 = createPerformancePrice(performance3, 20000);
+        PerformancePrice price6 = createPerformancePrice(performance3, 90000);
+        PerformancePrice price7 = createPerformancePrice(performance4, 110000);
+
+        performancePriceRepository.saveAll(List.of(price1, price2, price3, price4, price5, price6, price7));
+        System.out.println("3performancePriceRepository.findAll().size() = " + performancePriceRepository.findAll().size());
+        //when
+        PerformanceFilterRequest request = PerformanceFilterRequest.builder()
+            .areas(List.of(Area.CHUNGBUK, Area.JEJU))
+            .price(PerformancePriceLevel.PRICE5)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getPerformancesByCondition(request, pageRequest);
+
+        //then
+        List<PerformanceResponse> contents = result.getContents();
+        assertThat(contents).hasSize(1);
+        assertThat(contents).extracting("id").containsOnly(performance4.getId());
+    }
+
     private Performance createPerformance(String id) {
         return Performance.builder()
             .id(id)
@@ -483,6 +562,13 @@ class PerformanceServiceTest {
         return Place.builder()
             .id(id)
             .address("address")
+            .build();
+    }
+
+    private PerformancePrice createPerformancePrice(Performance performance, int price) {
+        return PerformancePrice.builder()
+            .performance(performance)
+            .price(price)
             .build();
     }
 }
