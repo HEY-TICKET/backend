@@ -142,7 +142,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
     }
 
     private Predicate afterDate(LocalDate date) {
-        return date == null ? null : performance.endDate.loe(date);
+        return date == null ? null : performance.endDate.goe(date);
     }
 
     private BooleanExpression inGenres(List<Genre> genres) {
