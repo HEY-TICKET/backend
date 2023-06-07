@@ -248,7 +248,7 @@ public class PerformanceService {
                 if (StringUtils.hasText(placeId)) {
                     Optional<Place> optionalPlace = placeRepository.findById(placeId);
                     if (optionalPlace.isEmpty()) {
-                        log.info("PlaceId is empty. placeId : {}", placeId);
+                        log.info("PlaceId is empty for performance. placeId : {}", placeId);
                         continue;
                     }
                     Place place = optionalPlace.get();

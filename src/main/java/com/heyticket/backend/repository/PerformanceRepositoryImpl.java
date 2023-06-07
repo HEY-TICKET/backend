@@ -127,81 +127,50 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
     @Override
     public List<GenreCountResponse> findPerformanceGenreCount() {
         return queryFactory.select(
-                Projections.fields(
-                    GenreCountResponse.class,
-                    performance.genre.as("genre"),
-                    performance.genre.count().as("count")
-                ))
+            Projections.fields(
+                GenreCountResponse.class,
+                performance.genre.as("genre"),
+                performance.genre.count().as("count")
+            ))
             .from(performance)
             .groupBy(performance.genre)
             .fetch();
     }
 
     private BooleanExpression eqPerformanceGenre(Genre genre) {
-        if (ObjectUtils.isEmpty(genre) || genre == Genre.ALL) {
-            return null;
-        }
-        return performance.genre.in(genre);
+        return (genre == null) || (genre == Genre.ALL) ? null : performance.genre.in(genre);
     }
 
     private Predicate afterDate(LocalDate date) {
-        if (ObjectUtils.isEmpty(date)) {
-            return null;
-        }
-        return performance.endDate.loe(date);
+        return date == null ? null : performance.endDate.loe(date);
     }
 
     private BooleanExpression inGenres(List<Genre> genres) {
-        if (ObjectUtils.isEmpty(genres)) {
-            return null;
-        }
-        return performance.genre.in(genres);
+        return ObjectUtils.isEmpty(genres) ? null : performance.genre.in(genres);
     }
 
     private BooleanExpression inAreas(List<Area> areas) {
-        if (ObjectUtils.isEmpty(areas)) {
-            return null;
-        }
-        return performance.area.in(areas);
+        return ObjectUtils.isEmpty(areas) ? null : performance.area.in(areas);
     }
 
     private BooleanExpression inStatuses(List<PerformanceStatus> statuses) {
-        if (ObjectUtils.isEmpty(statuses)) {
-            return null;
-        }
-        return performance.status.in(statuses);
+        return ObjectUtils.isEmpty(statuses) ? null : performance.status.in(statuses);
     }
 
     private Predicate inPrice(PerformancePriceLevel price) {
-        if (ObjectUtils.isEmpty(price)) {
-            return null;
-        }
-
-        return performancePrice.price.goe(price.getLowPrice())
+        return price == null ? null : performancePrice.price.goe(price.getLowPrice())
             .and(performancePrice.price.loe(price.getHighPrice()));
     }
 
     private OrderSpecifier<?> orderBy(SortType sortType, SortOrder sortOrder) {
-        if (ObjectUtils.isEmpty(sortType)) {
+        if (sortType == null) {
             return performance.createdDate.desc();
         }
 
-        switch (sortType) {
-            case TIME:
-                if (sortOrder == SortOrder.ASC) {
-                    return performance.createdDate.asc();
-                } else {
-                    return performance.createdDate.desc();
-                }
-            case VIEWS:
-                if (sortOrder == SortOrder.ASC) {
-                    return performance.views.asc();
-                } else {
-                    return performance.views.desc();
-                }
-            default:
-                return null;
-        }
+        return switch (sortType) {
+            case TIME -> sortOrder == SortOrder.ASC ? performance.createdDate.asc() : performance.createdDate.desc();
+            case VIEWS -> sortOrder == SortOrder.ASC ? performance.views.asc() : performance.views.desc();
+        };
     }
 
 }
