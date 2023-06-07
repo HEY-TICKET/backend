@@ -48,7 +48,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             )
             .join(performancePrice)
             .on(performancePrice.performance.eq(performance))
-            .orderBy(performance.views.desc())
+            .orderBy(orderCondition(request.getSortType(), request.getSortOrder()))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -109,7 +109,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
                 eqPerformanceGenre(request.getGenre()),
                 performance.createdDate.goe(LocalDateTime.now().minusDays(7))
             )
-            .orderBy(orderBy(request.getSortType(), request.getSortOrder()))
+            .orderBy(orderCondition(request.getSortType(), request.getSortOrder()))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -162,7 +162,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             .and(performancePrice.price.loe(price.getHighPrice()));
     }
 
-    private OrderSpecifier<?> orderBy(SortType sortType, SortOrder sortOrder) {
+    private OrderSpecifier<?> orderCondition(SortType sortType, SortOrder sortOrder) {
         if (sortType == null) {
             return performance.createdDate.desc();
         }

@@ -89,7 +89,7 @@ public class PerformanceService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<PerformanceResponse> getPerformanceBySearchQuery(PerformanceSearchRequest request, Pageable pageable) {
+    public PageResponse<PerformanceResponse> searchPerformances(PerformanceSearchRequest request, Pageable pageable) {
         Page<Performance> performancePageResponse = performanceRepository.findPerformanceBySearchQuery(request, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
         List<PerformanceResponse> performanceResponseList = performanceList.stream()

@@ -4,6 +4,8 @@ import com.heyticket.backend.domain.enums.PerformancePriceLevel;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.module.kopis.enums.SortOrder;
+import com.heyticket.backend.module.kopis.enums.SortType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,4 +34,8 @@ public class PerformanceFilterRequest {
     private List<PerformanceStatus> statuses = new ArrayList<>();
 
     private PerformancePriceLevel price;
+
+    private SortType sortType = SortType.TIME;
+
+    private SortOrder sortOrder = SortOrder.DESC;
 }
