@@ -34,8 +34,8 @@ public class PerformanceController {
 
     @GetMapping("/performances/search")
     public ResponseEntity<?> searchPerformances(PerformanceSearchRequest request, CustomPageRequest customPageRequest) {
-        PageResponse<PerformanceResponse> filteredPerformances = performanceService.searchPerformances(request, customPageRequest.of());
-        return CommonResponse.ok("Search query result.", filteredPerformances);
+        PageResponse<PerformanceResponse> searchedPerformances = performanceService.searchPerformances(request, customPageRequest.of());
+        return CommonResponse.ok("Search query result.", searchedPerformances);
     }
 
     @GetMapping("/performances/new")

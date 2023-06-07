@@ -79,7 +79,7 @@ public class PerformanceService {
             .map(this::getPerformanceResponse)
             .collect(Collectors.toList());
 
-        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
+        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, performancePageResponse.getNumberOfElements(), performancePageResponse.getTotalPages());
     }
 
     @Transactional(readOnly = true)
@@ -90,7 +90,7 @@ public class PerformanceService {
             .map(this::getPerformanceResponse)
             .collect(Collectors.toList());
 
-        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
+        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, performancePageResponse.getNumberOfElements(), performancePageResponse.getTotalPages());
     }
 
     @Transactional(readOnly = true)
@@ -101,7 +101,7 @@ public class PerformanceService {
             .map(this::getPerformanceResponse)
             .collect(Collectors.toList());
 
-        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
+        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, performancePageResponse.getNumberOfElements(), performancePageResponse.getTotalPages());
     }
 
     @Transactional(readOnly = true)
@@ -170,7 +170,7 @@ public class PerformanceService {
 
         performanceRepository.saveAll(unsavedPerformanceList);
 
-        return new PageResponse<>(boxOfficeRankResponseList, 1, dataSize, 1);
+        return new PageResponse<>(boxOfficeRankResponseList, 1, boxOfficeRankResponseList.size(), 1);
     }
 
     @Transactional(readOnly = true)

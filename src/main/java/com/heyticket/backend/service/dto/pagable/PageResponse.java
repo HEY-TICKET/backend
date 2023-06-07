@@ -15,5 +15,4 @@ public class PageResponse<T> {
     private Integer pageSize;
 
     private Integer totalPages;
-
 }

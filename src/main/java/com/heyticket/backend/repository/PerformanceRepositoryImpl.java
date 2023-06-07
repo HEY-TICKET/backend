@@ -171,6 +171,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             case END_DATE -> sortOrder == SortOrder.ASC ? performance.endDate.asc() : performance.endDate.desc();
             case TIME -> sortOrder == SortOrder.ASC ? performance.createdDate.asc() : performance.createdDate.desc();
             case VIEWS -> sortOrder == SortOrder.ASC ? performance.views.asc() : performance.views.desc();
+            default -> null;
         };
     }
 
