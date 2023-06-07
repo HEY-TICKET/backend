@@ -76,13 +76,7 @@ public class PerformanceService {
         Page<Performance> performancePageResponse = performanceRepository.findPerformanceByCondition(request, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
         List<PerformanceResponse> performanceResponseList = performanceList.stream()
-            .map(performance -> {
-                PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-                if (performance.getStoryUrls() != null) {
-                    performanceResponse.updateStoryUrls(performance.getStoryUrls());
-                }
-                return performanceResponse;
-            })
+            .map(this::getPerformanceResponse)
             .collect(Collectors.toList());
 
         return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
@@ -93,13 +87,7 @@ public class PerformanceService {
         Page<Performance> performancePageResponse = performanceRepository.findPerformanceBySearchQuery(request, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
         List<PerformanceResponse> performanceResponseList = performanceList.stream()
-            .map(performance -> {
-                PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-                if (performance.getStoryUrls() != null) {
-                    performanceResponse.updateStoryUrls(performance.getStoryUrls());
-                }
-                return performanceResponse;
-            })
+            .map(this::getPerformanceResponse)
             .collect(Collectors.toList());
 
         return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
@@ -110,13 +98,7 @@ public class PerformanceService {
         Page<Performance> performancePageResponse = performanceRepository.findNewPerformances(newPerformanceRequest, pageable);
         List<Performance> performanceList = performancePageResponse.getContent();
         List<PerformanceResponse> performanceResponseList = performanceList.stream()
-            .map(performance -> {
-                PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-                if (performance.getStoryUrls() != null) {
-                    performanceResponse.updateStoryUrls(performance.getStoryUrls());
-                }
-                return performanceResponse;
-            })
+            .map(this::getPerformanceResponse)
             .collect(Collectors.toList());
 
         return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, pageable.getPageSize(), performancePageResponse.getTotalPages());
@@ -145,6 +127,8 @@ public class PerformanceService {
             performanceResponse.setAddress(place.getAddress());
             performanceResponse.setPhoneNumber(place.getPhoneNumber());
             performanceResponse.setPlaceId(place.getId());
+            performanceResponse.setSido(place.getArea().getName());
+            performanceResponse.setGugun(place.getGugunName());
         }
         return performanceResponse;
     }

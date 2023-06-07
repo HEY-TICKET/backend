@@ -8,5 +8,6 @@ import lombok.RequiredArgsConstructor;
 public enum SortType {
 
     TIME,
-    VIEWS
+    VIEWS,
+    END_DATE
 }

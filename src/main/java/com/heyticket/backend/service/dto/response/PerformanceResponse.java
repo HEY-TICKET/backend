@@ -46,6 +46,8 @@ public class PerformanceResponse {
     private Double longitude;   // 경도
     private String address; // 주소
     private String phoneNumber; // 전화 번호
+    private String sido; // 시도
+    private String gugun; // 구군
 
     public void updateStoryUrls(String storyUrls) {
         if (StringUtils.hasText(storyUrls)) {
