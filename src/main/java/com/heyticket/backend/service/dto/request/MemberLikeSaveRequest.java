@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberLikeRequest {
+public class MemberLikeSaveRequest {
 
     private String email;
 

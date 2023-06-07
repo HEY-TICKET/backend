@@ -3,12 +3,16 @@ package com.heyticket.backend.controller;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import com.heyticket.backend.service.CacheService;
 import com.heyticket.backend.service.EmailService;
+import com.heyticket.backend.service.MemberLikeService;
 import com.heyticket.backend.service.MemberService;
+import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
+import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
-import com.heyticket.backend.service.dto.request.MemberLikeRequest;
+import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
+import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -16,6 +20,7 @@ import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.CommonResponse;
 import com.heyticket.backend.service.dto.response.MemberResponse;
+import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +44,8 @@ public class MemberController {
 
     private final CacheService cacheService;
 
+    private final MemberLikeService memberLikeService;
+
     @PostMapping("/members/login")
     public ResponseEntity<?> login(@RequestBody MemberLoginRequest request) {
         TokenInfo tokenInfo = memberService.login(request);
@@ -54,7 +61,7 @@ public class MemberController {
     @GetMapping("/members/{id}")
     public ResponseEntity<?> getMember(@PathVariable String id) {
         MemberResponse memberResponse = memberService.getMemberByEmail(id);
-        return CommonResponse.ok("Sign up successful.", memberResponse);
+        return CommonResponse.ok("User info.", memberResponse);
     }
 
     @PostMapping("/members/verification/send")
@@ -105,14 +112,20 @@ public class MemberController {
         return CommonResponse.ok("Member keyword has been updated", true);
     }
 
-    @PostMapping("/members/like")
-    public ResponseEntity<?> hitLike(@RequestBody MemberLikeRequest request) {
+    @GetMapping("/members/performances/like")
+    public ResponseEntity<?> getMemberLikePerformances(MemberLikeListRequest request, CustomPageRequest pageRequest) {
+        PageResponse<PerformanceResponse> memberLikePerformances = memberLikeService.getMemberLikedPerformances(request, pageRequest.of());
+        return CommonResponse.ok("Performances member liked.", memberLikePerformances);
+    }
+
+    @PostMapping("/members/performances/like")
+    public ResponseEntity<?> hitLike(@RequestBody MemberLikeSaveRequest request) {
         memberService.hitLike(request);
         return CommonResponse.ok("Member like " + request.getPerformanceId(), true);
     }
 
-    @DeleteMapping("/members/like")
-    public ResponseEntity<?> cancelLike(@RequestBody MemberLikeRequest request) {
+    @DeleteMapping("/members/performances/like")
+    public ResponseEntity<?> cancelLike(@RequestBody MemberLikeSaveRequest request) {
         memberService.cancelLike(request);
         return CommonResponse.ok("Member cancel like " + request.getPerformanceId(), true);
     }

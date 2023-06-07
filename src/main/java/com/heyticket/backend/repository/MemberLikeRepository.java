@@ -6,7 +6,7 @@ import com.heyticket.backend.domain.Performance;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MemberLikeRepository extends JpaRepository<MemberLike, Long> {
+public interface MemberLikeRepository extends JpaRepository<MemberLike, Long>, MemberLikeCustomRepository {
 
     Optional<MemberLike> findMemberLikeByMemberAndPerformance(Member member, Performance performance);
 

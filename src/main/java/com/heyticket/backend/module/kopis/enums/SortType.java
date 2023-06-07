@@ -9,5 +9,6 @@ public enum SortType {
 
     TIME,
     VIEWS,
-    END_DATE
+    END_DATE,
+    LIKE_DATE
 }

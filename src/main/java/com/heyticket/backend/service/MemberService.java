@@ -22,7 +22,7 @@ import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
-import com.heyticket.backend.service.dto.request.MemberLikeRequest;
+import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -134,7 +134,7 @@ public class MemberService {
         return tokenInfo;
     }
 
-    public void checkIfExistingMember(String email) {
+    private void checkIfExistingMember(String email) {
         boolean existingEmail = memberRepository.existsByEmail(email);
         if (existingEmail) {
             throw new InvalidParameterException("Duplicated email exists.");
@@ -253,7 +253,7 @@ public class MemberService {
         }
     }
 
-    public void hitLike(MemberLikeRequest request) {
+    public void hitLike(MemberLikeSaveRequest request) {
         Member member = getMemberFromDb(request.getEmail());
         String performanceId = request.getPerformanceId();
         Performance performance = performanceRepository.findById(performanceId)
@@ -266,7 +266,7 @@ public class MemberService {
         memberLikeRepository.save(memberLike);
     }
 
-    public void cancelLike(MemberLikeRequest request) {
+    public void cancelLike(MemberLikeSaveRequest request) {
         Member member = getMemberFromDb(request.getEmail());
         String performanceId = request.getPerformanceId();
         Performance performance = performanceRepository.findById(performanceId)
