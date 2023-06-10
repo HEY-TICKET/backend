@@ -138,13 +138,23 @@ public class PerformanceService {
         BoxOfficeRank boxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(request)
             .orElseThrow(() -> new NoSuchElementException("No such boxOfficeRank."));
 
-        int dataSize = pageable.getPageSize();
         if (!StringUtils.hasText(boxOfficeRank.getPerformanceIds())) {
-            return new PageResponse<>(Collections.emptyList(), 1, dataSize, 1);
+            return new PageResponse<>(Collections.emptyList(), 1, 0, 1);
         }
         String[] performanceIds = boxOfficeRank.getPerformanceIds().split("\\|");
-        if (performanceIds.length > dataSize) {
-            performanceIds = Arrays.copyOfRange(performanceIds, 0, dataSize);
+
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber() + 1;
+
+        int totalItems = performanceIds.length;
+        int totalPage = (int) Math.ceil((double) totalItems / pageSize);
+
+        if (pageNumber > totalPage) {
+            performanceIds = new String[]{};
+        } else {
+            int start = (pageNumber - 1) * pageSize;
+            int end = Math.min(start + pageSize, totalItems);
+            performanceIds = Arrays.copyOfRange(performanceIds, start, end);
         }
 
         List<Performance> performanceList = performanceRepository.findAllById(Arrays.asList(performanceIds));
@@ -170,7 +180,7 @@ public class PerformanceService {
 
         performanceRepository.saveAll(unsavedPerformanceList);
 
-        return new PageResponse<>(boxOfficeRankResponseList, 1, boxOfficeRankResponseList.size(), 1);
+        return new PageResponse<>(boxOfficeRankResponseList, pageNumber, boxOfficeRankResponseList.size(), totalPage);
     }
 
     @Transactional(readOnly = true)
