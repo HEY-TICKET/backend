@@ -25,6 +25,7 @@ import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
+import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
@@ -132,6 +133,10 @@ public class MemberService {
         TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
         cacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
         return tokenInfo;
+    }
+
+    public boolean validateMember(MemberValidationRequest request) {
+        return memberRepository.existsByEmail(request.getEmail());
     }
 
     private void checkIfExistingMember(String email) {

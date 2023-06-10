@@ -15,6 +15,7 @@ import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
+import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
@@ -62,6 +63,12 @@ public class MemberController {
     public ResponseEntity<?> getMember(@PathVariable String id) {
         MemberResponse memberResponse = memberService.getMemberByEmail(id);
         return CommonResponse.ok("User info.", memberResponse);
+    }
+
+    @PostMapping("/members/validation")
+    public ResponseEntity<?> validateMember(@RequestBody @Valid MemberValidationRequest request) {
+        boolean exist = memberService.validateMember(request);
+        return CommonResponse.ok("ture. if registered member.", exist);
     }
 
     @PostMapping("/members/verification/send")
