@@ -35,7 +35,9 @@ public class PerformanceFilterRequest {
 
     private PerformancePriceLevel price;
 
+    @Builder.Default
     private SortType sortType = SortType.END_DATE;
 
+    @Builder.Default
     private SortOrder sortOrder = SortOrder.ASC;
 }

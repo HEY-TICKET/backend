@@ -110,7 +110,7 @@ class PerformanceServiceTest {
 
         //then
         assertThat(result.getPage()).isEqualTo(1);
-        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getPageSize()).isEqualTo(result.getContents().size());
         assertThat(result.getContents()).hasSize(4);
         assertThat(result.getContents()).extracting("id")
             .containsOnly(performance1.getId(), performance2.getId(), performance3.getId(), performance4.getId());
@@ -139,7 +139,7 @@ class PerformanceServiceTest {
 
         //then
         assertThat(result.getPage()).isEqualTo(1);
-        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getPageSize()).isEqualTo(result.getContents().size());
         assertThat(result.getContents()).hasSize(1);
         assertThat(result.getContents().get(0).getId()).isEqualTo(performance3.getId());
     }
@@ -176,7 +176,7 @@ class PerformanceServiceTest {
 
         //then
         assertThat(result.getPage()).isEqualTo(1);
-        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getPageSize()).isEqualTo(result.getContents().size());
         assertThat(result.getContents()).hasSize(4);
         assertThat(result.getContents()).extracting("id")
             .containsExactly(performance3.getId(), performance4.getId(), performance2.getId(), performance1.getId());
@@ -209,7 +209,7 @@ class PerformanceServiceTest {
 
         //then
         assertThat(result.getPage()).isEqualTo(1);
-        assertThat(result.getPageSize()).isEqualTo(10);
+        assertThat(result.getPageSize()).isEqualTo(result.getContents().size());
         assertThat(result.getContents()).hasSize(1);
         PerformanceResponse performanceResponse = result.getContents().get(0);
         List<String> storyUrls = performanceResponse.getStoryUrls();
@@ -228,6 +228,7 @@ class PerformanceServiceTest {
             .id("placeId")
             .latitude(latitude)
             .longitude(longitude)
+            .area(Area.CHUNGBUK)
             .address("address")
             .phoneNumber("phoneNumber")
             .build();

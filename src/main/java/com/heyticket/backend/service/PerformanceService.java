@@ -195,8 +195,11 @@ public class PerformanceService {
 
         BoxOfficeRank genreBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(genreBoxOfficeRankRequest).orElseThrow(() -> new NoSuchElementException("no such boxOfficeRank."));
         String[] genrePerformanceIdArray = genreBoxOfficeRank.getPerformanceIds().split("\\|");
-        String firstGenrePerformanceId = genrePerformanceIdArray[0];
-        String secondGenrePerformanceId = genrePerformanceIdArray[1];
+        List<String> filteredGerePerformanceIds = Arrays.stream(genrePerformanceIdArray)
+            .filter(id -> !id.equals(performanceId))
+            .collect(Collectors.toList());
+        String firstGenrePerformanceId = filteredGerePerformanceIds.get(0);
+        String secondGenrePerformanceId = filteredGerePerformanceIds.get(1);
 
         Area area = performance.getArea();
         BoxOfficeArea boxOfficeArea = area.getBoxOfficeArea();
@@ -208,8 +211,13 @@ public class PerformanceService {
 
         BoxOfficeRank areaBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(areaBoxOfficeRankRequest).orElseThrow(() -> new NoSuchElementException("no such boxOfficeRank."));
         String[] areaPerformanceIdArray = areaBoxOfficeRank.getPerformanceIds().split("\\|");
-        String firstAreaPerformanceId = areaPerformanceIdArray[0];
-        String secondAreaPerformanceId = areaPerformanceIdArray[1];
+        List<String> filteredAreaPerformanceIds = Arrays.stream(areaPerformanceIdArray)
+            .filter(id -> !id.equals(performanceId))
+            .filter(id -> !id.equals(firstGenrePerformanceId))
+            .filter(id -> !id.equals(secondGenrePerformanceId))
+            .collect(Collectors.toList());
+        String firstAreaPerformanceId = filteredAreaPerformanceIds.get(0);
+        String secondAreaPerformanceId = filteredAreaPerformanceIds.get(1);
 
         return List.of(getPerformanceByIdWithoutUpdatingViewCount(firstGenrePerformanceId),
             getPerformanceByIdWithoutUpdatingViewCount(secondGenrePerformanceId),

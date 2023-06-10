@@ -17,6 +17,8 @@ public interface PerformanceMapper {
     @Mapping(target = "longitude", ignore = true)
     @Mapping(target = "address", ignore = true)
     @Mapping(target = "phoneNumber", ignore = true)
+    @Mapping(target = "sido", ignore = true)
+    @Mapping(target = "gugun", ignore = true)
     @Mapping(source = "performance.place", target = "placeId", ignore = true)
     PerformanceResponse toPerformanceDto(Performance performance);
 
