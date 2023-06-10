@@ -44,6 +44,7 @@ public record KopisPerformanceDetailResponse(
             .price(this.pcseguidance.equals(" ") ? null : this.pcseguidance)
             .poster(this.poster.equals(" ") ? null : this.poster)
             .story(this.sty.equals(" ") ? null : this.sty)
+            .schedule(this.dtguidance.equals(" ") ? null : this.dtguidance)
             .genre(Genre.getByName(this.genrenm))
             .status(PerformanceStatus.getByName(this.prfstate))
             .openRun(this.openrun.equals("Y"))
@@ -51,7 +52,6 @@ public record KopisPerformanceDetailResponse(
                 this.styurls != null ?
                     String.join("|", this.styurls) : null
             )
-            .schedule(this.dtguidance)
             .views(0)
             .build();
     }
