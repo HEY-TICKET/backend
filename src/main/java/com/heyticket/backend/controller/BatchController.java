@@ -4,7 +4,7 @@ import com.heyticket.backend.service.PerformanceService;
 import com.heyticket.backend.service.PlaceService;
 import com.heyticket.backend.service.dto.request.PerformanceBatchUpdateRequest;
 import com.heyticket.backend.service.dto.response.CommonResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/batch")
-@Tag(name = "batch-controller", description = "Only for admin account")
+@Hidden
 public class BatchController {
 
     private final PerformanceService performanceService;

@@ -1,6 +1,6 @@
 package com.heyticket.backend.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Hidden;
 import java.net.URI;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
-@Tag(name = "swagger-controller", description = "Only for Swagger redirect")
+@Hidden
 public class SwaggerController {
 
     @GetMapping("/swagger")
@@ -20,5 +20,4 @@ public class SwaggerController {
         headers.setLocation(URI.create("/swagger-ui/index.html"));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
-
 }
