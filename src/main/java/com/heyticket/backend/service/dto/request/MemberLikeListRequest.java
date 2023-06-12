@@ -20,7 +20,9 @@ public class MemberLikeListRequest {
 
     private PerformanceStatus status;
 
+    @Builder.Default
     private SortType sortType = SortType.LIKE_DATE;
 
+    @Builder.Default
     private SortOrder sortOrder = SortOrder.DESC;
 }
