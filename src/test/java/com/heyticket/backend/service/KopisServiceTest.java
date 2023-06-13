@@ -1,12 +1,11 @@
 //package com.heyticket.backend.service;
 //
-//import static org.assertj.core.api.Assertions.assertThat;
-//
 //import com.heyticket.backend.module.kopis.client.dto.BoxOfficeRequest;
 //import com.heyticket.backend.module.kopis.client.dto.BoxOfficeResponse;
+//import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceRequest;
+//import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceResponse;
 //import com.heyticket.backend.module.kopis.client.dto.PerformanceDetailResponse;
-//import com.heyticket.backend.module.kopis.client.dto.PerformanceRequest;
-//import com.heyticket.backend.module.kopis.client.dto.PerformanceResponse;
+//import com.heyticket.backend.module.kopis.service.KopisService;
 //import java.time.LocalDate;
 //import java.time.format.DateTimeFormatter;
 //import java.util.List;
@@ -25,7 +24,7 @@
 //    @Test
 //    void getPerformances() {
 //        //given
-//        PerformanceRequest performanceRequest = PerformanceRequest.builder()
+//        KopisPerformanceRequest performanceRequest = KopisPerformanceRequest.builder()
 //            .stdate(LocalDate.now().minusMonths(6).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
 //            .eddate(LocalDate.now().plusMonths(12).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
 //            .cpage(1)
@@ -33,7 +32,7 @@
 //            .build();
 //
 //        //when
-//        List<PerformanceResponse> performanceFromKopis = kopisService.getPerformances(performanceRequest);
+//        List<KopisPerformanceResponse> performanceFromKopis = kopisService.getPerformances(performanceRequest);
 //
 //        //then
 //        System.out.println("performanceFromKopis.size() = " + performanceFromKopis.size());
