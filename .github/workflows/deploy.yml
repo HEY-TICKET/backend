@@ -41,12 +41,12 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Upload to AWS S3
-          run: |
-            aws deploy push \
-              --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-              --ignore-hidden-files \
-              --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-              --source build/libs/*.jar
+        run: |
+          aws deploy push \
+            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --ignore-hidden-files \
+            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+            --source build/libs/*.jar
 
       - name: Deploy to AWS EC2 from S3
         run: |
