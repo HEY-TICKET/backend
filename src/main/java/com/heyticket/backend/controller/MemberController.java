@@ -81,7 +81,7 @@ public class MemberController {
     @PostMapping("/members/validation")
     public ResponseEntity<?> validateMember(@RequestBody @Valid MemberValidationRequest request) {
         boolean exist = memberService.validateMember(request);
-        return CommonResponse.ok("ture. if registered member.", exist);
+        return CommonResponse.ok("true. if registered member.", exist);
     }
 
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
