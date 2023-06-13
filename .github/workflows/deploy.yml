@@ -40,13 +40,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Zip the jar
-        run: |
-          zip ${{ github.sha }}.zip build/libs/*.jar
-
-      - name: Upload to AWS S3 bucket
-        run: |
-          aws s3 cp ${{ github.sha }}.zip s3://your-bucket-name/${{ github.sha }}.zip
+      - name: Upload to AWS S3
+          run: |
+            aws deploy push \
+              --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+              --ignore-hidden-files \
+              --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
+              --source build/libs/*.jar
 
       - name: Deploy to AWS EC2 from S3
         run: |
