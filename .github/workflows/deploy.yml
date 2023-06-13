@@ -11,8 +11,12 @@ env:
   CODE_DEPLOY_APPLICATION_NAME: heyticket-backend
   CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: heyticket-backend-deployment-group
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     environment: production
 
