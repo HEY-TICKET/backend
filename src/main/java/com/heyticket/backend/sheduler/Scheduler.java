@@ -19,27 +19,23 @@ public class Scheduler {
 
     private final PlaceService placeService;
 
-    @Scheduled(cron = "0 10 0/3 * * *")
+    @Scheduled(cron = "10 0 0 * * *")
     public void updatePerformanceState() {
         performanceService.updatePerformanceStatusBatch();
-        log.info("Performance state update has been scheduled.");
     }
 
-    @Scheduled(cron = "0 20 0/3 * * *")
+    @Scheduled(cron = "0 0 0/3 * * *")
     public void updatePerformances() {
         performanceService.updatePerformancesBatch(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), 1000);
-        log.info("Performances update has been scheduled.");
     }
 
-    @Scheduled(cron = "0 30 0/3 * * *")
+    @Scheduled(cron = "5 0 0/3 * * *")
     public void updateBoxOfficeRank() {
         performanceService.updateBoxOfficeRankBatch();
-        log.info("BoxOfficeRank update has been scheduled.");
     }
 
-    @Scheduled(cron = "0 40 0/3 * * *")
+    @Scheduled(cron = "10 0 0/3 * * *")
     public void updatePlace() {
         placeService.updatePlacesBatch();
-        log.info("Places update has been scheduled.");
     }
 }

@@ -29,7 +29,7 @@ public class PlaceService {
     private final KopisService kopisService;
 
     public int updatePlacesBatch() {
-        log.info("Batch updating places.");
+        log.info("[Batch] Batch updating places.");
         KopisPlaceRequest kopisPlaceRequest = KopisPlaceRequest.builder()
             .cpage(1)
             .rows(5000)
@@ -63,7 +63,7 @@ public class PlaceService {
 
         placeRepository.saveAll(newPlaceList);
 
-        log.info("Place information update. size : {}", newPlaceList.size());
+        log.info("[Batch] Place information update. size : {}", newPlaceList.size());
 
         return newPlaceList.size();
     }

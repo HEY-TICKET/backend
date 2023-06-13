@@ -226,7 +226,7 @@ public class PerformanceService {
     }
 
     public int updatePerformancesBatch(LocalDate from, LocalDate to, int rows) {
-        log.info("Batch updating performances.");
+        log.info("[Batch] Batch updating performances.");
         KopisPerformanceRequest kopisPerformanceRequest = KopisPerformanceRequest.builder()
             .stdate(from.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
             .eddate(to.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
@@ -269,12 +269,12 @@ public class PerformanceService {
             .collect(Collectors.toList());
 
         performancePriceRepository.saveAll(performancePrices);
-        log.info("Performance has been updated. total size : {}, updated size : {}", kopisPerformanceResponseList.size(), newPerformances.size());
+        log.info("[Batch] Performance has been updated. total size : {}, updated size : {}", kopisPerformanceResponseList.size(), newPerformances.size());
         return performances.size();
     }
 
     public int updateBoxOfficeRankBatch() {
-        log.info("Batch updating performance rank.");
+        log.info("[Batch] Batch updating performance rank.");
         boxOfficeRankRepository.deleteAll();
         BoxOfficeGenre[] genres = BoxOfficeGenre.values();
         BoxOfficeArea[] areas = BoxOfficeArea.values();
@@ -368,12 +368,12 @@ public class PerformanceService {
             .collect(Collectors.toList());
 
         boxOfficeRankRepository.saveAll(boxOfficeRankList);
-        log.info("box office rank has been updated. size : {}", boxOfficeRankList.size());
+        log.info("[Batch] Box office rank has been updated. size : {}", boxOfficeRankList.size());
         return boxOfficeRankList.size();
     }
 
     public int updatePerformanceStatusBatch() {
-        log.info("Batch updating performance status.");
+        log.info("[Batch] Batch updating performance status.");
         List<Performance> performanceList = performanceRepository.findAll();
         int updateCnt = 0;
         for (Performance performance : performanceList) {
@@ -394,7 +394,7 @@ public class PerformanceService {
                 updateCnt++;
             }
         }
-        log.info("Performance state has been updated. updated count : {}", updateCnt);
+        log.info("[Batch] Performance state has been updated. updated count : {}", updateCnt);
         return updateCnt;
     }
 
