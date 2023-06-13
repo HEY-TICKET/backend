@@ -28,9 +28,11 @@ import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
+import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
+import com.heyticket.backend.service.enums.SearchType;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -496,6 +498,7 @@ class PerformanceServiceTest {
     @Test
     @DisplayName("Performance filter 조회 - 지역, 가격 조회")
     void getFilteredPerformances_area() {
+
         //given
         System.out.println("2performancePriceRepository.findAll().size() = " + performancePriceRepository.findAll().size());
         Performance performance1 = createPerformanceWithArea("performance1", Area.BUSAN);
@@ -530,6 +533,39 @@ class PerformanceServiceTest {
         List<PerformanceResponse> contents = result.getContents();
         assertThat(contents).hasSize(1);
         assertThat(contents).extracting("id").containsOnly(performance4.getId());
+    }
+
+    @Test
+    @DisplayName("Performance 검색")
+    void searchPerformance() {
+        //given
+        Performance performance = Performance.builder()
+            .id("id")
+            .title("브루노 마스 내한 공연")
+            .views(0)
+            .status(PerformanceStatus.ONGOING)
+            .build();
+
+        performanceRepository.save(performance);
+
+        //when
+        PerformanceSearchRequest request1 = PerformanceSearchRequest.builder()
+            .searchType(SearchType.ARTIST)
+            .query("브루노")
+            .build();
+
+        PerformanceSearchRequest request2 = PerformanceSearchRequest.builder()
+            .searchType(SearchType.PERFORMANCE)
+            .query("부루노")
+            .build();
+
+        PageResponse<PerformanceResponse> performanceResponsePageResponse1 = performanceService.searchPerformances(request1, PageRequest.of(0, 10));
+        PageResponse<PerformanceResponse> performanceResponsePageResponse2 = performanceService.searchPerformances(request2, PageRequest.of(0, 10));
+
+        //then
+        assertThat(performanceResponsePageResponse1.getContents()).hasSize(1);
+        assertThat(performanceResponsePageResponse1.getContents().get(0).getId()).isEqualTo(performance.getId());
+        assertThat(performanceResponsePageResponse2.getContents()).hasSize(0);
     }
 
     private Performance createPerformance(String id) {
