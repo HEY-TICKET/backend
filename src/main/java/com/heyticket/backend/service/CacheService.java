@@ -73,7 +73,7 @@ public class CacheService {
     private VerificationCode getVerificationCode(String email) {
         VerificationCode verificationCode = getVerificationCodeIfPresent(email);
         if (verificationCode == null) {
-            throw new NoSuchElementException("해당 메일의 인증 내역이 없습니다.");
+            throw new NoSuchElementException("Verification code for this email does not exist.");
         }
         return verificationCode;
     }
