@@ -4,7 +4,7 @@
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5level) %magenta([%thread]) %blue([%C.%M:%yellow(%L)]) - %msg%n" />
     <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5level [%thread] [%C.%M:%L] - %msg%n" />
-    <property name="LOG_PATH" value="./log"/>
+    <property name="LOG_PATH" value="/home/ubuntu/app/log"/>
 
     <springProfile name="local, localnoauth">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
