@@ -26,7 +26,7 @@ public class Scheduler {
 
     @Scheduled(cron = "0 0 0/3 * * *")
     public void updatePerformances() {
-        performanceService.updatePerformancesBatch(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), 1000);
+        performanceService.updatePerformancesBatch(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), 300);
     }
 
     @Scheduled(cron = "5 0 0/3 * * *")
