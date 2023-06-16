@@ -8,7 +8,6 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMessage.RecipientType;
 import java.io.UnsupportedEncodingException;
-import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -107,16 +106,18 @@ public class EmailService {
 
     private String createCode() {
         StringBuilder code = new StringBuilder();
-        Random random = new Random();
-
-        for (int i = 0; i < 8; i++) { // 인증코드 8자리
-            int index = random.nextInt(3); // 0~2 까지 랜덤, random 값에 따라서 아래 switch 문이 실행됨
-            switch (index) {
-                case 0 -> code.append((char) (random.nextInt(26) + 97)); // a~z (ex. 1+97=98 => (char)98 = 'b')
-                case 1 -> code.append((char) (random.nextInt(26) + 65)); // A~Z
-                case 2 -> code.append((random.nextInt(10))); // 0~9
-            }
-        }
+        //개발용 임시코드
+        code.append("0000");
+//        Random random = new Random();
+//
+//        for (int i = 0; i < 8; i++) { // 인증코드 8자리
+//            int index = random.nextInt(3); // 0~2 까지 랜덤, random 값에 따라서 아래 switch 문이 실행됨
+//            switch (index) {
+//                case 0 -> code.append((char) (random.nextInt(26) + 97)); // a~z (ex. 1+97=98 => (char)98 = 'b')
+//                case 1 -> code.append((char) (random.nextInt(26) + 65)); // A~Z
+//                case 2 -> code.append((random.nextInt(10))); // 0~9
+//            }
+//        }
 
         return code.toString();
     }
