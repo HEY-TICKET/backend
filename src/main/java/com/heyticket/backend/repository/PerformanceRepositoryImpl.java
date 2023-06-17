@@ -46,7 +46,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
                 inStatuses(request.getStatuses()),
                 afterDate(request.getDate())
             )
-            .join(performancePrice)
+            .leftJoin(performancePrice)
             .on(performancePrice.performance.eq(performance))
             .orderBy(orderCondition(request.getSortType(), request.getSortOrder()))
             .offset(pageable.getOffset())
@@ -62,7 +62,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
                 inStatuses(request.getStatuses()),
                 afterDate(request.getDate())
             )
-            .join(performancePrice)
+            .leftJoin(performancePrice)
             .on(performancePrice.performance.eq(performance));
 
         return PageableExecutionUtils.getPage(performanceList, pageable, count::fetchOne);
