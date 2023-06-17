@@ -460,7 +460,7 @@ class PerformanceServiceTest {
 
     @Test
     @DisplayName("Performance filter 조회 - 장르, 가격 조회")
-    void getFilteredPerformances_genre() {
+    void getPerformancesByCondition_withGenre() {
         //given
         Performance performance1 = createPerformanceWithGenre("performance1", Genre.CLASSIC);
         Performance performance2 = createPerformanceWithGenre("performance2", Genre.MUSICAL);
@@ -497,10 +497,8 @@ class PerformanceServiceTest {
 
     @Test
     @DisplayName("Performance filter 조회 - 지역, 가격 조회")
-    void getFilteredPerformances_area() {
-
+    void getPerformancesByCondition_withArea() {
         //given
-        System.out.println("2performancePriceRepository.findAll().size() = " + performancePriceRepository.findAll().size());
         Performance performance1 = createPerformanceWithArea("performance1", Area.BUSAN);
         Performance performance2 = createPerformanceWithArea("performance2", Area.BUSAN);
         Performance performance3 = createPerformanceWithArea("performance3", Area.CHUNGBUK);
@@ -517,7 +515,7 @@ class PerformanceServiceTest {
         PerformancePrice price7 = createPerformancePrice(performance4, 110000);
 
         performancePriceRepository.saveAll(List.of(price1, price2, price3, price4, price5, price6, price7));
-        System.out.println("3performancePriceRepository.findAll().size() = " + performancePriceRepository.findAll().size());
+
         //when
         PerformanceFilterRequest request = PerformanceFilterRequest.builder()
             .areas(List.of(Area.CHUNGBUK, Area.JEJU))
@@ -533,6 +531,62 @@ class PerformanceServiceTest {
         List<PerformanceResponse> contents = result.getContents();
         assertThat(contents).hasSize(1);
         assertThat(contents).extracting("id").containsOnly(performance4.getId());
+    }
+
+    @Test
+    @DisplayName("Performance filter 조회 - 상태 조회, 시간 순 조회")
+    void getPerformancesByCondition_withStatuses() {
+        //given
+        Performance performance1 = createPerformanceWithStatus("performance1", PerformanceStatus.ONGOING);
+        performanceRepository.save(performance1);
+        Performance performance2 = createPerformanceWithStatus("performance2", PerformanceStatus.COMPLETED);
+        performanceRepository.save(performance2);
+        Performance performance3 = createPerformanceWithStatus("performance3", PerformanceStatus.ONGOING);
+        performanceRepository.save(performance3);
+        Performance performance4 = createPerformanceWithStatus("performance4", PerformanceStatus.UPCOMING);
+        performanceRepository.save(performance4);
+
+        //when
+        PerformanceFilterRequest request = PerformanceFilterRequest.builder()
+            .statuses(List.of(PerformanceStatus.ONGOING, PerformanceStatus.UPCOMING))
+            .sortType(SortType.TIME)
+            .sortOrder(SortOrder.DESC)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getPerformancesByCondition(request, pageRequest);
+
+        //then
+        List<PerformanceResponse> contents = result.getContents();
+        assertThat(contents).hasSize(3);
+        assertThat(contents).extracting("id").containsExactly(performance4.getId(), performance3.getId(), performance1.getId());
+    }
+
+    @Test
+    @DisplayName("Performance filter 조회 - 전체 조회")
+    void getPerformancesByCondition_withNoFilter() {
+        //given
+        Performance performance1 = createPerformanceWithArea("performance1", Area.BUSAN);
+        Performance performance2 = createPerformanceWithArea("performance2", Area.BUSAN);
+        Performance performance3 = createPerformanceWithArea("performance3", Area.CHUNGBUK);
+        Performance performance4 = createPerformanceWithArea("performance4", Area.JEJU);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4));
+
+        //when
+        PerformanceFilterRequest request = PerformanceFilterRequest.builder()
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getPerformancesByCondition(request, pageRequest);
+
+        //then
+        List<PerformanceResponse> contents = result.getContents();
+        assertThat(contents).hasSize(4);
     }
 
     @Test
@@ -591,6 +645,16 @@ class PerformanceServiceTest {
             .id(id)
             .title("title")
             .area(area)
+            .views(0)
+            .build();
+    }
+
+    private Performance createPerformanceWithStatus(String id, PerformanceStatus status) {
+        return Performance.builder()
+            .id(id)
+            .title("title")
+            .status(status)
+            .area(Area.CHUNGBUK)
             .views(0)
             .build();
     }
