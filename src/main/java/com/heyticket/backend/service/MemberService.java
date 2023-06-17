@@ -124,6 +124,7 @@ public class MemberService {
         List<String> keywords = request.getKeywords();
         List<MemberKeyword> memberKeywords = getMemberKeywords(savedMember, keywords);
         memberKeywordRepository.saveAll(memberKeywords);
+
         return email;
     }
 

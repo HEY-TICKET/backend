@@ -6,7 +6,7 @@
     <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5level [%thread] [%C.%M:%L] - %msg%n" />
     <property name="LOG_PATH" value="/home/ubuntu/app/log"/>
 
-    <springProfile name="local, localnoauth">
+    <springProfile name="local, localnoauth, test">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
                 <pattern>${CONSOLE_LOG_PATTERN}</pattern>
