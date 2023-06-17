@@ -3,8 +3,10 @@ package com.heyticket.backend.sheduler;
 import com.heyticket.backend.service.PerformanceService;
 import com.heyticket.backend.service.PlaceService;
 import java.time.LocalDate;
+import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,9 @@ public class Scheduler {
 
     private final PlaceService placeService;
 
+    @Value("${kopis.performance.batch-count: 200}")
+    private int performanceBatchCount;
+
     @Scheduled(cron = "10 0 0 * * *")
     public void updatePerformanceState() {
         performanceService.updatePerformanceStatusBatch();
@@ -26,7 +31,9 @@ public class Scheduler {
 
     @Scheduled(cron = "0 0 0/3 * * *")
     public void updatePerformances() {
-        performanceService.updatePerformancesBatch(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), 300);
+        performanceService.updatePerformancesBatch(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), performanceBatchCount);
+        Executors.newSingleThreadExecutor();
+        Executors.newFixedThreadPool(1);
     }
 
     @Scheduled(cron = "5 0 0/3 * * *")
