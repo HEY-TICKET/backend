@@ -39,4 +39,11 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return CommonResponse.badRequest(InternalCode.INVALID_JWT, "Invalid user information.");
     }
+
+    @ExceptionHandler(value = LoginFailureException.class)
+    public ResponseEntity<?> loginFailureExceptionHandler(LoginFailureException e) {
+        log.warn("Invalid user information.");
+        e.printStackTrace();
+        return CommonResponse.badRequest(e.getCode(), e.getMessage());
+    }
 }

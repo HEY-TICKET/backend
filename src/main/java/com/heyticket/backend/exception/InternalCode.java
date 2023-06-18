@@ -12,9 +12,9 @@ public enum InternalCode {
     SERVER_ERROR("SERVER_ERROR"),
     NOT_FOUND("NOT_FOUND"),
 
-    INVALID_JWT("JWT-001"),
-    EXPIRED_JWT("JWT-002");
+    INVALID_JWT("INVALID_JWT"),
+    EXPIRED_JWT("EXPIRED_JWT"),
+    USER_NOT_FOUND("USER_NOT_FOUND");
 
     private final String name;
-
 }

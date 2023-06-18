@@ -6,6 +6,8 @@ import com.heyticket.backend.domain.MemberGenre;
 import com.heyticket.backend.domain.MemberKeyword;
 import com.heyticket.backend.domain.MemberLike;
 import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.LoginFailureException;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
@@ -109,6 +111,7 @@ public class MemberService {
             .email(email)
             .password(passwordEncoder.encode(password))
             .roles(List.of("USER"))
+            .allowKeywordPush(request.isKeywordPush())
             .build();
 
         Member savedMember = memberRepository.save(member);
@@ -129,6 +132,10 @@ public class MemberService {
     }
 
     public TokenInfo login(MemberLoginRequest request) {
+        boolean exists = memberRepository.existsByEmail(request.getEmail());
+        if (!exists) {
+            throw new LoginFailureException("No such user.", InternalCode.USER_NOT_FOUND);
+        }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);

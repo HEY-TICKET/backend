@@ -23,5 +23,4 @@ public class JwtValidationException extends RuntimeException {
     public JwtValidationException(Throwable cause) {
         super(cause);
     }
-
 }

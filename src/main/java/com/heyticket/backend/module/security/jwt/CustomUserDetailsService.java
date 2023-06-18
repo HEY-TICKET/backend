@@ -2,7 +2,6 @@ package com.heyticket.backend.module.security.jwt;
 
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.repository.MemberRepository;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return memberRepository.findByEmail(username)
             .map(this::createUserDetails)
-            .orElseThrow(() -> new NoSuchElementException("No such user."));
+            .orElseThrow(() -> new UsernameNotFoundException("No such user."));
     }
 
     private UserDetails createUserDetails(Member member) {
