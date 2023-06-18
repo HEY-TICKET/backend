@@ -26,4 +26,5 @@ public class MemberSignUpRequest {
     @Builder.Default
     private List<String> keywords = new ArrayList<>();
 
+    private boolean keywordPush;
 }
