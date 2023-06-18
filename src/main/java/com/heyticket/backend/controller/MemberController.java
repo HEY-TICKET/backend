@@ -27,6 +27,7 @@ import com.heyticket.backend.service.dto.swaggerresponse.MemberCommonResponse;
 import com.heyticket.backend.service.dto.swaggerresponse.PagePerformanceCommonrResponse;
 import com.heyticket.backend.service.dto.swaggerresponse.StringCommonResponse;
 import com.heyticket.backend.service.dto.swaggerresponse.TokenInfoCommonResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -56,6 +57,7 @@ public class MemberController {
 
     private final MemberLikeService memberLikeService;
 
+    @Operation(summary = "로그인")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = TokenInfoCommonResponse.class)))})
     @PostMapping("/members/login")
     public ResponseEntity<?> login(@RequestBody MemberLoginRequest request) {
@@ -63,6 +65,7 @@ public class MemberController {
         return CommonResponse.ok("Login successful.", tokenInfo);
     }
 
+    @Operation(summary = "회원 가입")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @PostMapping("/members/signup")
     public ResponseEntity<?> signUp(@RequestBody MemberSignUpRequest request) {
@@ -70,6 +73,7 @@ public class MemberController {
         return CommonResponse.ok("Sign up successful.", email);
     }
 
+    @Operation(summary = "회원 정보 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = MemberCommonResponse.class)))})
     @GetMapping("/members/{id}")
     public ResponseEntity<?> getMember(@PathVariable String id) {
@@ -77,6 +81,7 @@ public class MemberController {
         return CommonResponse.ok("User info.", memberResponse);
     }
 
+    @Operation(summary = "이메일 검증")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @PostMapping("/members/validation")
     public ResponseEntity<?> validateMember(@RequestBody @Valid MemberValidationRequest request) {
@@ -84,6 +89,7 @@ public class MemberController {
         return CommonResponse.ok("true. if registered member.", exist);
     }
 
+    @Operation(summary = "인증 메일 전송")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @PostMapping("/members/verification/send")
     public ResponseEntity<?> sendSignUpVerificationEmail(@RequestBody @Valid EmailSendRequest request) {
@@ -91,6 +97,7 @@ public class MemberController {
         return CommonResponse.ok("Verification email has been sent.", email);
     }
 
+    @Operation(summary = "인증 번호 확인")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @PostMapping("/members/verification/verify")
     public ResponseEntity<?> verifyCode(@RequestBody @Valid VerificationRequest request) {
@@ -98,6 +105,7 @@ public class MemberController {
         return CommonResponse.ok("Email verification result.", isVerified);
     }
 
+    @Operation(summary = "인증 번호 만료시키기(화면 이탈 시)")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @DeleteMapping("/members/verification/expire")
     public ResponseEntity<?> expireVerificationCode(@RequestBody VerificationRequest request) {
@@ -105,6 +113,7 @@ public class MemberController {
         return CommonResponse.ok("Email verification code has been expired.", email);
     }
 
+    @Operation(summary = "Refresh token 만료 시 token 재발급")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = TokenInfoCommonResponse.class)))})
     @PutMapping("/members/token")
     public ResponseEntity<?> reissueJwtTokens(@RequestBody @Valid TokenReissueRequest request) {
@@ -112,6 +121,7 @@ public class MemberController {
         return CommonResponse.ok("Reissued token information.", tokenInfo);
     }
 
+    @Operation(summary = "비밀번호 변경")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @PutMapping("/members/password")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
@@ -119,6 +129,7 @@ public class MemberController {
         return CommonResponse.ok("Password change successful.", email);
     }
 
+    @Operation(summary = "회원 탈퇴")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @DeleteMapping("/members")
     public ResponseEntity<?> deleteMember(@RequestBody MemberDeleteRequest request) {
@@ -126,6 +137,7 @@ public class MemberController {
         return CommonResponse.ok("Member has been deleted", deletedEmail);
     }
 
+    @Operation(summary = "회원 카테고리 수정")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @PutMapping("/members/categories")
     public ResponseEntity<?> updateCategory(@RequestBody MemberCategoryUpdateRequest request) {
@@ -133,6 +145,7 @@ public class MemberController {
         return CommonResponse.ok("Member category has been updated", true);
     }
 
+    @Operation(summary = "회원 키워드 수정")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @PutMapping("/members/keywords")
     public ResponseEntity<?> updateKeyword(@RequestBody MemberKeywordUpdateRequest request) {
@@ -140,6 +153,7 @@ public class MemberController {
         return CommonResponse.ok("Member keyword has been updated", true);
     }
 
+    @Operation(summary = "회원 찜한 공연 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = PagePerformanceCommonrResponse.class)))})
     @GetMapping("/members/performances/like")
     public ResponseEntity<?> getMemberLikePerformances(MemberLikeListRequest request, CustomPageRequest pageRequest) {
@@ -147,6 +161,7 @@ public class MemberController {
         return CommonResponse.ok("Performances member liked.", memberLikePerformances);
     }
 
+    @Operation(summary = "공연 찜하기")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @PostMapping("/members/performances/like")
     public ResponseEntity<?> hitLike(@RequestBody MemberLikeSaveRequest request) {
@@ -154,6 +169,7 @@ public class MemberController {
         return CommonResponse.ok("Member like " + request.getPerformanceId(), true);
     }
 
+    @Operation(summary = "공연 찜하기 취소")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @DeleteMapping("/members/performances/like")
     public ResponseEntity<?> cancelLike(@RequestBody MemberLikeSaveRequest request) {
