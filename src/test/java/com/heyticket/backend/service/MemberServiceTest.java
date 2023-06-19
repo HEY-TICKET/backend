@@ -96,8 +96,8 @@ class MemberServiceTest {
         MemberSignUpRequest request = MemberSignUpRequest.builder()
             .email("email")
             .password("Password123")
-            .areas(List.of("경기", "서울"))
-            .genres(List.of("연극", "뮤지컬"))
+            .areas(List.of(Area.GYEONGGI, Area.SEOUL))
+            .genres(List.of(Genre.MUSICAL, Genre.THEATER))
             .keywords(List.of("맘마미아"))
             .verificationCode("verificationCode")
             .build();
@@ -128,8 +128,8 @@ class MemberServiceTest {
         MemberSignUpRequest request = MemberSignUpRequest.builder()
             .email("email")
             .password("password123")
-            .areas(List.of("경기", "서울"))
-            .genres(List.of("연극", "뮤지컬"))
+            .areas(List.of(Area.GYEONGGI, Area.SEOUL))
+            .genres(List.of(Genre.MUSICAL, Genre.THEATER))
             .keywords(List.of("맘마미아"))
             .verificationCode("verificationCode")
             .build();
