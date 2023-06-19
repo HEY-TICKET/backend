@@ -2,7 +2,7 @@ package com.heyticket.backend.module.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.heyticket.backend.exception.InternalCode;
-import com.heyticket.backend.exception.JwtValidationException;
+import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.service.dto.response.CommonResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,8 +35,8 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.setContentType("application/json; charset=UTF-8");
         CommonResponse commonResponse;
-        if (ex instanceof JwtValidationException jwtValidationException) {
-            commonResponse = new CommonResponse<>(jwtValidationException.getCode(), jwtValidationException.getMessage());
+        if (ex instanceof ValidationFailureException validationFailureException) {
+            commonResponse = new CommonResponse<>(validationFailureException.getCode(), validationFailureException.getMessage());
         } else {
             commonResponse = new CommonResponse(InternalCode.SERVER_ERROR, ex.getMessage());
         }

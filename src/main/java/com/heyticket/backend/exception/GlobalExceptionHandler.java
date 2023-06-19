@@ -26,8 +26,8 @@ public class GlobalExceptionHandler {
         return CommonResponse.notFound(InternalCode.NOT_FOUND, e.getMessage());
     }
 
-    @ExceptionHandler(value = JwtValidationException.class)
-    public ResponseEntity<?> jwtValidationExceptionHandler(JwtValidationException e) {
+    @ExceptionHandler(value = ValidationFailureException.class)
+    public ResponseEntity<?> jwtValidationExceptionHandler(ValidationFailureException e) {
         log.warn(e.getMessage());
         e.printStackTrace();
         return CommonResponse.serverError(e.getCode(), e.getMessage());

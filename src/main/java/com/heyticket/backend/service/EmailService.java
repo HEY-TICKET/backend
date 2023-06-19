@@ -1,7 +1,11 @@
 package com.heyticket.backend.service;
 
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.ValidationFailureException;
+import com.heyticket.backend.module.util.VerificationCodeGenerator;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
+import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -23,7 +27,7 @@ public class EmailService {
 
     public String sendSimpleMessage(EmailSendRequest request) {
         String email = request.getEmail();
-        String code = createCode();
+        String code = VerificationCodeGenerator.createCode();
         MimeMessage message;
         VerificationCode verificationCode;
         if (request.getVerificationType() == VerificationType.SIGN_UP) {
@@ -48,6 +52,19 @@ public class EmailService {
     public String expireCode(String email) {
         cacheService.invalidateCode(email);
         return email;
+    }
+
+    public String verifyCode(VerificationRequest request) {
+        boolean validCodeWithTime = cacheService.isValidCodeWithTime(request);
+        if (!validCodeWithTime) {
+            throw new ValidationFailureException("Verification code is outdated or not matched.", InternalCode.BAD_REQUEST);
+        }
+
+        String code = VerificationCodeGenerator.createCode();
+        VerificationCode verificationCode = VerificationCode.of(code, System.currentTimeMillis() + 600000);
+        cacheService.putVerificationCode(request.getEmail(), verificationCode);
+
+        return code;
     }
 
     private MimeMessage createSignUpMessage(String email, String code) {
@@ -102,23 +119,5 @@ public class EmailService {
         }
 
         return message;
-    }
-
-    private String createCode() {
-        StringBuilder code = new StringBuilder();
-        //개발용 임시코드
-        code.append("0000");
-//        Random random = new Random();
-//
-//        for (int i = 0; i < 8; i++) { // 인증코드 8자리
-//            int index = random.nextInt(3); // 0~2 까지 랜덤, random 값에 따라서 아래 switch 문이 실행됨
-//            switch (index) {
-//                case 0 -> code.append((char) (random.nextInt(26) + 97)); // a~z (ex. 1+97=98 => (char)98 = 'b')
-//                case 1 -> code.append((char) (random.nextInt(26) + 65)); // A~Z
-//                case 2 -> code.append((random.nextInt(10))); // 0~9
-//            }
-//        }
-
-        return code.toString();
     }
 }

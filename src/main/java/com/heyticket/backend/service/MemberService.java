@@ -14,19 +14,16 @@ import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
-import com.heyticket.backend.repository.MemberAreaRepository;
-import com.heyticket.backend.repository.MemberGenreRepository;
-import com.heyticket.backend.repository.MemberKeywordRepository;
 import com.heyticket.backend.repository.MemberLikeRepository;
 import com.heyticket.backend.repository.MemberRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
-import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
+import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -55,12 +52,6 @@ import org.springframework.stereotype.Service;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-
-    private final MemberGenreRepository memberGenreRepository;
-
-    private final MemberAreaRepository memberAreaRepository;
-
-    private final MemberKeywordRepository memberKeywordRepository;
 
     private final MemberLikeRepository memberLikeRepository;
 

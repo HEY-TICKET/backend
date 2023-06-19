@@ -1,7 +1,7 @@
 package com.heyticket.backend.module.security.jwt;
 
 import com.heyticket.backend.exception.InternalCode;
-import com.heyticket.backend.exception.JwtValidationException;
+import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -98,7 +98,7 @@ public class JwtTokenProvider {
 
         if (claims.get("auth") == null) {
             log.info("Invalid JWT");
-            throw new JwtValidationException("JWT is invalid.", InternalCode.INVALID_JWT);
+            throw new ValidationFailureException("JWT is invalid.", InternalCode.INVALID_JWT);
         }
 
         Collection<? extends GrantedAuthority> authorities =
@@ -116,16 +116,16 @@ public class JwtTokenProvider {
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT", e);
-            throw new JwtValidationException("JWT is invalid.", InternalCode.INVALID_JWT);
+            throw new ValidationFailureException("JWT is invalid.", InternalCode.INVALID_JWT);
         } catch (ExpiredJwtException e) {
             log.info("Expired JWT", e);
-            throw new JwtValidationException("JWT is expired.", InternalCode.EXPIRED_JWT);
+            throw new ValidationFailureException("JWT is expired.", InternalCode.EXPIRED_JWT);
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
-            throw new JwtValidationException("JWT is unsupported.", InternalCode.INVALID_JWT);
+            throw new ValidationFailureException("JWT is unsupported.", InternalCode.INVALID_JWT);
         } catch (IllegalArgumentException e) {
             log.info("JWT claims string is empty.", e);
-            throw new JwtValidationException("JWT claims string is empty.", InternalCode.INVALID_JWT);
+            throw new ValidationFailureException("JWT claims string is empty.", InternalCode.INVALID_JWT);
         }
     }
 

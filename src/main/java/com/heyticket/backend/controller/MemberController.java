@@ -99,11 +99,11 @@ public class MemberController {
     }
 
     @Operation(summary = "인증 번호 확인")
-    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @PostMapping("/members/verification/verify")
     public ResponseEntity<?> verifyCode(@RequestBody @Valid VerificationRequest request) {
-        boolean isVerified = cacheService.isValidCodeWithTime(request);
-        return CommonResponse.ok("Email verification result.", isVerified);
+        String verificationCode = emailService.verifyCode(request);
+        return CommonResponse.ok("Email verification is successful. New verification code issued.", verificationCode);
     }
 
     @Operation(summary = "인증 번호 만료시키기(화면 이탈 시)")
