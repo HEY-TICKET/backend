@@ -1,6 +1,7 @@
 package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.Performance;
@@ -117,6 +118,32 @@ class MemberServiceTest {
         assertThat(foundMember.getMemberGenres()).extracting("genre").containsOnly(Genre.MUSICAL, Genre.THEATER);
         assertThat(foundMember.getMemberAreas()).extracting("area").containsOnly(Area.GYEONGGI, Area.SEOUL);
         assertThat(foundMember.getMemberKeywords().get(0).getKeyword()).isEqualTo(request.getKeywords().get(0));
+    }
+
+    @Test
+    @DisplayName("Member 가입 - 비밀번호 양식 오류")
+    @Transactional
+    void signUp_passwordValidationFailure() {
+        //given
+        MemberSignUpRequest request = MemberSignUpRequest.builder()
+            .email("email")
+            .password("password123")
+            .areas(List.of("경기", "서울"))
+            .genres(List.of("연극", "뮤지컬"))
+            .keywords(List.of("맘마미아"))
+            .verificationCode("verificationCode")
+            .build();
+
+        cacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+
+        //when
+        Throwable throwable = catchThrowable(() -> memberService.signUp(request));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        //then
+        assertThat(throwable).isInstanceOf(IllegalStateException.class);
     }
 
 
