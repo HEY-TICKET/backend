@@ -94,4 +94,19 @@ public class Member extends BaseTimeEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public void addMemberGenres(List<MemberGenre> memberGenres) {
+        this.memberGenres.addAll(memberGenres);
+        memberGenres.forEach(memberGenre -> memberGenre.setMember(this));
+    }
+
+    public void addMemberAreas(List<MemberArea> memberAreas) {
+        this.memberAreas.addAll(memberAreas);
+        memberAreas.forEach(memberArea -> memberArea.setMember(this));
+    }
+
+    public void addMemberKeywords(List<MemberKeyword> memberKeywords) {
+        this.memberKeywords.addAll(memberKeywords);
+        memberKeywords.forEach(memberKeyword -> memberKeyword.setMember(this));
+    }
 }

@@ -36,13 +36,12 @@ public class MemberGenre extends BaseTimeEntity {
     @JoinColumn(name = "email")
     private Member member;
 
-    public static MemberGenre of(Genre genre, Member member) {
-        return new MemberGenre(genre, member);
+    public static MemberGenre of(Genre genre) {
+        return new MemberGenre(genre);
     }
 
-    public MemberGenre(Genre genre, Member member) {
+    public MemberGenre(Genre genre) {
         this.genre = genre;
-        this.member = member;
     }
 
     @Override
@@ -60,5 +59,9 @@ public class MemberGenre extends BaseTimeEntity {
     @Override
     public int hashCode() {
         return Objects.hash(genre);
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
     }
 }

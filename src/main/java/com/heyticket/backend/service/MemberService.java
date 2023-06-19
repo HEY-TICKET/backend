@@ -35,6 +35,7 @@ import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -99,7 +100,7 @@ public class MemberService {
             .build();
     }
 
-    public String signUp(MemberSignUpRequest request) {
+    public TokenInfo signUp(MemberSignUpRequest request) {
         String email = request.getEmail();
         String password = request.getPassword();
 
@@ -111,24 +112,40 @@ public class MemberService {
             .email(email)
             .password(passwordEncoder.encode(password))
             .roles(List.of("USER"))
+            .memberAreas(new ArrayList<>())
+            .memberGenres(new ArrayList<>())
+            .memberKeywords(new ArrayList<>())
+            .memberLikes(new ArrayList<>())
             .allowKeywordPush(request.isKeywordPush())
             .build();
 
-        Member savedMember = memberRepository.save(member);
-
         List<Genre> genres = Genre.getByNames(request.getGenres());
-        List<MemberGenre> memberGenres = getMemberGenres(savedMember, genres);
-        memberGenreRepository.saveAll(memberGenres);
+        List<MemberGenre> memberGenres = genres.stream()
+            .map(MemberGenre::of)
+            .collect(Collectors.toList());
 
         List<Area> areas = Area.getByNames(request.getAreas());
-        List<MemberArea> memberAreas = getMemberAreas(savedMember, areas);
-        memberAreaRepository.saveAll(memberAreas);
+        List<MemberArea> memberAreas = areas.stream()
+            .map(MemberArea::of)
+            .collect(Collectors.toList());
 
         List<String> keywords = request.getKeywords();
-        List<MemberKeyword> memberKeywords = getMemberKeywords(savedMember, keywords);
-        memberKeywordRepository.saveAll(memberKeywords);
+        List<MemberKeyword> memberKeywords = keywords.stream()
+            .map(MemberKeyword::of)
+            .collect(Collectors.toList());
 
-        return email;
+        member.addMemberGenres(memberGenres);
+        member.addMemberAreas(memberAreas);
+        member.addMemberKeywords(memberKeywords);
+
+        memberRepository.save(member);
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
+        cacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+
+        return tokenInfo;
     }
 
     public TokenInfo login(MemberLoginRequest request) {
@@ -228,7 +245,9 @@ public class MemberService {
             List<MemberGenre> memberGenres = member.getMemberGenres();
 
             List<Genre> genres = Genre.getByNames(request.getGenres());
-            List<MemberGenre> newMemberGenres = getMemberGenres(member, genres);
+            List<MemberGenre> newMemberGenres = genres.stream()
+                .map(MemberGenre::of)
+                .collect(Collectors.toList());
 
             memberGenres.removeIf(memberGenre -> !newMemberGenres.contains(memberGenre));
             newMemberGenres.stream()
@@ -240,7 +259,9 @@ public class MemberService {
             List<MemberArea> memberAreas = member.getMemberAreas();
 
             List<Area> areas = Area.getByNames(request.getAreas());
-            List<MemberArea> newMemberAreas = getMemberAreas(member, areas);
+            List<MemberArea> newMemberAreas = areas.stream()
+                .map(MemberArea::of)
+                .collect(Collectors.toList());
 
             memberAreas.removeIf(memberArea -> !newMemberAreas.contains(memberArea));
             newMemberAreas.stream()
@@ -257,7 +278,9 @@ public class MemberService {
             List<MemberKeyword> memberKeywords = member.getMemberKeywords();
 
             List<String> keywords = request.getKeywords();
-            List<MemberKeyword> newMemberKeywords = getMemberKeywords(member, keywords);
+            List<MemberKeyword> newMemberKeywords = keywords.stream()
+                .map(MemberKeyword::of)
+                .collect(Collectors.toList());
 
             memberKeywords.removeIf(memberKeyword -> !newMemberKeywords.contains(memberKeyword));
             newMemberKeywords.stream()
@@ -299,24 +322,6 @@ public class MemberService {
     private Member getCurrentMember() {
         String email = SecurityUtil.getCurrentMemberEmail();
         return getMemberFromDb(email);
-    }
-
-    private List<MemberGenre> getMemberGenres(Member member, List<Genre> genres) {
-        return genres.stream()
-            .map(genre -> MemberGenre.of(genre, member))
-            .collect(Collectors.toList());
-    }
-
-    private List<MemberArea> getMemberAreas(Member member, List<Area> areas) {
-        return areas.stream()
-            .map(area -> MemberArea.of(area, member))
-            .collect(Collectors.toList());
-    }
-
-    private List<MemberKeyword> getMemberKeywords(Member member, List<String> keywords) {
-        return keywords.stream()
-            .map(keyword -> MemberKeyword.of(keyword, member))
-            .collect(Collectors.toList());
     }
 
     private void validateCode(String email, String code) {

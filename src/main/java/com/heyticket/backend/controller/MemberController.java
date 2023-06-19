@@ -69,8 +69,8 @@ public class MemberController {
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @PostMapping("/members/signup")
     public ResponseEntity<?> signUp(@RequestBody MemberSignUpRequest request) {
-        String email = memberService.signUp(request);
-        return CommonResponse.ok("Sign up successful.", email);
+        TokenInfo tokenInfo = memberService.signUp(request);
+        return CommonResponse.ok("Sign up successful.", tokenInfo);
     }
 
     @Operation(summary = "회원 정보 조회")

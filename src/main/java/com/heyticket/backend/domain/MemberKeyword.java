@@ -32,13 +32,12 @@ public class MemberKeyword extends BaseTimeEntity {
     @JoinColumn(name = "email")
     private Member member;
 
-    public static MemberKeyword of(String keyword, Member member) {
-        return new MemberKeyword(keyword, member);
+    public static MemberKeyword of(String keyword) {
+        return new MemberKeyword(keyword);
     }
 
-    public MemberKeyword(String keyword, Member member) {
+    public MemberKeyword(String keyword) {
         this.keyword = keyword;
-        this.member = member;
     }
 
     @Override
@@ -56,5 +55,9 @@ public class MemberKeyword extends BaseTimeEntity {
     @Override
     public int hashCode() {
         return Objects.hash(keyword);
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
     }
 }
