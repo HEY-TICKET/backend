@@ -14,6 +14,7 @@ import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
+import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -175,5 +176,21 @@ public class MemberController {
     public ResponseEntity<?> cancelLike(@RequestBody MemberLikeSaveRequest request) {
         memberService.cancelLike(request);
         return CommonResponse.ok("Member cancel like " + request.getPerformanceId(), true);
+    }
+
+    @Operation(summary = "관심 정보 알림 설정")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
+    @PutMapping("/members/keyword-push")
+    public ResponseEntity<?> updateKeywordPushEnabled(@RequestBody MemberPushUpdateRequest request) {
+        memberService.updateKeywordPushEnabled(request);
+        return CommonResponse.ok("Member keyword push updated.", true);
+    }
+
+    @Operation(summary = "마케팅 알림 설정")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
+    @PutMapping("/members/marketing-push")
+    public ResponseEntity<?> updateMarketingPushEnabled(@RequestBody MemberPushUpdateRequest request) {
+        memberService.updateMarketingPushEnabled(request);
+        return CommonResponse.ok("Member marketing push updated.", true);
     }
 }

@@ -23,6 +23,7 @@ import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
+import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
@@ -312,6 +313,16 @@ public class MemberService {
             return;
         }
         memberLikeRepository.deleteByMemberAndPerformance(member, performance);
+    }
+
+    public void updateKeywordPushEnabled(MemberPushUpdateRequest request) {
+        Member member = getMemberFromDb(request.getEmail());
+        member.setAllowKeywordPush(request.isPushEnabled());
+    }
+
+    public void updateMarketingPushEnabled(MemberPushUpdateRequest request) {
+        Member member = getMemberFromDb(request.getEmail());
+        member.setAllowMarketing(request.isPushEnabled());
     }
 
     private Member getMemberFromDb(String email) {

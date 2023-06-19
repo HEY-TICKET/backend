@@ -109,4 +109,12 @@ public class Member extends BaseTimeEntity implements UserDetails {
         this.memberKeywords.addAll(memberKeywords);
         memberKeywords.forEach(memberKeyword -> memberKeyword.setMember(this));
     }
+
+    public void setAllowKeywordPush(boolean allowKeywordPush) {
+        this.allowKeywordPush = allowKeywordPush;
+    }
+
+    public void setAllowMarketing(boolean allowMarketing) {
+        this.allowMarketing = allowMarketing;
+    }
 }
