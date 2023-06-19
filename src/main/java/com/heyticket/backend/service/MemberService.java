@@ -120,18 +120,15 @@ public class MemberService {
             .allowKeywordPush(request.isKeywordPush())
             .build();
 
-        List<Genre> genres = Genre.getByNames(request.getGenres());
-        List<MemberGenre> memberGenres = genres.stream()
+        List<MemberGenre> memberGenres = request.getGenres().stream()
             .map(MemberGenre::of)
             .collect(Collectors.toList());
 
-        List<Area> areas = Area.getByNames(request.getAreas());
-        List<MemberArea> memberAreas = areas.stream()
+        List<MemberArea> memberAreas = request.getAreas().stream()
             .map(MemberArea::of)
             .collect(Collectors.toList());
 
-        List<String> keywords = request.getKeywords();
-        List<MemberKeyword> memberKeywords = keywords.stream()
+        List<MemberKeyword> memberKeywords = request.getKeywords().stream()
             .map(MemberKeyword::of)
             .collect(Collectors.toList());
 

@@ -1,5 +1,7 @@
 package com.heyticket.backend.service.dto.request;
 
+import com.heyticket.backend.module.kopis.enums.Area;
+import com.heyticket.backend.module.kopis.enums.Genre;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -22,10 +24,10 @@ public class MemberSignUpRequest {
     private String verificationCode;
 
     @Builder.Default
-    private List<String> genres = new ArrayList<>();
+    private List<Genre> genres = new ArrayList<>();
 
     @Builder.Default
-    private List<String> areas = new ArrayList<>();
+    private List<Area> areas = new ArrayList<>();
 
     @Builder.Default
     private List<String> keywords = new ArrayList<>();
