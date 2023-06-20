@@ -21,6 +21,7 @@ public enum Area {
     SEJONG("36", "세종", BoxOfficeArea.SEJONG),
     GYEONGGI("41", "경기", BoxOfficeArea.GYEONGGI),
     GANGWON("42", "강원", BoxOfficeArea.GYEONGSANG),
+
     CHUNGBUK("43", "충북", BoxOfficeArea.CHUNGCHEONG),
     CHUNGNAM("44", "충남", BoxOfficeArea.CHUNGCHEONG),
     JEONBUK("45", "전북", BoxOfficeArea.JEOLLA),

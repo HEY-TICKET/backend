@@ -9,7 +9,6 @@ import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
-import com.heyticket.backend.domain.enums.PerformancePriceLevel;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
@@ -328,8 +327,8 @@ class PerformanceServiceTest {
         //when
         BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
             .timePeriod(TimePeriod.DAY)
-            .area(BoxOfficeArea.BUSAN)
-            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
@@ -369,8 +368,8 @@ class PerformanceServiceTest {
         //when
         BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
             .timePeriod(TimePeriod.DAY)
-            .area(BoxOfficeArea.BUSAN)
-            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
@@ -481,7 +480,8 @@ class PerformanceServiceTest {
         //when
         PerformanceFilterRequest request = PerformanceFilterRequest.builder()
             .genres(List.of(Genre.MUSICAL, Genre.KOREAN_TRADITIONAL_MUSIC))
-            .price(PerformancePriceLevel.PRICE2)
+            .minPrice(10000)
+            .maxPrice(40000)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
@@ -519,7 +519,7 @@ class PerformanceServiceTest {
         //when
         PerformanceFilterRequest request = PerformanceFilterRequest.builder()
             .areas(List.of(Area.CHUNGBUK, Area.JEJU))
-            .price(PerformancePriceLevel.PRICE5)
+            .minPrice(10000)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);

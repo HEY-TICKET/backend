@@ -5,7 +5,6 @@ import static com.heyticket.backend.domain.QPerformance.performance;
 import static com.heyticket.backend.domain.QPerformancePrice.performancePrice;
 
 import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.domain.enums.PerformancePriceLevel;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.Genre;
@@ -40,7 +39,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
     public Page<Performance> findPerformanceByCondition(PerformanceFilterRequest request, Pageable pageable) {
         List<Performance> performanceList = queryFactory.selectFrom(performance)
             .where(
-                inPrice(request.getPrice()),
+                inPrice(request),
                 inGenres(request.getGenres()),
                 inAreas(request.getAreas()),
                 inStatuses(request.getStatuses()),
@@ -56,7 +55,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
         JPAQuery<Long> count = queryFactory.select(performance.count())
             .from(performance)
             .where(
-                inPrice(request.getPrice()),
+                inPrice(request),
                 inGenres(request.getGenres()),
                 inAreas(request.getAreas()),
                 inStatuses(request.getStatuses()),
@@ -157,9 +156,19 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
         return ObjectUtils.isEmpty(statuses) ? null : performance.status.in(statuses);
     }
 
-    private Predicate inPrice(PerformancePriceLevel price) {
-        return price == null ? null : performancePrice.price.goe(price.getLowPrice())
-            .and(performancePrice.price.loe(price.getHighPrice()));
+    private Predicate inPrice(PerformanceFilterRequest request) {
+        if (request.getMinPrice() != null && request.getMaxPrice() == null) {
+            return performancePrice.price.goe(request.getMinPrice());
+        }
+        if (request.getMaxPrice() != null && request.getMinPrice() == null) {
+            return performancePrice.price.loe(request.getMaxPrice());
+        }
+        if (request.getMinPrice() != null && request.getMaxPrice() != null) {
+            return performancePrice.price.loe(request.getMaxPrice())
+                .and(performancePrice.price.goe(request.getMinPrice()));
+        }
+
+        return null;
     }
 
     private OrderSpecifier<?> orderCondition(SortType sortType, SortOrder sortOrder) {
