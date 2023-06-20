@@ -18,7 +18,7 @@ public class BoxOfficeRankRequest {
 
     private TimePeriod timePeriod;
 
-    private BoxOfficeGenre genre;
+    private BoxOfficeGenre boxOfficeGenre;
 
-    private BoxOfficeArea area;
+    private BoxOfficeArea boxOfficeArea;
 }

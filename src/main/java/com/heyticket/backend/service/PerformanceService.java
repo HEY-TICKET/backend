@@ -189,7 +189,7 @@ public class PerformanceService {
         BoxOfficeGenre boxOfficeGenre = performance.getGenre().getBoxOfficeGenre();
 
         BoxOfficeRankRequest genreBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
-            .genre(boxOfficeGenre)
+            .boxOfficeGenre(boxOfficeGenre)
             .timePeriod(TimePeriod.WEEK)
             .build();
 
@@ -205,7 +205,7 @@ public class PerformanceService {
         BoxOfficeArea boxOfficeArea = area.getBoxOfficeArea();
 
         BoxOfficeRankRequest areaBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
-            .area(boxOfficeArea)
+            .boxOfficeArea(boxOfficeArea)
             .timePeriod(TimePeriod.WEEK)
             .build();
 
@@ -276,8 +276,8 @@ public class PerformanceService {
     public int updateBoxOfficeRankBatch() {
         log.info("[Batch] Batch updating performance rank.");
         boxOfficeRankRepository.deleteAll();
-        BoxOfficeGenre[] genres = BoxOfficeGenre.values();
-        BoxOfficeArea[] areas = BoxOfficeArea.values();
+        BoxOfficeGenre[] boxOfficeGenres = BoxOfficeGenre.values();
+        BoxOfficeArea[] boxOfficeAreas = BoxOfficeArea.values();
         TimePeriod[] timePeriods = TimePeriod.values();
 
         List<CompletableFuture<BoxOfficeRank>> futures = new ArrayList<>();
@@ -285,15 +285,15 @@ public class PerformanceService {
         ExecutorService executorService = Executors.newFixedThreadPool(20);
 
         for (TimePeriod timePeriod : timePeriods) {
-            for (BoxOfficeGenre genre : genres) {
-                if (genre == BoxOfficeGenre.ALL) {
+            for (BoxOfficeGenre boxOfficeGenre : boxOfficeGenres) {
+                if (boxOfficeGenre == BoxOfficeGenre.ALL) {
                     continue;
                 }
                 CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
                     KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
                         .ststype(timePeriod.getValue())
                         .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                        .catecode(genre.getCode())
+                        .catecode(boxOfficeGenre.getCode())
                         .build();
 
                     List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
@@ -303,7 +303,7 @@ public class PerformanceService {
                         .collect(Collectors.joining("|"));
 
                     return BoxOfficeRank.builder()
-                        .boxOfficeGenre(genre)
+                        .boxOfficeGenre(boxOfficeGenre)
                         .boxOfficeArea(BoxOfficeArea.ALL)
                         .timePeriod(timePeriod)
                         .performanceIds(ids)
@@ -313,15 +313,15 @@ public class PerformanceService {
 
             }
 
-            for (BoxOfficeArea area : areas) {
-                if (area == BoxOfficeArea.ALL) {
+            for (BoxOfficeArea boxOfficeArea : boxOfficeAreas) {
+                if (boxOfficeArea == BoxOfficeArea.ALL) {
                     continue;
                 }
                 CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
                     KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
                         .ststype(timePeriod.getValue())
                         .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                        .area(area.getCode())
+                        .area(boxOfficeArea.getCode())
                         .build();
 
                     List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
@@ -331,7 +331,7 @@ public class PerformanceService {
                         .collect(Collectors.joining("|"));
 
                     return BoxOfficeRank.builder()
-                        .boxOfficeArea(area)
+                        .boxOfficeArea(boxOfficeArea)
                         .boxOfficeGenre(BoxOfficeGenre.ALL)
                         .timePeriod(timePeriod)
                         .performanceIds(ids)

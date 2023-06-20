@@ -24,8 +24,8 @@ public class BoxOfficeRankRepositoryImpl implements BoxOfficeRankCustomRepositor
     public Optional<BoxOfficeRank> findBoxOfficeRank(BoxOfficeRankRequest request) {
         BoxOfficeRank boxOfficeRank = queryFactory.selectFrom(QBoxOfficeRank.boxOfficeRank)
             .where(
-                eqBoxOfficeGenre(request.getGenre()),
-                eqBoxOfficeArea(request.getArea()),
+                eqBoxOfficeGenre(request.getBoxOfficeGenre()),
+                eqBoxOfficeArea(request.getBoxOfficeArea()),
                 eqTimePeriod(request.getTimePeriod())
             )
             .orderBy(QBoxOfficeRank.boxOfficeRank.createdDate.desc())
