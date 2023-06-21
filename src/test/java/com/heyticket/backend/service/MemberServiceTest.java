@@ -4,15 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.heyticket.backend.domain.Member;
-import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.exception.LoginFailureException;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import com.heyticket.backend.repository.MemberGenreRepository;
 import com.heyticket.backend.repository.MemberKeywordRepository;
 import com.heyticket.backend.repository.MemberLikeRepository;
 import com.heyticket.backend.repository.MemberRepository;
-import com.heyticket.backend.repository.PerformanceRepository;
 import com.heyticket.backend.service.dto.VerificationCode;
+import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import jakarta.persistence.EntityManager;
@@ -21,14 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +40,6 @@ class MemberServiceTest {
 
     @Autowired
     private MemberLikeRepository memberLikeRepository;
-
-    @Autowired
-    private PerformanceRepository performanceRepository;
 
     @Autowired
     private MemberGenreRepository memberGenreRepository;
@@ -60,11 +56,8 @@ class MemberServiceTest {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @BeforeEach
-    void init() {
-        Authentication authentication = new UsernamePasswordAuthenticationToken("email", "password");
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @AfterEach
     void deleteAll() {
@@ -75,7 +68,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 조회")
+    @DisplayName("Member 조회 - 데이터 확인")
     void getMemberByEmail() {
         //given
         Member member = createMember("email");
@@ -89,7 +82,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 가입 - 정상 가입 데이터 확인")
+    @DisplayName("Member 가입 - 데이터 확인")
     @Transactional
     void signUp() {
         //given
@@ -121,7 +114,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 가입 - 비밀번호 양식 오류")
+    @DisplayName("Member 가입 - 비밀번호 양식이 맞지 않으면 throw IllegalStateException")
     @Transactional
     void signUp_passwordValidationFailure() {
         //given
@@ -146,11 +139,69 @@ class MemberServiceTest {
         assertThat(throwable).isInstanceOf(IllegalStateException.class);
     }
 
+    @Test
+    @DisplayName("Member 로그인 - 성공 데이터 확인")
+    void login_success() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        //when
+        MemberLoginRequest request = MemberLoginRequest.builder()
+            .email(member.getEmail())
+            .password("password")
+            .build();
+
+        TokenInfo tokenInfo = memberService.login(request);
+
+        //then
+        assertThat(tokenInfo.getAccessToken()).isNotNull();
+        assertThat(tokenInfo.getRefreshToken()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Member 로그인 - 존재하지 않는 email을 입력한 경우 throw LoginFailureException")
+    void login_wrongEmail() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        //when
+        MemberLoginRequest request = MemberLoginRequest.builder()
+            .email("wrongEmail")
+            .password("password")
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.login(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(LoginFailureException.class);
+    }
+
+    @Test
+    @DisplayName("Member 로그인 - 잘못된 비밀번호를 입력한 경우 throw BadCredentialException")
+    void login_wrongPassword() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        //when
+        MemberLoginRequest request = MemberLoginRequest.builder()
+            .email(member.getEmail())
+            .password("wrongPassword")
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.login(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(BadCredentialsException.class);
+    }
+
 
     private Member createMember(String email) {
         return Member.builder()
             .email(email)
-            .password("password")
+            .password(passwordEncoder.encode("password"))
             .memberAreas(new ArrayList<>())
             .memberGenres(new ArrayList<>())
             .memberLikes(new ArrayList<>())
@@ -158,10 +209,4 @@ class MemberServiceTest {
             .build();
     }
 
-    private Performance createPerformance(String id) {
-        return Performance.builder()
-            .id(id)
-            .title("title")
-            .build();
-    }
 }
