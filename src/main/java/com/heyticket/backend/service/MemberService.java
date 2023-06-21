@@ -160,6 +160,7 @@ public class MemberService {
         if (request.getNewPassword().equals(request.getCurrentPassword())) {
             throw new IllegalArgumentException("New password is equal to old password.");
         }
+        PasswordValidator.validatePassword(request.getNewPassword());
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
         member.updatePassword(encodedPassword);
     }
@@ -202,7 +203,9 @@ public class MemberService {
         if (!savedCode.equals(code)) {
             throw new IllegalStateException("인증 내역이 다릅니다.");
         }
+
         Member member = getMemberFromDb(email);
+        PasswordValidator.validatePassword(request.getPassword());
         member.updatePassword(passwordEncoder.encode(request.getPassword()));
         cacheService.invalidateRefreshToken(email);
         return email;
