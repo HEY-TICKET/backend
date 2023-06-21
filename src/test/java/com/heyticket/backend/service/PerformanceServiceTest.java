@@ -519,7 +519,7 @@ class PerformanceServiceTest {
         //when
         PerformanceFilterRequest request = PerformanceFilterRequest.builder()
             .areas(List.of(Area.CHUNGBUK, Area.JEJU))
-            .minPrice(10000)
+            .minPrice(100000)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);

@@ -18,6 +18,7 @@ import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
+import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.CommonResponse;
@@ -122,12 +123,20 @@ public class MemberController {
         return CommonResponse.ok("Reissued token information.", tokenInfo);
     }
 
-    @Operation(summary = "비밀번호 변경")
+    @Operation(summary = "비밀번호 변경(로그인 화면)")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
-    @PutMapping("/members/password")
+    @PutMapping("/members/password/reset")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
         String email = memberService.resetPassword(request);
         return CommonResponse.ok("Password change successful.", email);
+    }
+
+    @Operation(summary = "비밀번호 변경(내 정보)")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = TokenInfoCommonResponse.class)))})
+    @PutMapping("/members/password/update")
+    public ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateRequest request) {
+        memberService.updatePassword(request);
+        return CommonResponse.ok("Password change successful.", true);
     }
 
     @Operation(summary = "회원 탈퇴")

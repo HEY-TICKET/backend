@@ -27,6 +27,7 @@ import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
+import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
@@ -149,6 +150,20 @@ public class MemberService {
         return tokenInfo;
     }
 
+    public void updatePassword(PasswordUpdateRequest request) {
+        String email = SecurityUtil.getCurrentMemberEmail();
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new NoSuchElementException("No such member."));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
+            throw new IllegalArgumentException("Incorrect current password");
+        }
+        if (request.getNewPassword().equals(request.getCurrentPassword())) {
+            throw new IllegalArgumentException("New password is equal to old password.");
+        }
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        member.updatePassword(encodedPassword);
+    }
+
     public boolean validateMember(MemberValidationRequest request) {
         return memberRepository.existsByEmail(request.getEmail());
     }
@@ -211,20 +226,6 @@ public class MemberService {
         memberRepository.delete(member);
         cacheService.invalidateRefreshToken(email);
         return email;
-    }
-
-    public void likePerformance(String performanceId) {
-        Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NoSuchElementException("No such performance"));
-
-        Member member = getCurrentMember();
-
-        MemberLike memberLike = MemberLike.builder()
-            .member(member)
-            .performance(performance)
-            .build();
-
-        memberLikeRepository.save(memberLike);
     }
 
     public void updatePreferredCategory(MemberCategoryUpdateRequest request) {
@@ -316,11 +317,6 @@ public class MemberService {
     private Member getMemberFromDb(String email) {
         return memberRepository.findById(email)
             .orElseThrow(() -> new NoSuchElementException("No such member."));
-    }
-
-    private Member getCurrentMember() {
-        String email = SecurityUtil.getCurrentMemberEmail();
-        return getMemberFromDb(email);
     }
 
     private void validateCode(String email, String code) {
