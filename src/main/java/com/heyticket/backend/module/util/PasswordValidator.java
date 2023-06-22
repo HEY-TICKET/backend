@@ -1,5 +1,7 @@
 package com.heyticket.backend.module.util;
 
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.ValidationFailureException;
 import java.util.regex.Pattern;
 
 public class PasswordValidator {
@@ -10,7 +12,7 @@ public class PasswordValidator {
         Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
         boolean matches = pattern.matcher(password).matches();
         if (!matches) {
-            throw new IllegalStateException("Invalid password");
+            throw new ValidationFailureException("Invalid password", InternalCode.BAD_REQUEST);
         }
     }
 

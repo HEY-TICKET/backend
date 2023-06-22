@@ -4,7 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.heyticket.backend.domain.Member;
+import com.heyticket.backend.domain.MemberArea;
+import com.heyticket.backend.domain.MemberGenre;
+import com.heyticket.backend.domain.MemberKeyword;
+import com.heyticket.backend.exception.AuthenticationFailureException;
 import com.heyticket.backend.exception.LoginFailureException;
+import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
@@ -15,6 +20,7 @@ import com.heyticket.backend.repository.MemberRepository;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
+import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -27,6 +33,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +81,12 @@ class MemberServiceTest {
     void getMemberByEmail() {
         //given
         Member member = createMember("email");
+        MemberGenre memberGenre = MemberGenre.of(Genre.MUSICAL);
+        MemberArea memberArea = MemberArea.of(Area.BUSAN);
+        MemberKeyword memberKeyword = MemberKeyword.of("keyword");
+        member.addMemberGenres(List.of(memberGenre));
+        member.addMemberAreas(List.of(memberArea));
+        member.addMemberKeywords(List.of(memberKeyword));
         memberRepository.save(member);
 
         //when
@@ -79,6 +94,9 @@ class MemberServiceTest {
 
         //then
         assertThat(memberResponse.getEmail()).isEqualTo(member.getEmail());
+        assertThat(memberResponse.getKeywords()).hasSize(1);
+        assertThat(memberResponse.getAreas()).hasSize(1);
+        assertThat(memberResponse.getGenres()).hasSize(1);
     }
 
     @Test
@@ -114,8 +132,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 가입 - 비밀번호 양식이 맞지 않으면 throw IllegalStateException")
-    @Transactional
+    @DisplayName("Member 가입 - 비밀번호 양식이 맞지 않으면 throw ValidationFailureException")
     void signUp_passwordValidationFailure() {
         //given
         MemberSignUpRequest request = MemberSignUpRequest.builder()
@@ -132,15 +149,37 @@ class MemberServiceTest {
         //when
         Throwable throwable = catchThrowable(() -> memberService.signUp(request));
 
-        entityManager.flush();
-        entityManager.clear();
-
         //then
-        assertThat(throwable).isInstanceOf(IllegalStateException.class);
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
     }
 
     @Test
-    @DisplayName("Member 로그인 - 성공 데이터 확인")
+    @DisplayName("Member 가입 - 이미 가입된 회원이면 throw validationException")
+    void signUp_duplicateEmail() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        MemberSignUpRequest request = MemberSignUpRequest.builder()
+            .email("email")
+            .password("password123")
+            .areas(List.of(Area.GYEONGGI, Area.SEOUL))
+            .genres(List.of(Genre.MUSICAL, Genre.THEATER))
+            .keywords(List.of("맘마미아"))
+            .verificationCode("verificationCode")
+            .build();
+
+        cacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+
+        //when
+        Throwable throwable = catchThrowable(() -> memberService.signUp(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
+
+    @Test
+    @DisplayName("Member 로그인 - 데이터 확인")
     void login_success() {
         //given
         Member member = createMember("email");
@@ -197,11 +236,52 @@ class MemberServiceTest {
         assertThat(throwable).isInstanceOf(BadCredentialsException.class);
     }
 
+    @Test
+    @DisplayName("Member 비밀번호 변경 - 데이터 확인")
+    void updatePassword() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), member.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        //when
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
+            .currentPassword("Qweqwe123")
+            .newPassword("Asdasd123")
+            .build();
+
+        memberService.updatePassword(request);
+
+        //then
+        Member foundMember = memberRepository.findByEmail(member.getEmail())
+            .orElseThrow(() -> new NoSuchElementException("No such member."));
+        assertThat(passwordEncoder.matches(request.getNewPassword(), foundMember.getPassword())).isTrue();
+    }
+
+    @Test
+    @DisplayName("Member 비밀번호 변경 - 로그인이 되지 않은 상태에서 요청이 온 경우 throw AuthenticationFailureException")
+    void updatePassword_memberNotFound() {
+        //given
+
+        //when
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
+            .currentPassword("Qweqwe123")
+            .newPassword("Asdasd123")
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.updatePassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(AuthenticationFailureException.class);
+    }
+
 
     private Member createMember(String email) {
         return Member.builder()
             .email(email)
-            .password(passwordEncoder.encode("password"))
+            .password(passwordEncoder.encode("Qweqwe123"))
             .memberAreas(new ArrayList<>())
             .memberGenres(new ArrayList<>())
             .memberLikes(new ArrayList<>())

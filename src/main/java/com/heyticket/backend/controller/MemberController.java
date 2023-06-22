@@ -1,7 +1,6 @@
 package com.heyticket.backend.controller;
 
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
-import com.heyticket.backend.service.CacheService;
 import com.heyticket.backend.service.EmailService;
 import com.heyticket.backend.service.MemberLikeService;
 import com.heyticket.backend.service.MemberService;
@@ -54,8 +53,6 @@ public class MemberController {
     private final MemberService memberService;
 
     private final EmailService emailService;
-
-    private final CacheService cacheService;
 
     private final MemberLikeService memberLikeService;
 
@@ -115,7 +112,7 @@ public class MemberController {
         return CommonResponse.ok("Email verification code has been expired.", email);
     }
 
-    @Operation(summary = "Refresh token 만료 시 token 재발급")
+    @Operation(summary = "리프레시 토큰 만료 시 토큰 재발급")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = TokenInfoCommonResponse.class)))})
     @PutMapping("/members/token")
     public ResponseEntity<?> reissueJwtTokens(@RequestBody @Valid TokenReissueRequest request) {

@@ -8,6 +8,8 @@ import com.heyticket.backend.domain.MemberLike;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.LoginFailureException;
+import com.heyticket.backend.exception.NotFoundException;
+import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.kopis.enums.Area;
 import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
@@ -153,12 +155,12 @@ public class MemberService {
     public void updatePassword(PasswordUpdateRequest request) {
         String email = SecurityUtil.getCurrentMemberEmail();
         Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new NoSuchElementException("No such member."));
+            .orElseThrow(() -> new NotFoundException("No such member."));
         if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("Incorrect current password");
+            throw new ValidationFailureException("Incorrect current password");
         }
         if (request.getNewPassword().equals(request.getCurrentPassword())) {
-            throw new IllegalArgumentException("New password is equal to old password.");
+            throw new ValidationFailureException("New password is equal to old password.");
         }
         PasswordValidator.validatePassword(request.getNewPassword());
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
@@ -172,7 +174,7 @@ public class MemberService {
     private void checkIfExistingMember(String email) {
         boolean existingEmail = memberRepository.existsByEmail(email);
         if (existingEmail) {
-            throw new InvalidParameterException("Duplicated email exists.");
+            throw new ValidationFailureException("Duplicated email exists.", InternalCode.BAD_REQUEST);
         }
     }
 

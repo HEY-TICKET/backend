@@ -12,18 +12,25 @@ public class MailConfig {
 
     @Value("${mail.smtp.port}")
     private int port;
+
     @Value("${mail.smtp.socketFactory.port}")
     private int socketPort;
+
     @Value("${mail.smtp.auth}")
     private boolean auth;
+
     @Value("${mail.smtp.starttls.enable}")
     private boolean starttls;
+
     @Value("${mail.smtp.starttls.required}")
     private boolean startllsRequired;
+
     @Value("${mail.smtp.socketFactory.fallback}")
     private boolean fallback;
+
     @Value("${mail.admin-id}")
     private String id;
+
     @Value("${mail.admin-pw}")
     private String password;
 
