@@ -68,6 +68,8 @@ class MemberServiceTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private static final String TEST_PASSWORD = "Password123";
+
     @AfterEach
     void deleteAll() {
         memberGenreRepository.deleteAll();
@@ -106,7 +108,7 @@ class MemberServiceTest {
         //given
         MemberSignUpRequest request = MemberSignUpRequest.builder()
             .email("email")
-            .password("Qweqwe123")
+            .password(TEST_PASSWORD)
             .areas(List.of(Area.GYEONGGI, Area.SEOUL))
             .genres(List.of(Genre.MUSICAL, Genre.THEATER))
             .keywords(List.of("맘마미아"))
@@ -162,7 +164,7 @@ class MemberServiceTest {
 
         MemberSignUpRequest request = MemberSignUpRequest.builder()
             .email("email")
-            .password("Qweqwe123")
+            .password(TEST_PASSWORD)
             .areas(List.of(Area.GYEONGGI, Area.SEOUL))
             .genres(List.of(Genre.MUSICAL, Genre.THEATER))
             .keywords(List.of("맘마미아"))
@@ -188,7 +190,7 @@ class MemberServiceTest {
         //when
         MemberLoginRequest request = MemberLoginRequest.builder()
             .email(member.getEmail())
-            .password("Qweqwe123")
+            .password(TEST_PASSWORD)
             .build();
 
         TokenInfo tokenInfo = memberService.login(request);
@@ -208,7 +210,7 @@ class MemberServiceTest {
         //when
         MemberLoginRequest request = MemberLoginRequest.builder()
             .email("wrongEmail")
-            .password("Qweqwe123")
+            .password(TEST_PASSWORD)
             .build();
 
         Throwable throwable = catchThrowable(() -> memberService.login(request));
@@ -248,8 +250,8 @@ class MemberServiceTest {
 
         //when
         PasswordUpdateRequest request = PasswordUpdateRequest.builder()
-            .currentPassword("Qweqwe123")
-            .newPassword("Asdasd123")
+            .currentPassword(TEST_PASSWORD)
+            .newPassword("NewPassword123")
             .build();
 
         memberService.updatePassword(request);
@@ -267,8 +269,8 @@ class MemberServiceTest {
 
         //when
         PasswordUpdateRequest request = PasswordUpdateRequest.builder()
-            .currentPassword("Qweqwe123")
-            .newPassword("Asdasd123")
+            .currentPassword(TEST_PASSWORD)
+            .newPassword("NewPassword123")
             .build();
 
         Throwable throwable = catchThrowable(() -> memberService.updatePassword(request));
@@ -277,11 +279,54 @@ class MemberServiceTest {
         assertThat(throwable).isInstanceOf(NotFoundException.class);
     }
 
+    @Test
+    @DisplayName("Member 비밀번호 변경 - 기존 비밀번호 일치하지 않는 경우 throw ValidationFailureException")
+    void updatePassword_wrongPassword() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), member.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        //when
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
+            .currentPassword("WrongPassword123")
+            .newPassword("NewPassword123")
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.updatePassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
+
+    @Test
+    @DisplayName("Member 비밀번호 변경 - 기존 비밀번호와 새로운 번호가 일치하면 throw ValidationFailureException")
+    void updatePassword_samePassword() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), member.getPassword());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        //when
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
+            .currentPassword(TEST_PASSWORD)
+            .newPassword(TEST_PASSWORD)
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.updatePassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
 
     private Member createMember(String email) {
         return Member.builder()
             .email(email)
-            .password(passwordEncoder.encode("Qweqwe123"))
+            .password(passwordEncoder.encode(TEST_PASSWORD))
             .memberAreas(new ArrayList<>())
             .memberGenres(new ArrayList<>())
             .memberLikes(new ArrayList<>())
