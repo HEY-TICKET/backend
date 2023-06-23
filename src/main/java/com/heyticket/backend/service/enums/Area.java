@@ -1,5 +1,6 @@
-package com.heyticket.backend.module.kopis.enums;
+package com.heyticket.backend.service.enums;
 
+import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

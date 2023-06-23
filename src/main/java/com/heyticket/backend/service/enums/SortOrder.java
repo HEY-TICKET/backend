@@ -1,4 +1,4 @@
-package com.heyticket.backend.module.kopis.enums;
+package com.heyticket.backend.service.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

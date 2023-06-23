@@ -34,11 +34,11 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
     public void setErrorResponse(HttpServletResponse response, Throwable ex) {
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.setContentType("application/json; charset=UTF-8");
-        CommonResponse commonResponse;
+        CommonResponse<?> commonResponse;
         if (ex instanceof ValidationFailureException validationFailureException) {
             commonResponse = new CommonResponse<>(validationFailureException.getCode(), validationFailureException.getMessage());
         } else {
-            commonResponse = new CommonResponse(InternalCode.SERVER_ERROR, ex.getMessage());
+            commonResponse = new CommonResponse<>(InternalCode.SERVER_ERROR, ex.getMessage());
         }
         try {
             response.getWriter().write(objectMapper.writeValueAsString(commonResponse));

@@ -10,13 +10,13 @@ import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
-import com.heyticket.backend.module.kopis.enums.Area;
+import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
-import com.heyticket.backend.module.kopis.enums.Genre;
-import com.heyticket.backend.module.kopis.enums.SortOrder;
-import com.heyticket.backend.module.kopis.enums.SortType;
-import com.heyticket.backend.module.kopis.enums.TimePeriod;
+import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.SortOrder;
+import com.heyticket.backend.service.enums.SortType;
+import com.heyticket.backend.service.enums.TimePeriod;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformancePriceRepository;
@@ -166,7 +166,7 @@ class PerformanceServiceTest {
         //when
         NewPerformanceRequest request = NewPerformanceRequest.builder()
             .genre(Genre.ALL)
-            .sortType(SortType.VIEWS)
+            .sortType(SortType.VIEW_COUNT)
             .sortOrder(SortOrder.DESC)
             .build();
 
@@ -549,7 +549,7 @@ class PerformanceServiceTest {
         //when
         PerformanceFilterRequest request = PerformanceFilterRequest.builder()
             .statuses(List.of(PerformanceStatus.ONGOING, PerformanceStatus.UPCOMING))
-            .sortType(SortType.TIME)
+            .sortType(SortType.CREATED_DATE)
             .sortOrder(SortOrder.DESC)
             .build();
 

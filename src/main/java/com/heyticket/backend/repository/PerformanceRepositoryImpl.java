@@ -6,10 +6,10 @@ import static com.heyticket.backend.domain.QPerformancePrice.performancePrice;
 
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
-import com.heyticket.backend.module.kopis.enums.Area;
-import com.heyticket.backend.module.kopis.enums.Genre;
-import com.heyticket.backend.module.kopis.enums.SortOrder;
-import com.heyticket.backend.module.kopis.enums.SortType;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.SortOrder;
+import com.heyticket.backend.service.enums.SortType;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
 import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
@@ -178,8 +178,8 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
 
         return switch (sortType) {
             case END_DATE -> sortOrder == SortOrder.ASC ? performance.endDate.asc() : performance.endDate.desc();
-            case TIME -> sortOrder == SortOrder.ASC ? performance.createdDate.asc() : performance.createdDate.desc();
-            case VIEWS -> sortOrder == SortOrder.ASC ? performance.views.asc() : performance.views.desc();
+            case CREATED_DATE -> sortOrder == SortOrder.ASC ? performance.createdDate.asc() : performance.createdDate.desc();
+            case VIEW_COUNT -> sortOrder == SortOrder.ASC ? performance.views.asc() : performance.views.desc();
             default -> null;
         };
     }

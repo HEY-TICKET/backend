@@ -1,6 +1,6 @@
 package com.heyticket.backend.domain;
 
-import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.service.enums.Genre;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

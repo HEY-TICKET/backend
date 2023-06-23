@@ -1,14 +1,12 @@
-package com.heyticket.backend.module.kopis.enums;
+package com.heyticket.backend.service.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum SortType {
+public enum LikeSortType {
 
-    TIME,
-    VIEWS,
-    END_DATE,
+    CREATED_DATE,
     LIKE_DATE
 }

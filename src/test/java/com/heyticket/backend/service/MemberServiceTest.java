@@ -7,11 +7,9 @@ import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberArea;
 import com.heyticket.backend.domain.MemberGenre;
 import com.heyticket.backend.domain.MemberKeyword;
-import com.heyticket.backend.exception.AuthenticationFailureException;
 import com.heyticket.backend.exception.LoginFailureException;
+import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
-import com.heyticket.backend.module.kopis.enums.Area;
-import com.heyticket.backend.module.kopis.enums.Genre;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import com.heyticket.backend.repository.MemberGenreRepository;
 import com.heyticket.backend.repository.MemberKeywordRepository;
@@ -22,6 +20,8 @@ import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
@@ -106,7 +106,7 @@ class MemberServiceTest {
         //given
         MemberSignUpRequest request = MemberSignUpRequest.builder()
             .email("email")
-            .password("Password123")
+            .password("Qweqwe123")
             .areas(List.of(Area.GYEONGGI, Area.SEOUL))
             .genres(List.of(Genre.MUSICAL, Genre.THEATER))
             .keywords(List.of("맘마미아"))
@@ -162,7 +162,7 @@ class MemberServiceTest {
 
         MemberSignUpRequest request = MemberSignUpRequest.builder()
             .email("email")
-            .password("password123")
+            .password("Qweqwe123")
             .areas(List.of(Area.GYEONGGI, Area.SEOUL))
             .genres(List.of(Genre.MUSICAL, Genre.THEATER))
             .keywords(List.of("맘마미아"))
@@ -188,7 +188,7 @@ class MemberServiceTest {
         //when
         MemberLoginRequest request = MemberLoginRequest.builder()
             .email(member.getEmail())
-            .password("password")
+            .password("Qweqwe123")
             .build();
 
         TokenInfo tokenInfo = memberService.login(request);
@@ -208,7 +208,7 @@ class MemberServiceTest {
         //when
         MemberLoginRequest request = MemberLoginRequest.builder()
             .email("wrongEmail")
-            .password("password")
+            .password("Qweqwe123")
             .build();
 
         Throwable throwable = catchThrowable(() -> memberService.login(request));
@@ -261,7 +261,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 비밀번호 변경 - 로그인이 되지 않은 상태에서 요청이 온 경우 throw AuthenticationFailureException")
+    @DisplayName("Member 비밀번호 변경 - 로그인이 되지 않은 상태에서 요청이 온 경우 throw NotFoundException")
     void updatePassword_memberNotFound() {
         //given
 
@@ -274,7 +274,7 @@ class MemberServiceTest {
         Throwable throwable = catchThrowable(() -> memberService.updatePassword(request));
 
         //then
-        assertThat(throwable).isInstanceOf(AuthenticationFailureException.class);
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
     }
 
 
@@ -288,5 +288,4 @@ class MemberServiceTest {
             .memberKeywords(new ArrayList<>())
             .build();
     }
-
 }

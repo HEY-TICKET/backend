@@ -5,9 +5,9 @@ import static com.heyticket.backend.domain.QPerformance.performance;
 
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
-import com.heyticket.backend.module.kopis.enums.SortOrder;
-import com.heyticket.backend.module.kopis.enums.SortType;
 import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
+import com.heyticket.backend.service.enums.LikeSortType;
+import com.heyticket.backend.service.enums.SortOrder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -34,7 +34,7 @@ public class MemberLikeRepositoryImpl implements MemberLikeCustomRepository {
             )
             .join(performance)
             .on(memberLike.performance.eq(performance))
-            .orderBy(orderCondition(request.getSortType(), request.getSortOrder()))
+            .orderBy(orderCondition(request.getLikeSortType(), request.getSortOrder()))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -58,10 +58,10 @@ public class MemberLikeRepositoryImpl implements MemberLikeCustomRepository {
         return performance.status.eq(status);
     }
 
-    private OrderSpecifier<?> orderCondition(SortType sortType, SortOrder sortOrder) {
-        return switch (sortType) {
+    private OrderSpecifier<?> orderCondition(LikeSortType likeSortType, SortOrder sortOrder) {
+        return switch (likeSortType) {
             case LIKE_DATE -> sortOrder == SortOrder.ASC ? memberLike.createdDate.asc() : memberLike.createdDate.desc();
-            case TIME -> sortOrder == SortOrder.ASC ? performance.createdDate.asc() : performance.createdDate.desc();
+            case CREATED_DATE -> sortOrder == SortOrder.ASC ? performance.createdDate.asc() : performance.createdDate.desc();
             default -> null;
         };
     }
