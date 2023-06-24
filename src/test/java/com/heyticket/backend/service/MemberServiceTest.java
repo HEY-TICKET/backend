@@ -16,6 +16,7 @@ import com.heyticket.backend.repository.MemberKeywordRepository;
 import com.heyticket.backend.repository.MemberLikeRepository;
 import com.heyticket.backend.repository.MemberRepository;
 import com.heyticket.backend.service.dto.VerificationCode;
+import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
@@ -27,6 +28,7 @@ import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -318,6 +320,45 @@ class MemberServiceTest {
             .build();
 
         Throwable throwable = catchThrowable(() -> memberService.updatePassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
+
+    @Test
+    @DisplayName("Member 탈퇴 - 데이터 확인")
+    void deleteMember() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        //when
+        MemberDeleteRequest request = MemberDeleteRequest.builder()
+            .email(member.getEmail())
+            .password(TEST_PASSWORD)
+            .build();
+
+        memberService.deleteMember(request);
+
+        //then
+        Optional<Member> optionalMember = memberRepository.findByEmail(member.getEmail());
+        assertThat(optionalMember).isNotPresent();
+    }
+
+    @Test
+    @DisplayName("Member 탈퇴 - password 일치하지 않는 경우")
+    void deleteMember_wrongPassword() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        //when
+        MemberDeleteRequest request = MemberDeleteRequest.builder()
+            .email(member.getEmail())
+            .password("wrongPassword")
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.deleteMember(request));
 
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);

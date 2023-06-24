@@ -10,8 +10,6 @@ import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.LoginFailureException;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
-import com.heyticket.backend.service.enums.Area;
-import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
@@ -33,9 +31,10 @@ import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -156,9 +155,7 @@ public class MemberService {
         String email = SecurityUtil.getCurrentMemberEmail();
         Member member = memberRepository.findByEmail(email)
             .orElseThrow(() -> new NotFoundException("No such member."));
-        if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
-            throw new ValidationFailureException("Incorrect current password");
-        }
+        matchPassword(request.getCurrentPassword(), member.getPassword());
         if (request.getNewPassword().equals(request.getCurrentPassword())) {
             throw new ValidationFailureException("New password is equal to old password.");
         }
@@ -225,12 +222,16 @@ public class MemberService {
     public String deleteMember(MemberDeleteRequest request) {
         String email = request.getEmail();
         Member member = getMemberFromDb(email);
-        if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
-            throw new InvalidParameterException("Wrong password.");
-        }
+        matchPassword(request.getPassword(), member.getPassword());
         memberRepository.delete(member);
         cacheService.invalidateRefreshToken(email);
         return email;
+    }
+
+    private void matchPassword(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new ValidationFailureException("Wrong password.");
+        }
     }
 
     public void updatePreferredCategory(MemberCategoryUpdateRequest request) {
