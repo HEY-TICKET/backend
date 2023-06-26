@@ -15,5 +15,4 @@ public class PasswordValidator {
             throw new ValidationFailureException("Invalid password", InternalCode.BAD_REQUEST);
         }
     }
-
 }

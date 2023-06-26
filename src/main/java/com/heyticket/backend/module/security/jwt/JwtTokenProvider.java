@@ -119,7 +119,7 @@ public class JwtTokenProvider {
             throw new ValidationFailureException("JWT is invalid.", InternalCode.INVALID_JWT);
         } catch (ExpiredJwtException e) {
             log.info("Expired JWT", e);
-            throw new ValidationFailureException("JWT is expired.", InternalCode.EXPIRED_JWT);
+            throw new ValidationFailureException("JWT is expired.", InternalCode.INVALID_JWT);
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
             throw new ValidationFailureException("JWT is unsupported.", InternalCode.INVALID_JWT);

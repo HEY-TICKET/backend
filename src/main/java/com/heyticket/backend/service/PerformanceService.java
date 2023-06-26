@@ -111,7 +111,7 @@ public class PerformanceService {
         performance.addViewCount();
         return getPerformanceResponse(performance);
     }
-    
+
     private PerformanceResponse getPerformanceByIdWithoutUpdatingViewCount(String performanceId) {
         Performance performance = getPerformanceFromDb(performanceId);
         return getPerformanceResponse(performance);

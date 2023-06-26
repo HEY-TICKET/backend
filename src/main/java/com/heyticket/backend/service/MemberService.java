@@ -7,7 +7,6 @@ import com.heyticket.backend.domain.MemberKeyword;
 import com.heyticket.backend.domain.MemberLike;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.exception.InternalCode;
-import com.heyticket.backend.exception.LoginFailureException;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
@@ -37,7 +36,6 @@ import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -142,7 +140,7 @@ public class MemberService {
     public TokenInfo login(MemberLoginRequest request) {
         boolean exists = memberRepository.existsByEmail(request.getEmail());
         if (!exists) {
-            throw new LoginFailureException("No such user.", InternalCode.USER_NOT_FOUND);
+            throw new NotFoundException("No such user.", InternalCode.NOT_FOUND);
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -154,10 +152,10 @@ public class MemberService {
     public void updatePassword(PasswordUpdateRequest request) {
         String email = SecurityUtil.getCurrentMemberEmail();
         Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new NotFoundException("No such member."));
+            .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
         matchPassword(request.getCurrentPassword(), member.getPassword());
         if (request.getNewPassword().equals(request.getCurrentPassword())) {
-            throw new ValidationFailureException("New password is equal to old password.");
+            throw new ValidationFailureException("New password is equal to old password.", InternalCode.VALIDATION_FAILURE);
         }
         PasswordValidator.validatePassword(request.getNewPassword());
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
@@ -181,7 +179,7 @@ public class MemberService {
         jwtTokenProvider.validateToken(refreshToken);
         String savedRefreshToken = cacheService.getRefreshTokenIfPresent(email);
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
-            throw new NoSuchElementException("No such refresh token information.");
+            throw new NotFoundException("No such refresh token information.", InternalCode.NOT_FOUND);
         }
         Member member = getMemberFromDb(email);
         String authorities = member.getAuthorities().stream()
@@ -197,10 +195,10 @@ public class MemberService {
         String code = request.getVerificationCode();
         String savedCode = cacheService.getVerificationCodeIfPresent(email).getCode();
         if (savedCode == null) {
-            throw new NoSuchElementException("인증 내역이 없습니다");
+            throw new NotFoundException("Verification code not found.", InternalCode.NOT_FOUND);
         }
         if (!savedCode.equals(code)) {
-            throw new IllegalStateException("인증 내역이 다릅니다.");
+            throw new ValidationFailureException("인증 내역이 다릅니다.", InternalCode.VALIDATION_FAILURE);
         }
 
         Member member = getMemberFromDb(email);
@@ -230,7 +228,7 @@ public class MemberService {
 
     private void matchPassword(String rawPassword, String encodedPassword) {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new ValidationFailureException("Wrong password.");
+            throw new ValidationFailureException("Wrong password.", InternalCode.VALIDATION_FAILURE);
         }
     }
 
@@ -289,7 +287,7 @@ public class MemberService {
         Member member = getMemberFromDb(request.getEmail());
         String performanceId = request.getPerformanceId();
         Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NoSuchElementException("No such performance."));
+            .orElseThrow(() -> new NotFoundException("No such performance.", InternalCode.NOT_FOUND));
         Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
         if (optionalMemberLike.isPresent()) {
             return;
@@ -302,7 +300,7 @@ public class MemberService {
         Member member = getMemberFromDb(request.getEmail());
         String performanceId = request.getPerformanceId();
         Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NoSuchElementException("No such performance."));
+            .orElseThrow(() -> new NotFoundException("No such performance.", InternalCode.NOT_FOUND));
         Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
         if (optionalMemberLike.isEmpty()) {
             return;
@@ -322,7 +320,7 @@ public class MemberService {
 
     private Member getMemberFromDb(String email) {
         return memberRepository.findById(email)
-            .orElseThrow(() -> new NoSuchElementException("No such member."));
+            .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
     }
 
     private void validateCode(String email, String code) {
@@ -333,7 +331,7 @@ public class MemberService {
 
         boolean validCode = cacheService.isValidCode(request);
         if (!validCode) {
-            throw new IllegalStateException();
+            throw new ValidationFailureException("Validation code failure.", InternalCode.VALIDATION_FAILURE);
         }
         cacheService.invalidateCode(email);
     }

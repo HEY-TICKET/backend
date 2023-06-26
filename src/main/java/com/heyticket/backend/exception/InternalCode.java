@@ -15,7 +15,8 @@ public enum InternalCode {
 
     INVALID_JWT("INVALID_JWT"),
     EXPIRED_JWT("EXPIRED_JWT"),
-    USER_NOT_FOUND("USER_NOT_FOUND");
+    USER_NOT_FOUND("USER_NOT_FOUND"),
+    VALIDATION_FAILURE("VALIDATION_FAILURE");
 
     private final String name;
 }

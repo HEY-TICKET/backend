@@ -46,4 +46,11 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return CommonResponse.badRequest(e.getCode(), e.getMessage());
     }
+
+    @ExceptionHandler(value = NotFoundException.class)
+    public ResponseEntity<?> notFoundExceptionHandler(NotFoundException e) {
+        log.warn("Not found Exception.");
+        e.printStackTrace();
+        return CommonResponse.badRequest(e.getCode(), e.getMessage());
+    }
 }
