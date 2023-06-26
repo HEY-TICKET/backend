@@ -98,7 +98,7 @@ public class MemberService {
 
         PasswordValidator.validatePassword(password);
         checkIfExistingMember(email);
-        validateCode(email, request.getVerificationCode());
+        verifyCode(email, request.getVerificationCode());
 
         Member member = Member.builder()
             .email(email)
@@ -155,7 +155,7 @@ public class MemberService {
             .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
         matchPassword(request.getCurrentPassword(), member.getPassword());
         if (request.getNewPassword().equals(request.getCurrentPassword())) {
-            throw new ValidationFailureException("New password is equal to old password.", InternalCode.VALIDATION_FAILURE);
+            throw new ValidationFailureException("The new password is identical to the existing password.", InternalCode.BAD_REQUEST);
         }
         PasswordValidator.validatePassword(request.getNewPassword());
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
@@ -169,7 +169,7 @@ public class MemberService {
     private void checkIfExistingMember(String email) {
         boolean existingEmail = memberRepository.existsByEmail(email);
         if (existingEmail) {
-            throw new ValidationFailureException("Duplicated email exists.", InternalCode.BAD_REQUEST);
+            throw new ValidationFailureException("Duplicated email exists.", InternalCode.EXISTING_EMAIL);
         }
     }
 
@@ -193,16 +193,14 @@ public class MemberService {
     public String resetPassword(PasswordResetRequest request) {
         String email = request.getEmail();
         String code = request.getVerificationCode();
-        String savedCode = cacheService.getVerificationCodeIfPresent(email).getCode();
-        if (savedCode == null) {
-            throw new NotFoundException("Verification code not found.", InternalCode.NOT_FOUND);
-        }
-        if (!savedCode.equals(code)) {
-            throw new ValidationFailureException("인증 내역이 다릅니다.", InternalCode.VALIDATION_FAILURE);
-        }
+        verifyCode(email, code);
 
         Member member = getMemberFromDb(email);
         PasswordValidator.validatePassword(request.getPassword());
+        boolean matched = passwordEncoder.matches(request.getPassword(), member.getPassword());
+        if (matched) {
+            throw new ValidationFailureException("The new password is identical to the existing password.", InternalCode.BAD_REQUEST);
+        }
         member.updatePassword(passwordEncoder.encode(request.getPassword()));
         cacheService.invalidateRefreshToken(email);
         return email;
@@ -228,7 +226,7 @@ public class MemberService {
 
     private void matchPassword(String rawPassword, String encodedPassword) {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new ValidationFailureException("Wrong password.", InternalCode.VALIDATION_FAILURE);
+            throw new ValidationFailureException("Wrong password.", InternalCode.PW_MISMATCH);
         }
     }
 
@@ -323,7 +321,7 @@ public class MemberService {
             .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
     }
 
-    private void validateCode(String email, String code) {
+    private void verifyCode(String email, String code) {
         VerificationRequest request = VerificationRequest.builder()
             .email(email)
             .code(code)
@@ -331,7 +329,7 @@ public class MemberService {
 
         boolean validCode = cacheService.isValidCode(request);
         if (!validCode) {
-            throw new ValidationFailureException("Validation code failure.", InternalCode.VALIDATION_FAILURE);
+            throw new ValidationFailureException("Validation code failure.", InternalCode.VERIFICATION_FAILURE);
         }
         cacheService.invalidateCode(email);
     }
