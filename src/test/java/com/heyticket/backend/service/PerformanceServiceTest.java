@@ -10,13 +10,9 @@ import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
-import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
-import com.heyticket.backend.service.enums.Genre;
-import com.heyticket.backend.service.enums.SortOrder;
-import com.heyticket.backend.service.enums.SortType;
-import com.heyticket.backend.service.enums.TimePeriod;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.PerformancePriceRepository;
@@ -31,10 +27,14 @@ import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.service.enums.SearchType;
+import com.heyticket.backend.service.enums.SortOrder;
+import com.heyticket.backend.service.enums.SortType;
+import com.heyticket.backend.service.enums.TimePeriod;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -293,7 +293,7 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("Performance 단일 조회 - 해당 id가 없는 경우 NoSuchElementException을 throw한다.")
+    @DisplayName("Performance 단일 조회 - 해당 id가 없는 경우 NotFoundException을 throw한다.")
     void getPerformanceById_noSuchId() {
         //given
 
@@ -301,7 +301,7 @@ class PerformanceServiceTest {
         Throwable throwable = catchThrowable(() -> performanceService.getPerformanceById("randomId"));
 
         //then
-        assertThat(throwable).isInstanceOf(NoSuchElementException.class);
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
     }
 
     @Test

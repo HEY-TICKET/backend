@@ -7,7 +7,6 @@ import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberArea;
 import com.heyticket.backend.domain.MemberGenre;
 import com.heyticket.backend.domain.MemberKeyword;
-import com.heyticket.backend.exception.LoginFailureException;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
@@ -104,6 +103,26 @@ class MemberServiceTest {
     }
 
     @Test
+    @DisplayName("Member 조회 - 존재하지 않는 회원인 경우 throw NotFoundException")
+    void getMemberByEmail_noSuchMember() {
+        //given
+        Member member = createMember("email");
+        MemberGenre memberGenre = MemberGenre.of(Genre.MUSICAL);
+        MemberArea memberArea = MemberArea.of(Area.BUSAN);
+        MemberKeyword memberKeyword = MemberKeyword.of("keyword");
+        member.addMemberGenres(List.of(memberGenre));
+        member.addMemberAreas(List.of(memberArea));
+        member.addMemberKeywords(List.of(memberKeyword));
+        memberRepository.save(member);
+
+        //when
+        Throwable throwable = catchThrowable(() -> memberService.getMemberByEmail("wrongEmail"));
+
+        //then
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
     @DisplayName("Member 가입 - 데이터 확인")
     @Transactional
     void signUp() {
@@ -117,7 +136,7 @@ class MemberServiceTest {
             .verificationCode("verificationCode")
             .build();
 
-        cacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+        cacheService.putVerificationCode("email", VerificationCode.of(request.getVerificationCode()));
 
         //when
         memberService.signUp(request);
@@ -183,6 +202,28 @@ class MemberServiceTest {
     }
 
     @Test
+    @DisplayName("Member 가입 - 잘못된 인증 코드를 입력 받은 경우 throw ValidationFailureException")
+    void signUp_verificationCodeFailure() {
+        //given
+        MemberSignUpRequest request = MemberSignUpRequest.builder()
+            .email("email")
+            .password(TEST_PASSWORD)
+            .areas(List.of(Area.GYEONGGI, Area.SEOUL))
+            .genres(List.of(Genre.MUSICAL, Genre.THEATER))
+            .keywords(List.of("맘마미아"))
+            .verificationCode("wrongVerificationCode")
+            .build();
+
+        cacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+
+        //when
+        Throwable throwable = catchThrowable(() -> memberService.signUp(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
+
+    @Test
     @DisplayName("Member 로그인 - 데이터 확인")
     void login_success() {
         //given
@@ -203,7 +244,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 로그인 - 존재하지 않는 email을 입력한 경우 throw LoginFailureException")
+    @DisplayName("Member 로그인 - 존재하지 않는 email을 입력한 경우 throw NotFoundException")
     void login_wrongEmail() {
         //given
         Member member = createMember("email");
@@ -218,7 +259,7 @@ class MemberServiceTest {
         Throwable throwable = catchThrowable(() -> memberService.login(request));
 
         //then
-        assertThat(throwable).isInstanceOf(LoginFailureException.class);
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
     }
 
     @Test
