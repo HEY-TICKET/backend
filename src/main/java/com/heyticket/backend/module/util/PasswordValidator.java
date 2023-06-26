@@ -12,7 +12,7 @@ public class PasswordValidator {
         Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
         boolean matches = pattern.matcher(password).matches();
         if (!matches) {
-            throw new ValidationFailureException("Invalid password", InternalCode.BAD_REQUEST);
+            throw new ValidationFailureException("Invalid password", InternalCode.INVALID_JWT);
         }
     }
 }

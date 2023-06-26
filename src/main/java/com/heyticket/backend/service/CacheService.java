@@ -2,10 +2,11 @@ package com.heyticket.backend.service;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import jakarta.annotation.PostConstruct;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,9 +74,8 @@ public class CacheService {
     private VerificationCode getVerificationCode(String email) {
         VerificationCode verificationCode = getVerificationCodeIfPresent(email);
         if (verificationCode == null) {
-            throw new NoSuchElementException("Verification code for this email does not exist.");
+            throw new NotFoundException("Verification code for this email does not exist.", InternalCode.EXPIRED_CODE);
         }
         return verificationCode;
     }
-
 }

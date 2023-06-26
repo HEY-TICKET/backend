@@ -57,7 +57,7 @@ public class EmailService {
     public String verifyCode(VerificationRequest request) {
         boolean validCodeWithTime = cacheService.isValidCodeWithTime(request);
         if (!validCodeWithTime) {
-            throw new ValidationFailureException("Verification code is outdated or not matched.", InternalCode.BAD_REQUEST);
+            throw new ValidationFailureException("Verification code is outdated or not matched.", InternalCode.VERIFICATION_FAILURE);
         }
 
         String code = VerificationCodeGenerator.createCode();
