@@ -5,16 +5,15 @@ import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeResponse;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceDetailResponse;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceResponse;
-import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
-import com.heyticket.backend.service.enums.Genre;
-import com.heyticket.backend.service.enums.TimePeriod;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.repository.BoxOfficeRankRepository;
@@ -29,6 +28,9 @@ import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.TimePeriod;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,7 +41,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -110,9 +111,8 @@ public class PerformanceService {
         performance.addViewCount();
         return getPerformanceResponse(performance);
     }
-
-    @Transactional(readOnly = true)
-    public PerformanceResponse getPerformanceByIdWithoutUpdatingViewCount(String performanceId) {
+    
+    private PerformanceResponse getPerformanceByIdWithoutUpdatingViewCount(String performanceId) {
         Performance performance = getPerformanceFromDb(performanceId);
         return getPerformanceResponse(performance);
     }
@@ -136,7 +136,7 @@ public class PerformanceService {
     @Transactional(readOnly = true)
     public PageResponse<BoxOfficeRankResponse> getBoxOfficeRank(BoxOfficeRankRequest request, Pageable pageable) {
         BoxOfficeRank boxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(request)
-            .orElseThrow(() -> new NoSuchElementException("No such boxOfficeRank."));
+            .orElseThrow(() -> new NotFoundException("BoxOfficeRank is empty for the request.", InternalCode.NOT_FOUND));
 
         if (!StringUtils.hasText(boxOfficeRank.getPerformanceIds())) {
             return new PageResponse<>(Collections.emptyList(), 1, 0, 1);
@@ -193,7 +193,8 @@ public class PerformanceService {
             .timePeriod(TimePeriod.WEEK)
             .build();
 
-        BoxOfficeRank genreBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(genreBoxOfficeRankRequest).orElseThrow(() -> new NoSuchElementException("no such boxOfficeRank."));
+        BoxOfficeRank genreBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(genreBoxOfficeRankRequest)
+            .orElseThrow(() -> new NotFoundException("no such boxOfficeRank.", InternalCode.NOT_FOUND));
         String[] genrePerformanceIdArray = genreBoxOfficeRank.getPerformanceIds().split("\\|");
         List<String> filteredGerePerformanceIds = Arrays.stream(genrePerformanceIdArray)
             .filter(id -> !id.equals(performanceId))
@@ -209,7 +210,8 @@ public class PerformanceService {
             .timePeriod(TimePeriod.WEEK)
             .build();
 
-        BoxOfficeRank areaBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(areaBoxOfficeRankRequest).orElseThrow(() -> new NoSuchElementException("no such boxOfficeRank."));
+        BoxOfficeRank areaBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(areaBoxOfficeRankRequest)
+            .orElseThrow(() -> new NotFoundException("no such boxOfficeRank.", InternalCode.NOT_FOUND));
         String[] areaPerformanceIdArray = areaBoxOfficeRank.getPerformanceIds().split("\\|");
         List<String> filteredAreaPerformanceIds = Arrays.stream(areaPerformanceIdArray)
             .filter(id -> !id.equals(performanceId))
@@ -432,6 +434,7 @@ public class PerformanceService {
     }
 
     private Performance getPerformanceFromDb(String performanceId) {
-        return performanceRepository.findById(performanceId).orElseThrow(() -> new NoSuchElementException("no such performance. performanceId : " + performanceId));
+        return performanceRepository.findById(performanceId)
+            .orElseThrow(() -> new NotFoundException("no such performance. performanceId : " + performanceId, InternalCode.NOT_FOUND));
     }
 }
