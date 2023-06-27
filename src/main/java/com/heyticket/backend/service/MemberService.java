@@ -193,9 +193,9 @@ public class MemberService {
     public String resetPassword(PasswordResetRequest request) {
         String email = request.getEmail();
         String code = request.getVerificationCode();
+        Member member = getMemberFromDb(email);
         verifyCode(email, code);
 
-        Member member = getMemberFromDb(email);
         PasswordValidator.validatePassword(request.getPassword());
         boolean matched = passwordEncoder.matches(request.getPassword(), member.getPassword());
         if (matched) {

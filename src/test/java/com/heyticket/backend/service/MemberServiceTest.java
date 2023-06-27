@@ -18,6 +18,7 @@ import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
+import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.enums.Area;
@@ -421,6 +422,75 @@ class MemberServiceTest {
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
     }
+
+    @Test
+    @DisplayName("Member 비밀번호 변경(로그인 화면) - 데이터 확인")
+    void resetPassword(){
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        String verificationCode = "verificationCode";
+        cacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+
+        //when
+        PasswordResetRequest request = PasswordResetRequest.builder()
+            .email(member.getEmail())
+            .password("newPassword123")
+            .verificationCode(verificationCode)
+            .build();
+
+        memberService.resetPassword(request);
+
+        //then
+        Member foundMember = memberRepository.findByEmail(member.getEmail())
+            .orElseThrow(() -> new NoSuchElementException("No such member"));
+        String password = foundMember.getPassword();
+        boolean matched = passwordEncoder.matches(request.getPassword(), password);
+        assertThat(matched).isTrue();
+    }
+
+    @Test
+    @DisplayName("Member 비밀번호 변경(로그인 화면) - 해당 member가 존재하지 않는 경우 throw NotFoundException")
+    void resetPassword_noSuchMember(){
+        //given
+
+        //when
+        PasswordResetRequest request = PasswordResetRequest.builder()
+            .email("wrongEmail")
+            .password("newPassword123")
+            .verificationCode("verificationCode")
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.resetPassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Member 비밀번호 변경(로그인 화면) - 데이터 확인")
+    void resetPassword_wrongVerificationCode(){
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        String verificationCode = "verificationCode";
+        cacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+
+        //when
+        PasswordResetRequest request = PasswordResetRequest.builder()
+            .email(member.getEmail())
+            .password("newPassword123")
+            .verificationCode("wrongVerificationCode")
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.resetPassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
+
 
     private Member createMember(String email) {
         return Member.builder()
