@@ -387,7 +387,24 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 탈퇴 - password 일치하지 않는 경우")
+    @DisplayName("Member 탈퇴 - 존재하지 않는 회원인 경우 throw NotFoundException")
+    void deleteMember_noSuchMember() {
+        //given
+
+        //when
+        MemberDeleteRequest request = MemberDeleteRequest.builder()
+            .email("wrongEmail")
+            .password(TEST_PASSWORD)
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.deleteMember(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Member 탈퇴 - password 일치하지 않는 경우 throw ValidationFailureException")
     void deleteMember_wrongPassword() {
         //given
         Member member = createMember("email");
