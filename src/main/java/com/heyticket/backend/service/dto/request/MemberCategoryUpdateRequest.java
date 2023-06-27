@@ -1,5 +1,6 @@
 package com.heyticket.backend.service.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MemberCategoryUpdateRequest {
 
+    @NotBlank
     private String email;
 
     @Builder.Default

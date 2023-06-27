@@ -9,7 +9,7 @@ import com.heyticket.backend.domain.MemberGenre;
 import com.heyticket.backend.domain.MemberKeyword;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
-import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
+import com.heyticket.backend.module.security.jwt.TokenInfo;
 import com.heyticket.backend.repository.MemberGenreRepository;
 import com.heyticket.backend.repository.MemberKeywordRepository;
 import com.heyticket.backend.repository.MemberLikeRepository;

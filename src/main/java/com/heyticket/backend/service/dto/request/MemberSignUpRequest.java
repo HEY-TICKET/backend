@@ -2,6 +2,7 @@ package com.heyticket.backend.service.dto.request;
 
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,10 +18,13 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MemberSignUpRequest {
 
+    @NotBlank
     private String email;
 
+    @NotBlank
     private String password;
 
+    @NotBlank
     private String verificationCode;
 
     @Builder.Default
@@ -32,5 +36,6 @@ public class MemberSignUpRequest {
     @Builder.Default
     private List<String> keywords = new ArrayList<>();
 
+    @NotBlank
     private boolean keywordPush;
 }

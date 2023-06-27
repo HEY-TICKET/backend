@@ -11,7 +11,7 @@ import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
-import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
+import com.heyticket.backend.module.security.jwt.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
 import com.heyticket.backend.repository.MemberLikeRepository;
 import com.heyticket.backend.repository.MemberRepository;

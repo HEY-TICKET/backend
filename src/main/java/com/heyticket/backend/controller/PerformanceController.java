@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class PerformanceController {
     @Operation(summary = "공연 검색")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = PagePerformanceCommonrResponse.class)))})
     @GetMapping("/performances/search")
-    public ResponseEntity<?> searchPerformances(PerformanceSearchRequest request, CustomPageRequest customPageRequest) {
+    public ResponseEntity<?> searchPerformances(@Valid PerformanceSearchRequest request, CustomPageRequest customPageRequest) {
         PageResponse<PerformanceResponse> searchedPerformances = performanceService.searchPerformances(request, customPageRequest.of());
         return CommonResponse.ok("Search query result.", searchedPerformances);
     }
@@ -63,7 +64,7 @@ public class PerformanceController {
     @Operation(summary = "공연 랭킹 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = PageBoxOfficeRankCommonResponse.class)))})
     @GetMapping("/performances/rank")
-    public ResponseEntity<?> getBoxOffice(BoxOfficeRankRequest request, CustomPageRequest customPageRequest) {
+    public ResponseEntity<?> getBoxOffice(@Valid BoxOfficeRankRequest request, CustomPageRequest customPageRequest) {
         PageResponse<BoxOfficeRankResponse> boxOfficeRank = performanceService.getBoxOfficeRank(request, customPageRequest.of());
         return CommonResponse.ok("Performance rank.", boxOfficeRank);
     }

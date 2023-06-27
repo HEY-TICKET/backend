@@ -2,7 +2,6 @@ package com.heyticket.backend.module.security.jwt;
 
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.ValidationFailureException;
-import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

@@ -16,6 +16,7 @@ public class EmailSendRequest {
     @NotBlank
     private String email;
 
+    @NotBlank
     private VerificationType verificationType;
 
 }

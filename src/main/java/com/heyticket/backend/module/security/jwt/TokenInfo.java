@@ -1,4 +1,4 @@
-package com.heyticket.backend.module.security.jwt.dto;
+package com.heyticket.backend.module.security.jwt;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
