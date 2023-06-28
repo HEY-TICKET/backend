@@ -305,7 +305,7 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("BoxOffice rank 조회 - 성공 데이터 확인.")
+    @DisplayName("BoxOffice rank 조회 - 성공 데이터 확인")
     void getBoxOfficeRank_success() {
         //given
         Performance performance2 = createPerformance("2");
@@ -331,18 +331,18 @@ class PerformanceServiceTest {
             .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
             .build();
 
-        CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
+        CustomPageRequest customPageRequest = new CustomPageRequest(2, 2);
         PageRequest pageRequest = customPageRequest.of();
 
         PageResponse<BoxOfficeRankResponse> result = performanceService.getBoxOfficeRank(request, pageRequest);
 
         //then
         List<BoxOfficeRankResponse> contents = result.getContents();
-        assertThat(contents).hasSize(3);
+        assertThat(contents).hasSize(2);
         assertThat(contents).extracting("id")
-            .containsExactly(performance2.getId(), performance1.getId(), performance3.getId());
+            .containsExactly(performance3.getId(), performance4.getId());
         assertThat(contents).extracting("rank")
-            .containsExactly(1, 2, 3);
+            .containsExactly(3, 4);
         assertThat(contents.get(0).getStoryUrls()).hasSize(0);
     }
 

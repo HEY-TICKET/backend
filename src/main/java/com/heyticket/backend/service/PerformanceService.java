@@ -116,7 +116,7 @@ public class PerformanceService {
         Performance performance = getPerformanceFromDb(performanceId);
         return getPerformanceResponse(performance);
     }
-    
+
     private PerformanceResponse getPerformanceResponse(Performance performance) {
         PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
         performanceResponse.updateStoryUrls(performance.getStoryUrls());
@@ -173,7 +173,7 @@ public class PerformanceService {
                 unsavedPerformanceList.add(performance);
             }
             BoxOfficeRankResponse boxOfficeRankResponse = PerformanceMapper.INSTANCE.toBoxOfficeRankResponse(performance);
-            boxOfficeRankResponse.setRank(i + 1);
+            boxOfficeRankResponse.setRank((pageNumber - 1) * pageSize + i + 1);
             boxOfficeRankResponse.updateStoryUrls(performance.getStoryUrls());
             boxOfficeRankResponseList.add(boxOfficeRankResponse);
         }
