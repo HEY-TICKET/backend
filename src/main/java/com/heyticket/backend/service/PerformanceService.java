@@ -283,8 +283,7 @@ public class PerformanceService {
         TimePeriod[] timePeriods = TimePeriod.values();
 
         List<CompletableFuture<BoxOfficeRank>> futures = new ArrayList<>();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(20);
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
 
         for (TimePeriod timePeriod : timePeriods) {
             for (BoxOfficeGenre boxOfficeGenre : boxOfficeGenres) {
