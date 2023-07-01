@@ -1,6 +1,6 @@
 package com.heyticket.backend.service.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PerformanceBatchUpdateRequest {
 
-    @NotBlank
+    @NotNull
     private LocalDate from;
 
-    @NotBlank
+    @NotNull
     private LocalDate to;
 
-    @NotBlank
+    @NotNull
     private int rows;
 }

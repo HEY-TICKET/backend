@@ -3,6 +3,7 @@ package com.heyticket.backend.service.dto.request;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,6 @@ public class MemberSignUpRequest {
     @Builder.Default
     private List<String> keywords = new ArrayList<>();
 
-    @NotBlank
+    @NotNull
     private boolean keywordPush;
 }

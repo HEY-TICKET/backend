@@ -1,6 +1,7 @@
 package com.heyticket.backend.service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +16,6 @@ public class MemberPushUpdateRequest {
     @NotBlank
     private String email;
 
-    @NotBlank
+    @NotNull
     private boolean isPushEnabled;
 }
