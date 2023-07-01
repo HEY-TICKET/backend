@@ -113,7 +113,6 @@ public class MemberController {
         return CommonResponse.ok("Password change successful.", email);
     }
 
-
     // Authorized
     @Operation(summary = "회원 정보 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = MemberCommonResponse.class)))})
@@ -175,7 +174,7 @@ public class MemberController {
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @PostMapping("/members/performances/like")
     public ResponseEntity<?> hitLike(@RequestBody MemberLikeSaveRequest request) {
-        memberService.hitLike(request);
+        memberLikeService.hitLike(request);
         return CommonResponse.ok("Member like " + request.getPerformanceId(), true);
     }
 
@@ -183,7 +182,7 @@ public class MemberController {
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @DeleteMapping("/members/performances/like")
     public ResponseEntity<?> cancelLike(@RequestBody @Valid MemberLikeSaveRequest request) {
-        memberService.cancelLike(request);
+        memberLikeService.cancelLike(request);
         return CommonResponse.ok("Member cancel like " + request.getPerformanceId(), true);
     }
 

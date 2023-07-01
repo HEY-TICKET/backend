@@ -4,8 +4,6 @@ import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberArea;
 import com.heyticket.backend.domain.MemberGenre;
 import com.heyticket.backend.domain.MemberKeyword;
-import com.heyticket.backend.domain.MemberLike;
-import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
@@ -20,7 +18,6 @@ import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
-import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
@@ -36,7 +33,6 @@ import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -260,7 +256,6 @@ public class MemberService {
                 .filter(newMemberArea -> !memberAreas.contains(newMemberArea))
                 .forEach(memberAreas::add);
         }
-
     }
 
     public void updatePreferredKeyword(MemberKeywordUpdateRequest request) {
@@ -279,31 +274,6 @@ public class MemberService {
                 .filter(newMemberKeyword -> !memberKeywords.contains(newMemberKeyword))
                 .forEach(memberKeywords::add);
         }
-    }
-
-    public void hitLike(MemberLikeSaveRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
-        String performanceId = request.getPerformanceId();
-        Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NotFoundException("No such performance.", InternalCode.NOT_FOUND));
-        Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
-        if (optionalMemberLike.isPresent()) {
-            return;
-        }
-        MemberLike memberLike = MemberLike.of(member, performance);
-        memberLikeRepository.save(memberLike);
-    }
-
-    public void cancelLike(MemberLikeSaveRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
-        String performanceId = request.getPerformanceId();
-        Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NotFoundException("No such performance.", InternalCode.NOT_FOUND));
-        Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
-        if (optionalMemberLike.isEmpty()) {
-            return;
-        }
-        memberLikeRepository.deleteByMemberAndPerformance(member, performance);
     }
 
     public void updateKeywordPushEnabled(MemberPushUpdateRequest request) {
