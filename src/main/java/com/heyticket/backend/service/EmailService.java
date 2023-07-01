@@ -23,7 +23,7 @@ public class EmailService {
 
     private final JavaMailSender emailSender;
 
-    private final CacheService cacheService;
+    private final LocalCacheService localCacheService;
 
     public String sendSimpleMessage(EmailSendRequest request) {
         String email = request.getEmail();
@@ -44,25 +44,25 @@ public class EmailService {
             es.printStackTrace();
             throw new IllegalArgumentException();
         }
-        cacheService.putVerificationCode(email, verificationCode);
+        localCacheService.putVerificationCode(email, verificationCode);
 
         return email;
     }
 
     public String expireCode(String email) {
-        cacheService.invalidateCode(email);
+        localCacheService.invalidateCode(email);
         return email;
     }
 
     public String verifyCode(VerificationRequest request) {
-        boolean validCodeWithTime = cacheService.isValidCodeWithTime(request);
+        boolean validCodeWithTime = localCacheService.isValidCodeWithTime(request);
         if (!validCodeWithTime) {
             throw new ValidationFailureException("Verification code is outdated or not matched.", InternalCode.VERIFICATION_FAILURE);
         }
 
         String code = VerificationCodeGenerator.createCode();
         VerificationCode verificationCode = VerificationCode.of(code, System.currentTimeMillis() + 600000);
-        cacheService.putVerificationCode(request.getEmail(), verificationCode);
+        localCacheService.putVerificationCode(request.getEmail(), verificationCode);
 
         return code;
     }

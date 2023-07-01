@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
 @Configuration
-public class FeignConfiguration {
+public class FeignConfig {
 
     private final ObjectFactory<HttpMessageConverters> messageConverters;
 
-    public FeignConfiguration(final ObjectFactory<HttpMessageConverters> messageConverters) {
+    public FeignConfig(final ObjectFactory<HttpMessageConverters> messageConverters) {
         this.messageConverters = messageConverters;
     }
 

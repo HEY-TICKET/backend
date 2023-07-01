@@ -63,7 +63,7 @@ class MemberServiceTest {
     private MemberService memberService;
 
     @Autowired
-    private CacheService cacheService;
+    private LocalCacheService localCacheService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -138,7 +138,7 @@ class MemberServiceTest {
             .verificationCode("verificationCode")
             .build();
 
-        cacheService.putVerificationCode("email", VerificationCode.of(request.getVerificationCode()));
+        localCacheService.putVerificationCode("email", VerificationCode.of(request.getVerificationCode()));
 
         //when
         memberService.signUp(request);
@@ -169,7 +169,7 @@ class MemberServiceTest {
             .verificationCode("verificationCode")
             .build();
 
-        cacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+        localCacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
 
         //when
         Throwable throwable = catchThrowable(() -> memberService.signUp(request));
@@ -194,7 +194,7 @@ class MemberServiceTest {
             .verificationCode("verificationCode")
             .build();
 
-        cacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+        localCacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
 
         //when
         Throwable throwable = catchThrowable(() -> memberService.signUp(request));
@@ -216,7 +216,7 @@ class MemberServiceTest {
             .verificationCode("wrongVerificationCode")
             .build();
 
-        cacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+        localCacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
 
         //when
         Throwable throwable = catchThrowable(() -> memberService.signUp(request));
@@ -432,7 +432,7 @@ class MemberServiceTest {
         memberRepository.save(member);
 
         String verificationCode = "verificationCode";
-        cacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
@@ -477,7 +477,7 @@ class MemberServiceTest {
         memberRepository.save(member);
 
         String verificationCode = "verificationCode";
-        cacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()

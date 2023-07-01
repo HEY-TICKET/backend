@@ -63,7 +63,7 @@ public class MemberService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final CacheService cacheService;
+    private final LocalCacheService localCacheService;
 
     private final EmailService emailService;
 
@@ -132,7 +132,7 @@ public class MemberService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
-        cacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+        localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
 
         return tokenInfo;
     }
@@ -145,7 +145,7 @@ public class MemberService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
-        cacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+        localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
         return tokenInfo;
     }
 
@@ -177,7 +177,7 @@ public class MemberService {
         String email = request.getEmail();
         String refreshToken = request.getRefreshToken();
         jwtTokenProvider.validateToken(refreshToken);
-        String savedRefreshToken = cacheService.getRefreshTokenIfPresent(email);
+        String savedRefreshToken = localCacheService.getRefreshTokenIfPresent(email);
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
             throw new NotFoundException("No such refresh token information.", InternalCode.NOT_FOUND);
         }
@@ -186,7 +186,7 @@ public class MemberService {
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(","));
         TokenInfo tokenInfo = jwtTokenProvider.regenerateToken(email, authorities);
-        cacheService.putRefreshToken(email, tokenInfo.getRefreshToken());
+        localCacheService.putRefreshToken(email, tokenInfo.getRefreshToken());
         return tokenInfo;
     }
 
@@ -202,7 +202,7 @@ public class MemberService {
             throw new ValidationFailureException("The new password is identical to the existing password.", InternalCode.BAD_REQUEST);
         }
         member.updatePassword(passwordEncoder.encode(request.getPassword()));
-        cacheService.invalidateRefreshToken(email);
+        localCacheService.invalidateRefreshToken(email);
         return email;
     }
 
@@ -220,7 +220,7 @@ public class MemberService {
         Member member = getMemberFromDb(email);
         matchPassword(request.getPassword(), member.getPassword());
         memberRepository.delete(member);
-        cacheService.invalidateRefreshToken(email);
+        localCacheService.invalidateRefreshToken(email);
         return email;
     }
 
@@ -327,10 +327,10 @@ public class MemberService {
             .code(code)
             .build();
 
-        boolean validCode = cacheService.isValidCode(request);
+        boolean validCode = localCacheService.isValidCode(request);
         if (!validCode) {
             throw new ValidationFailureException("Validation code failure.", InternalCode.VERIFICATION_FAILURE);
         }
-        cacheService.invalidateCode(email);
+        localCacheService.invalidateCode(email);
     }
 }

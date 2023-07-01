@@ -21,5 +21,4 @@ public enum PerformanceStatus {
             .findFirst()
             .orElseThrow(() -> new NoSuchElementException("No such status."));
     }
-
 }

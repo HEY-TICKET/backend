@@ -37,5 +37,4 @@ public class BoxOfficeRank extends BaseTimeEntity {
 
     @Column(length = 1000)
     private String performanceIds;
-
 }

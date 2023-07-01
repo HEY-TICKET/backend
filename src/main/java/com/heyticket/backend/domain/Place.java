@@ -37,5 +37,4 @@ public class Place extends BaseTimeEntity {
         this.area = area;
         this.gugunName = gugunName;
     }
-
 }

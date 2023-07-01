@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CacheService {
+public class LocalCacheService {
 
     private Cache<String, VerificationCode> emailVerificationCache;
 
