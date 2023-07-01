@@ -56,6 +56,7 @@ public class MemberController {
 
     private final MemberLikeService memberLikeService;
 
+    // Unauthorized
     @Operation(summary = "로그인")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = TokenInfoCommonResponse.class)))})
     @PostMapping("/members/login")
@@ -70,14 +71,6 @@ public class MemberController {
     public ResponseEntity<?> signUp(@RequestBody @Valid MemberSignUpRequest request) {
         TokenInfo tokenInfo = memberService.signUp(request);
         return CommonResponse.ok("Sign up successful.", tokenInfo);
-    }
-
-    @Operation(summary = "회원 정보 조회")
-    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = MemberCommonResponse.class)))})
-    @GetMapping("/members/{id}")
-    public ResponseEntity<?> getMember(@PathVariable String id) {
-        MemberResponse memberResponse = memberService.getMemberByEmail(id);
-        return CommonResponse.ok("User info.", memberResponse);
     }
 
     @Operation(summary = "이메일 검증")
@@ -104,15 +97,7 @@ public class MemberController {
         return CommonResponse.ok("Email verification is successful. New verification code issued.", verificationCode);
     }
 
-    @Operation(summary = "인증 번호 만료시키기(화면 이탈 시)")
-    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
-    @DeleteMapping("/members/verification/expire")
-    public ResponseEntity<?> expireVerificationCode(@RequestBody @Valid VerificationRequest request) {
-        String email = emailService.expireCode(request.getEmail());
-        return CommonResponse.ok("Email verification code has been expired.", email);
-    }
-
-    @Operation(summary = "리프레시 토큰 만료 시 토큰 재발급")
+    @Operation(summary = "엑세스 토큰 만료 시 토큰 재발급")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = TokenInfoCommonResponse.class)))})
     @PutMapping("/members/token")
     public ResponseEntity<?> reissueJwtTokens(@RequestBody @Valid TokenReissueRequest request) {
@@ -126,6 +111,24 @@ public class MemberController {
     public ResponseEntity<?> resetPassword(@RequestBody @Valid PasswordResetRequest request) {
         String email = memberService.resetPassword(request);
         return CommonResponse.ok("Password change successful.", email);
+    }
+
+
+    // Authorized
+    @Operation(summary = "회원 정보 조회")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = MemberCommonResponse.class)))})
+    @GetMapping("/members/{id}")
+    public ResponseEntity<?> getMember(@PathVariable String id) {
+        MemberResponse memberResponse = memberService.getMemberByEmail(id);
+        return CommonResponse.ok("User info.", memberResponse);
+    }
+
+    @Operation(summary = "인증 번호 만료시키기(화면 이탈 시)")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
+    @DeleteMapping("/members/verification/expire")
+    public ResponseEntity<?> expireVerificationCode(@RequestBody @Valid VerificationRequest request) {
+        String email = emailService.expireCode(request.getEmail());
+        return CommonResponse.ok("Email verification code has been expired.", email);
     }
 
     @Operation(summary = "비밀번호 변경(내 정보)")

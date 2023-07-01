@@ -35,8 +35,15 @@ public class SecurityConfig {
             .formLogin().disable()
             .authorizeHttpRequests(authorize ->
                 authorize
-                    .requestMatchers("/api/**").permitAll()
                     .requestMatchers("/batch/**").hasRole("ADMIN")
+                    .requestMatchers("/api/members/login").permitAll()
+                    .requestMatchers("/api/members/signup").permitAll()
+                    .requestMatchers("/api/members/token").permitAll()
+                    .requestMatchers("/api/members/password/reset").permitAll()
+                    .requestMatchers("/api/members/verification/verify").permitAll()
+                    .requestMatchers("/api/members/verification/send").permitAll()
+                    .requestMatchers("/api/members/validation").permitAll()
+                    .requestMatchers("/api/**").authenticated()
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new ExceptionHandlerFilter(objectMapper), JwtAuthenticationFilter.class);
@@ -63,8 +70,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer configure() {
         return (web) -> web.ignoring()
-            .requestMatchers("/api/members/login")
-            .requestMatchers("/api/members/signup")
+            .requestMatchers("/api/performances/**")
             .requestMatchers("/api/swagger")
             .requestMatchers("/swagger-ui/**")
             .requestMatchers("/v3/api-docs/**")
