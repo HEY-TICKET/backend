@@ -1,10 +1,10 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.member;
 
 import static com.heyticket.backend.domain.QMemberLike.memberLike;
 import static com.heyticket.backend.domain.QPerformance.performance;
 
 import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
 import com.heyticket.backend.service.enums.LikeSortType;
 import com.heyticket.backend.service.enums.SortOrder;

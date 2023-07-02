@@ -1,4 +1,4 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.performance;
 
 
 import static com.heyticket.backend.domain.QBoxOfficeRank.boxOfficeRank;

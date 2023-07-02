@@ -1,17 +1,15 @@
-package com.heyticket.backend.sheduler;
+package com.heyticket.backend.schedule;
 
 import com.heyticket.backend.service.PerformanceService;
 import com.heyticket.backend.service.PlaceService;
 import java.time.LocalDate;
 import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @EnableScheduling
 @Component
 @RequiredArgsConstructor

@@ -1,4 +1,4 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.performance;
 
 import com.heyticket.backend.domain.BoxOfficeRank;
 import org.springframework.data.jpa.repository.JpaRepository;

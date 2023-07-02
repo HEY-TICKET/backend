@@ -1,4 +1,4 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.place;
 
 import com.heyticket.backend.domain.Place;
 import org.springframework.data.jpa.repository.JpaRepository;

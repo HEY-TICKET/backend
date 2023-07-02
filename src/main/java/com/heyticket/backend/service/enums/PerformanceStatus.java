@@ -1,4 +1,4 @@
-package com.heyticket.backend.domain.enums;
+package com.heyticket.backend.service.enums;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;

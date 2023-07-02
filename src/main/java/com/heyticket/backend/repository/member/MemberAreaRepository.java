@@ -1,4 +1,4 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.member;
 
 import com.heyticket.backend.domain.MemberArea;
 import org.springframework.data.jpa.repository.JpaRepository;

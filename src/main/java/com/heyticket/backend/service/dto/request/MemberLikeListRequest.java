@@ -1,6 +1,6 @@
 package com.heyticket.backend.service.dto.request;
 
-import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.LikeSortType;
 import com.heyticket.backend.service.enums.SortOrder;
 import jakarta.validation.constraints.NotBlank;

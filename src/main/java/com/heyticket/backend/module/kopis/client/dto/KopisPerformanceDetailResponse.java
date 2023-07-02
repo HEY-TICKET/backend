@@ -1,7 +1,7 @@
 package com.heyticket.backend.module.kopis.client.dto;
 
 import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.Genre;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

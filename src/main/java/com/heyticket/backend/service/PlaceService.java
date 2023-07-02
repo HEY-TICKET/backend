@@ -6,7 +6,7 @@ import com.heyticket.backend.module.kopis.client.dto.KopisPlaceRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisPlaceResponse;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.module.kopis.service.KopisService;
-import com.heyticket.backend.repository.PlaceRepository;
+import com.heyticket.backend.repository.place.PlaceRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

@@ -1,11 +1,11 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.performance;
 
 
 import static com.heyticket.backend.domain.QPerformance.performance;
 import static com.heyticket.backend.domain.QPerformancePrice.performancePrice;
 
 import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.service.enums.SortOrder;

@@ -1,6 +1,6 @@
 package com.heyticket.backend.domain;
 
-import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
 import jakarta.persistence.Column;

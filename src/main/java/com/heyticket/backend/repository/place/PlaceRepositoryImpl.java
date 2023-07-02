@@ -1,4 +1,4 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.place;
 
 
 import static com.heyticket.backend.domain.QPlace.place;

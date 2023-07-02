@@ -1,4 +1,4 @@
-package com.heyticket.backend.repository;
+package com.heyticket.backend.repository.member;
 
 import com.heyticket.backend.domain.Member;
 import java.util.Optional;

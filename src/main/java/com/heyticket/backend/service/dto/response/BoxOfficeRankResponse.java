@@ -1,6 +1,6 @@
 package com.heyticket.backend.service.dto.response;
 
-import com.heyticket.backend.domain.enums.PerformanceStatus;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.Genre;
 import java.time.LocalDate;
 import java.util.Collections;
