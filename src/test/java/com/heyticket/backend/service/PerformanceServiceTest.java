@@ -166,7 +166,7 @@ class PerformanceServiceTest {
         //when
         NewPerformanceRequest request = NewPerformanceRequest.builder()
             .genre(Genre.ALL)
-            .sortType(SortType.VIEW_COUNT)
+            .sortType(SortType.VIEWS)
             .sortOrder(SortOrder.DESC)
             .build();
 

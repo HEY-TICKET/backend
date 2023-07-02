@@ -35,8 +35,8 @@ public class PerformanceFilterRequest {
     private Integer maxPrice;
 
     @Builder.Default
-    private SortType sortType = SortType.END_DATE;
+    private SortType sortType = SortType.VIEWS;
 
     @Builder.Default
-    private SortOrder sortOrder = SortOrder.ASC;
+    private SortOrder sortOrder = SortOrder.DESC;
 }

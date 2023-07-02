@@ -11,9 +11,7 @@ import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.module.security.jwt.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
-import com.heyticket.backend.repository.member.MemberLikeRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
-import com.heyticket.backend.repository.performance.PerformanceRepository;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
@@ -49,11 +47,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    private final MemberLikeRepository memberLikeRepository;
-
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
-    private final PerformanceRepository performanceRepository;
 
     private final JwtTokenProvider jwtTokenProvider;
 

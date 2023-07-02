@@ -173,13 +173,12 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
 
     private OrderSpecifier<?> orderCondition(SortType sortType, SortOrder sortOrder) {
         if (sortType == null) {
-            return performance.createdDate.desc();
+            return performance.views.desc();
         }
 
         return switch (sortType) {
-            case END_DATE -> sortOrder == SortOrder.ASC ? performance.endDate.asc() : performance.endDate.desc();
             case CREATED_DATE -> sortOrder == SortOrder.ASC ? performance.createdDate.asc() : performance.createdDate.desc();
-            case VIEW_COUNT -> sortOrder == SortOrder.ASC ? performance.views.asc() : performance.views.desc();
+            case VIEWS -> sortOrder == SortOrder.ASC ? performance.views.asc() : performance.views.desc();
             default -> null;
         };
     }

@@ -96,7 +96,6 @@ public class JwtTokenProvider {
         Claims claims = parseClaims(accessToken);
 
         if (claims.get("auth") == null) {
-            log.info("Invalid JWT");
             throw new ValidationFailureException("JWT is invalid.", InternalCode.INVALID_JWT);
         }
 
