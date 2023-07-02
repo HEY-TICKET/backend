@@ -186,45 +186,53 @@ public class PerformanceService {
     @Transactional(readOnly = true)
     public List<PerformanceResponse> getPerformanceRecommendation(String performanceId) {
         Performance performance = getPerformanceFromDb(performanceId);
-        BoxOfficeGenre boxOfficeGenre = performance.getGenre().getBoxOfficeGenre();
 
+        List<String> recommendedPerformanceIds = new ArrayList<>();
+
+        BoxOfficeGenre boxOfficeGenre = performance.getGenre().getBoxOfficeGenre();
         BoxOfficeRankRequest genreBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
             .boxOfficeGenre(boxOfficeGenre)
             .timePeriod(TimePeriod.WEEK)
             .build();
 
-        BoxOfficeRank genreBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(genreBoxOfficeRankRequest)
-            .orElseThrow(() -> new NotFoundException("no such boxOfficeRank.", InternalCode.NOT_FOUND));
-        String[] genrePerformanceIdArray = genreBoxOfficeRank.getPerformanceIds().split("\\|");
-        List<String> filteredGerePerformanceIds = Arrays.stream(genrePerformanceIdArray)
-            .filter(id -> !id.equals(performanceId))
-            .collect(Collectors.toList());
-        String firstGenrePerformanceId = filteredGerePerformanceIds.get(0);
-        String secondGenrePerformanceId = filteredGerePerformanceIds.get(1);
+        Optional<BoxOfficeRank> optionalGenreBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(genreBoxOfficeRankRequest);
+        if (optionalGenreBoxOfficeRank.isPresent()) {
+            BoxOfficeRank boxOfficeRank = optionalGenreBoxOfficeRank.get();
+            String[] genrePerformanceIdArray = boxOfficeRank.getPerformanceIds().split("\\|");
+            List<String> filteredPerformanceIds = Arrays.stream(genrePerformanceIdArray)
+                .filter(id -> !id.equals(performanceId))
+                .collect(Collectors.toList());
 
-        Area area = performance.getArea();
-        BoxOfficeArea boxOfficeArea = area.getBoxOfficeArea();
+            int performanceLimit = Math.min(filteredPerformanceIds.size(), 2);
+            for (int i = 0; i < performanceLimit; i++) {
+                recommendedPerformanceIds.add(filteredPerformanceIds.get(i));
+            }
+        }
 
+        BoxOfficeArea boxOfficeArea = performance.getArea().getBoxOfficeArea();
         BoxOfficeRankRequest areaBoxOfficeRankRequest = BoxOfficeRankRequest.builder()
             .boxOfficeArea(boxOfficeArea)
             .timePeriod(TimePeriod.WEEK)
             .build();
 
-        BoxOfficeRank areaBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(areaBoxOfficeRankRequest)
-            .orElseThrow(() -> new NotFoundException("no such boxOfficeRank.", InternalCode.NOT_FOUND));
-        String[] areaPerformanceIdArray = areaBoxOfficeRank.getPerformanceIds().split("\\|");
-        List<String> filteredAreaPerformanceIds = Arrays.stream(areaPerformanceIdArray)
-            .filter(id -> !id.equals(performanceId))
-            .filter(id -> !id.equals(firstGenrePerformanceId))
-            .filter(id -> !id.equals(secondGenrePerformanceId))
-            .collect(Collectors.toList());
-        String firstAreaPerformanceId = filteredAreaPerformanceIds.get(0);
-        String secondAreaPerformanceId = filteredAreaPerformanceIds.get(1);
+        Optional<BoxOfficeRank> optionalAreaBoxOfficeRank = boxOfficeRankRepository.findBoxOfficeRank(areaBoxOfficeRankRequest);
+        if (optionalAreaBoxOfficeRank.isPresent()) {
+            BoxOfficeRank boxOfficeRank = optionalAreaBoxOfficeRank.get();
+            String[] performanceIdArray = boxOfficeRank.getPerformanceIds().split("\\|");
+            List<String> filteredPerformanceIds = Arrays.stream(performanceIdArray)
+                .filter(id -> !id.equals(performanceId))
+                .filter(id -> !recommendedPerformanceIds.contains(id))
+                .collect(Collectors.toList());
 
-        return List.of(getPerformanceByIdWithoutUpdatingViewCount(firstGenrePerformanceId),
-            getPerformanceByIdWithoutUpdatingViewCount(secondGenrePerformanceId),
-            getPerformanceByIdWithoutUpdatingViewCount(firstAreaPerformanceId),
-            getPerformanceByIdWithoutUpdatingViewCount(secondAreaPerformanceId));
+            int performanceLimit = Math.min(filteredPerformanceIds.size(), 2);
+            for (int i = 0; i < performanceLimit; i++) {
+                recommendedPerformanceIds.add(filteredPerformanceIds.get(i));
+            }
+        }
+
+        return recommendedPerformanceIds.stream()
+            .map(this::getPerformanceByIdWithoutUpdatingViewCount)
+            .toList();
     }
 
     public int updatePerformancesBatch(LocalDate from, LocalDate to, int rows) {

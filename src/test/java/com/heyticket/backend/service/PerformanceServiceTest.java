@@ -383,7 +383,7 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("Performance recommendation 조회")
+    @DisplayName("Performance recommendation 조회 - 데이터 확인")
     void getPerformanceRecommendation() {
         //given
         Genre genre = Genre.CLASSIC;
@@ -424,6 +424,47 @@ class PerformanceServiceTest {
         assertThat(result).hasSize(4);
         assertThat(result).extracting("id")
             .containsExactly(performance1.getId(), performance2.getId(), performance3.getId(), performance4.getId());
+    }
+
+    @Test
+    @DisplayName("Performance recommendation 조회 - 데이터가 4개 이하인 경우 있는 개수만큼만 return한다.")
+    void getPerformanceRecommendation_noRecommendationData() {
+        //given
+        Genre genre = Genre.CLASSIC;
+        Area area = Area.SEJONG;
+
+        Performance performance = Performance.builder()
+            .id("id")
+            .title("title")
+            .genre(genre)
+            .area(area)
+            .views(0)
+            .build();
+
+        Performance performance1 = createPerformanceWithGenre("genre1", genre);
+        Performance performance3 = createPerformanceWithArea("area1", area);
+
+        BoxOfficeRank boxOfficeRankGenre = BoxOfficeRank.builder()
+            .boxOfficeGenre(genre.getBoxOfficeGenre())
+            .timePeriod(TimePeriod.WEEK)
+            .performanceIds(performance1.getId())
+            .build();
+
+        BoxOfficeRank boxOfficeRankArea = BoxOfficeRank.builder()
+            .boxOfficeArea(area.getBoxOfficeArea())
+            .timePeriod(TimePeriod.WEEK)
+            .performanceIds(performance3.getId())
+            .build();
+
+        performanceRepository.saveAll(List.of(performance, performance1, performance3));
+        boxOfficeRankRepository.saveAll(List.of(boxOfficeRankGenre, boxOfficeRankArea));
+
+        //when
+        List<PerformanceResponse> result = performanceService.getPerformanceRecommendation(performance.getId());
+
+        //then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting("id").containsOnly(performance1.getId(), performance3.getId());
     }
 
     @Test
@@ -590,7 +631,7 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("Performance 검색")
+    @DisplayName("Performance 검색 - 데이터 확인")
     void searchPerformance() {
         //given
         Performance performance = Performance.builder()
