@@ -9,7 +9,10 @@ import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.repository.MemberLikeRepository;
 import com.heyticket.backend.repository.MemberRepository;
 import com.heyticket.backend.repository.PerformanceRepository;
+import com.heyticket.backend.service.dto.pagable.PageResponse;
+import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
+import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
 import jakarta.persistence.EntityManager;
@@ -24,6 +27,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
@@ -53,7 +57,7 @@ class MemberLikeServiceTest {
 
     @Test
     @DisplayName("MemberLike 등록 - 데이터 확인")
-    void hitLike(){
+    void hitLike() {
         //given
         Member member = createMember("email");
         memberRepository.save(member);
@@ -78,7 +82,80 @@ class MemberLikeServiceTest {
         List<MemberLike> memberLikes = foundMember.getMemberLikes();
         assertThat(memberLikes).hasSize(1);
         assertThat(memberLikes.get(0).getPerformance().getId()).isEqualTo(performance.getId());
-     }
+    }
+
+    @Test
+    @DisplayName("MemberLike 등록 취소 - 데이터 확인")
+    void cancelLike() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Performance performance = createPerformance("performanceId");
+        performanceRepository.save(performance);
+
+        MemberLike memberLike = MemberLike.builder()
+            .performance(performance)
+            .member(member)
+            .build();
+
+        memberLikeRepository.save(memberLike);
+
+        //when
+        MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
+            .email(member.getEmail())
+            .performanceId(performance.getId())
+            .build();
+
+        memberLikeService.cancelLike(request);
+
+        em.flush();
+        em.clear();
+
+        //then
+        List<MemberLike> memberLikes = memberLikeRepository.findAll();
+        assertThat(memberLikes).hasSize(0);
+    }
+
+    @Test
+    @DisplayName("MemberLike 조회 - 데이터 확인")
+    void getMemberLikedPerformances() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Performance performance1 = createPerformance("performanceId1");
+        Performance performance2 = createPerformance("performanceId2");
+        performanceRepository.saveAll(List.of(performance1, performance2));
+
+        MemberLike memberLike1 = MemberLike.builder()
+            .performance(performance1)
+            .member(member)
+            .build();
+
+        MemberLike memberLike2 = MemberLike.builder()
+            .performance(performance2)
+            .member(member)
+            .build();
+
+        memberLikeRepository.saveAll(List.of(memberLike1, memberLike2));
+
+        //when
+        MemberLikeListRequest request = MemberLikeListRequest.builder()
+            .email(member.getEmail())
+            .build();
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        PageResponse<PerformanceResponse> memberLikedPerformances = memberLikeService.getMemberLikedPerformances(request, pageRequest);
+
+        em.flush();
+        em.clear();
+
+        //then
+        List<PerformanceResponse> contents = memberLikedPerformances.getContents();
+        assertThat(contents).hasSize(2);
+        assertThat(contents).extracting("id").containsOnly(performance1.getId(), performance2.getId());
+    }
 
     private Member createMember(String email) {
         return Member.builder()

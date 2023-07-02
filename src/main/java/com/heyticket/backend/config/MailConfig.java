@@ -1,6 +1,7 @@
 package com.heyticket.backend.config;
 
-import com.heyticket.backend.config.SmtpProperties.Smtp;
+import com.heyticket.backend.config.properties.SmtpProperties;
+import com.heyticket.backend.config.properties.SmtpProperties.Smtp;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

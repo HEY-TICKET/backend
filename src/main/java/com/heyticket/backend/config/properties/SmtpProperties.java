@@ -1,4 +1,4 @@
-package com.heyticket.backend.config;
+package com.heyticket.backend.config.properties;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -47,7 +47,7 @@ public class SmtpProperties {
             private boolean fallback;
 
             private int port;
-            
+
         }
     }
 }
