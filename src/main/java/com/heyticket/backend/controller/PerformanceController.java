@@ -64,7 +64,7 @@ public class PerformanceController {
     @Operation(summary = "공연 랭킹 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = PageBoxOfficeRankCommonResponse.class)))})
     @GetMapping("/performances/rank")
-    public ResponseEntity<?> getBoxOffice(@Valid BoxOfficeRankRequest request, CustomPageRequest customPageRequest) {
+    public ResponseEntity<?> getBoxOffice(BoxOfficeRankRequest request, CustomPageRequest customPageRequest) {
         PageResponse<BoxOfficeRankResponse> boxOfficeRank = performanceService.getBoxOfficeRank(request, customPageRequest.of());
         return CommonResponse.ok("Performance rank.", boxOfficeRank);
     }
