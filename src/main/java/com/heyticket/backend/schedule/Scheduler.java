@@ -34,7 +34,7 @@ public class Scheduler {
         Executors.newFixedThreadPool(1);
     }
 
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 0 12 * * *")
     public void updateBoxOfficeRank() {
         performanceService.updateBoxOfficeRankBatch();
     }
