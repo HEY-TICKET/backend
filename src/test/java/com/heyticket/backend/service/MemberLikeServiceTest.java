@@ -6,9 +6,11 @@ import com.heyticket.backend.config.JpaConfig;
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberLike;
 import com.heyticket.backend.domain.Performance;
+import com.heyticket.backend.domain.Place;
 import com.heyticket.backend.repository.member.MemberLikeRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
 import com.heyticket.backend.repository.performance.PerformanceRepository;
+import com.heyticket.backend.repository.place.PlaceRepository;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
@@ -45,6 +47,9 @@ class MemberLikeServiceTest {
     @Autowired
     private PerformanceRepository performanceRepository;
 
+    @Autowired
+    private PlaceRepository placeRepository;
+
     @PersistenceContext
     private EntityManager em;
 
@@ -64,6 +69,42 @@ class MemberLikeServiceTest {
 
         Performance performance = createPerformance("performanceId");
         performanceRepository.save(performance);
+
+        //when
+        MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
+            .email(member.getEmail())
+            .performanceId(performance.getId())
+            .build();
+
+        memberLikeService.hitLike(request);
+
+        em.flush();
+        em.clear();
+
+        //then
+        Member foundMember = memberRepository.findByEmail(member.getEmail())
+            .orElseThrow(() -> new NoSuchElementException("No such member."));
+        List<MemberLike> memberLikes = foundMember.getMemberLikes();
+        assertThat(memberLikes).hasSize(1);
+        assertThat(memberLikes.get(0).getPerformance().getId()).isEqualTo(performance.getId());
+    }
+
+    @Test
+    @DisplayName("MemberLike 등록 - 이미 찜한 공연일 경우 저장하지 않는다")
+    void hitLike_alreadyHit() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Performance performance = createPerformance("performanceId");
+        performanceRepository.save(performance);
+
+        MemberLike memberLike = MemberLike.builder()
+            .member(member)
+            .performance(performance)
+            .build();
+
+        memberLikeRepository.save(memberLike);
 
         //when
         MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
@@ -118,14 +159,66 @@ class MemberLikeServiceTest {
     }
 
     @Test
-    @DisplayName("MemberLike 조회 - 데이터 확인")
-    void getMemberLikedPerformances() {
+    @DisplayName("MemberLike 등록 취소 - 찜한 이력이 없는 경우 요청을 종료한다")
+    void cancelLike_noMemberLike() {
         //given
         Member member = createMember("email");
         memberRepository.save(member);
 
-        Performance performance1 = createPerformance("performanceId1");
-        Performance performance2 = createPerformance("performanceId2");
+        Performance performance = createPerformance("performanceId");
+        performanceRepository.save(performance);
+
+        //when
+        MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
+            .email(member.getEmail())
+            .performanceId(performance.getId())
+            .build();
+
+        memberLikeService.cancelLike(request);
+
+        em.flush();
+        em.clear();
+
+        //then
+        List<MemberLike> memberLikes = memberLikeRepository.findAll();
+        assertThat(memberLikes).hasSize(0);
+    }
+
+    @Test
+    @DisplayName("MemberLike 조회 - 데이터 확인")
+    void getMemberLikedPerformances() {
+        //given
+        Place place = Place.builder()
+            .id("placeId")
+            .area(Area.BUSAN)
+            .address("address")
+            .phoneNumber("phoneNumber")
+            .gugunName("gugunName")
+            .build();
+
+        Place savedPlace = placeRepository.save(place);
+
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Performance performance1 = Performance.builder()
+            .id("performance1")
+            .title("title")
+            .genre(Genre.MUSICAL)
+            .area(Area.BUSAN)
+            .theater("theater")
+            .place(savedPlace)
+            .build();
+
+        Performance performance2 = Performance.builder()
+            .id("performance2")
+            .title("title")
+            .genre(Genre.MUSICAL)
+            .area(Area.BUSAN)
+            .theater("theater")
+            .place(savedPlace)
+            .build();
+
         performanceRepository.saveAll(List.of(performance1, performance2));
 
         MemberLike memberLike1 = MemberLike.builder()
