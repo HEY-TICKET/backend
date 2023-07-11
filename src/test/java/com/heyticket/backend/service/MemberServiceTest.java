@@ -18,6 +18,7 @@ import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
+import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
@@ -492,6 +493,39 @@ class MemberServiceTest {
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
     }
 
+    @Test
+    @DisplayName("Member 존재 유무 확인 - 존재할 경우 return true")
+    void validateMember_valid() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        //when
+        MemberValidationRequest request = MemberValidationRequest.builder()
+            .email(member.getEmail())
+            .build();
+
+        boolean valid = memberService.validateMember(request);
+
+        //then
+        assertThat(valid).isTrue();
+    }
+
+    @Test
+    @DisplayName("Member 존재 유무 확인 - 존재하지 않는 경우 return true")
+    void validateMember_Invalid() {
+        //given
+
+        //when
+        MemberValidationRequest request = MemberValidationRequest.builder()
+            .email("email")
+            .build();
+
+        boolean valid = memberService.validateMember(request);
+
+        //then
+        assertThat(valid).isFalse();
+    }
 
     private Member createMember(String email) {
         return Member.builder()
