@@ -2,6 +2,8 @@ package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 
 import com.heyticket.backend.config.JpaConfig;
@@ -9,8 +11,8 @@ import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
-import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.exception.NotFoundException;
+import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceDetailResponse;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.service.KopisService;
@@ -29,12 +31,14 @@ import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.SearchType;
 import com.heyticket.backend.service.enums.SortOrder;
 import com.heyticket.backend.service.enums.SortType;
 import com.heyticket.backend.service.enums.TimePeriod;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -380,6 +384,61 @@ class PerformanceServiceTest {
         //then
         List<BoxOfficeRankResponse> contents = result.getContents();
         assertThat(contents).hasSize(0);
+    }
+
+    @Test
+    @DisplayName("BoxOffice rank 조회 - DB에 랭킹에 있는 id의 공연이 저장되어 있지 않는 경우")
+    void getBoxOfficeRank_noSuchPerformance() {
+        //given
+        BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
+            .performanceIds("notExistPerformance1")
+            .timePeriod(TimePeriod.DAY)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        boxOfficeRankRepository.save(boxOfficeRank);
+        KopisPerformanceDetailResponse kopisPerformanceDetailResponse = new KopisPerformanceDetailResponse(
+            "mt20id",
+            "mt10id",
+            "prfnm",
+            "2023.07.01",
+            "2023.09.01",
+            "fcltynm",
+            "prfcast",
+            "prfcrew",
+            "prfruntime",
+            "prfage",
+            "entrpsnm",
+            "pcseguidance",
+            "poster",
+            "sty",
+            "대중음악",
+            "공연중",
+            "openrun",
+            new String[]{"storyUrl"},
+            "dtguidance");
+
+        given(kopisService.getPerformanceDetail(anyString())).willReturn(kopisPerformanceDetailResponse);
+
+        //when
+        BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
+            .timePeriod(TimePeriod.DAY)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<BoxOfficeRankResponse> result = performanceService.getBoxOfficeRank(request, pageRequest);
+
+        //then
+        List<BoxOfficeRankResponse> contents = result.getContents();
+        assertThat(contents).hasSize(1);
+        Performance performance = performanceRepository.findById(kopisPerformanceDetailResponse.mt20id())
+            .orElseThrow(NoSuchElementException::new);
+        assertThat(performance.getTitle()).isEqualTo(kopisPerformanceDetailResponse.prfnm());
     }
 
     @Test
