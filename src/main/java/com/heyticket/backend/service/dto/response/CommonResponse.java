@@ -16,19 +16,19 @@ public class CommonResponse<T> {
 
     private T data;
 
-    public static <T> ResponseEntity<CommonResponse> ok(String message, T data) {
+    public static <T> ResponseEntity<CommonResponse<?>> ok(String message, T data) {
         return new ResponseEntity<>(new CommonResponse<>(InternalCode.OK, message, data), HttpStatus.OK);
     }
 
-    public static <T> ResponseEntity<CommonResponse> serverError(InternalCode code, String message) {
+    public static <T> ResponseEntity<CommonResponse<?>> serverError(InternalCode code, String message) {
         return new ResponseEntity<>(new CommonResponse<>(code, message), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public static <T> ResponseEntity<CommonResponse> badRequest(InternalCode code, String message) {
+    public static <T> ResponseEntity<CommonResponse<?>> badRequest(InternalCode code, String message) {
         return new ResponseEntity<>(new CommonResponse<>(code, message), HttpStatus.BAD_REQUEST);
     }
 
-    public static <T> ResponseEntity<CommonResponse> notFound(InternalCode code, String message) {
+    public static <T> ResponseEntity<CommonResponse<?>> notFound(InternalCode code, String message) {
         return new ResponseEntity<>(new CommonResponse<>(code, message), HttpStatus.NOT_FOUND);
     }
 

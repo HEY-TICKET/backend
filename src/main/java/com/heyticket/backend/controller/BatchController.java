@@ -5,6 +5,7 @@ import com.heyticket.backend.service.PlaceService;
 import com.heyticket.backend.service.dto.request.PerformanceBatchUpdateRequest;
 import com.heyticket.backend.service.dto.response.CommonResponse;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,7 @@ public class BatchController {
     private final PlaceService placeService;
 
     @GetMapping("/performances")
-    public ResponseEntity<?> updatePerformancesBatch(PerformanceBatchUpdateRequest request) {
+    public ResponseEntity<?> updatePerformancesBatch(@Valid PerformanceBatchUpdateRequest request) {
         int count = performanceService.updatePerformancesBatch(request.getFrom(), request.getTo(), request.getRows());
         return CommonResponse.ok("Success in batch updating performances. Updated performances count in data", count);
     }

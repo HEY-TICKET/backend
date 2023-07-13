@@ -1,8 +1,9 @@
 package com.heyticket.backend.service.dto.request;
 
-import com.heyticket.backend.domain.enums.PerformanceStatus;
-import com.heyticket.backend.module.kopis.enums.SortOrder;
-import com.heyticket.backend.module.kopis.enums.SortType;
+import com.heyticket.backend.service.enums.PerformanceStatus;
+import com.heyticket.backend.service.enums.LikeSortType;
+import com.heyticket.backend.service.enums.SortOrder;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,12 +17,13 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MemberLikeListRequest {
 
+    @NotBlank
     private String email;
 
     private PerformanceStatus status;
 
     @Builder.Default
-    private SortType sortType = SortType.LIKE_DATE;
+    private LikeSortType likeSortType = LikeSortType.LIKE_DATE;
 
     @Builder.Default
     private SortOrder sortOrder = SortOrder.DESC;

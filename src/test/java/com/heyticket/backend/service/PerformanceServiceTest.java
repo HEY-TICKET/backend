@@ -2,6 +2,8 @@ package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 
 import com.heyticket.backend.config.JpaConfig;
@@ -9,20 +11,15 @@ import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
-import com.heyticket.backend.domain.enums.PerformancePriceLevel;
-import com.heyticket.backend.domain.enums.PerformanceStatus;
-import com.heyticket.backend.module.kopis.enums.Area;
+import com.heyticket.backend.exception.NotFoundException;
+import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceDetailResponse;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
-import com.heyticket.backend.module.kopis.enums.Genre;
-import com.heyticket.backend.module.kopis.enums.SortOrder;
-import com.heyticket.backend.module.kopis.enums.SortType;
-import com.heyticket.backend.module.kopis.enums.TimePeriod;
 import com.heyticket.backend.module.kopis.service.KopisService;
-import com.heyticket.backend.repository.BoxOfficeRankRepository;
-import com.heyticket.backend.repository.PerformancePriceRepository;
-import com.heyticket.backend.repository.PerformanceRepository;
-import com.heyticket.backend.repository.PlaceRepository;
+import com.heyticket.backend.repository.performance.BoxOfficeRankRepository;
+import com.heyticket.backend.repository.performance.PerformancePriceRepository;
+import com.heyticket.backend.repository.performance.PerformanceRepository;
+import com.heyticket.backend.repository.place.PlaceRepository;
 import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
@@ -32,7 +29,13 @@ import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.SearchType;
+import com.heyticket.backend.service.enums.SortOrder;
+import com.heyticket.backend.service.enums.SortType;
+import com.heyticket.backend.service.enums.TimePeriod;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -294,7 +297,7 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("Performance 단일 조회 - 해당 id가 없는 경우 NoSuchElementException을 throw한다.")
+    @DisplayName("Performance 단일 조회 - 해당 id가 없는 경우 NotFoundException을 throw한다.")
     void getPerformanceById_noSuchId() {
         //given
 
@@ -302,11 +305,11 @@ class PerformanceServiceTest {
         Throwable throwable = catchThrowable(() -> performanceService.getPerformanceById("randomId"));
 
         //then
-        assertThat(throwable).isInstanceOf(NoSuchElementException.class);
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
     }
 
     @Test
-    @DisplayName("BoxOffice rank 조회 - 성공 데이터 확인.")
+    @DisplayName("BoxOffice rank 조회 - 성공 데이터 확인")
     void getBoxOfficeRank_success() {
         //given
         Performance performance2 = createPerformance("2");
@@ -328,22 +331,22 @@ class PerformanceServiceTest {
         //when
         BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
             .timePeriod(TimePeriod.DAY)
-            .area(BoxOfficeArea.BUSAN)
-            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
             .build();
 
-        CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
+        CustomPageRequest customPageRequest = new CustomPageRequest(2, 2);
         PageRequest pageRequest = customPageRequest.of();
 
         PageResponse<BoxOfficeRankResponse> result = performanceService.getBoxOfficeRank(request, pageRequest);
 
         //then
         List<BoxOfficeRankResponse> contents = result.getContents();
-        assertThat(contents).hasSize(3);
+        assertThat(contents).hasSize(2);
         assertThat(contents).extracting("id")
-            .containsExactly(performance2.getId(), performance1.getId(), performance3.getId());
+            .containsExactly(performance3.getId(), performance4.getId());
         assertThat(contents).extracting("rank")
-            .containsExactly(1, 2, 3);
+            .containsExactly(3, 4);
         assertThat(contents.get(0).getStoryUrls()).hasSize(0);
     }
 
@@ -369,8 +372,8 @@ class PerformanceServiceTest {
         //when
         BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
             .timePeriod(TimePeriod.DAY)
-            .area(BoxOfficeArea.BUSAN)
-            .genre(BoxOfficeGenre.MIXED_GENRE)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
@@ -384,7 +387,62 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("Performance recommendation 조회")
+    @DisplayName("BoxOffice rank 조회 - DB에 랭킹에 있는 id의 공연이 저장되어 있지 않는 경우")
+    void getBoxOfficeRank_noSuchPerformance() {
+        //given
+        BoxOfficeRank boxOfficeRank = BoxOfficeRank.builder()
+            .performanceIds("notExistPerformance1")
+            .timePeriod(TimePeriod.DAY)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        boxOfficeRankRepository.save(boxOfficeRank);
+        KopisPerformanceDetailResponse kopisPerformanceDetailResponse = new KopisPerformanceDetailResponse(
+            "mt20id",
+            "mt10id",
+            "prfnm",
+            "2023.07.01",
+            "2023.09.01",
+            "fcltynm",
+            "prfcast",
+            "prfcrew",
+            "prfruntime",
+            "prfage",
+            "entrpsnm",
+            "pcseguidance",
+            "poster",
+            "sty",
+            "대중음악",
+            "공연중",
+            "openrun",
+            new String[]{"storyUrl"},
+            "dtguidance");
+
+        given(kopisService.getPerformanceDetail(anyString())).willReturn(kopisPerformanceDetailResponse);
+
+        //when
+        BoxOfficeRankRequest request = BoxOfficeRankRequest.builder()
+            .timePeriod(TimePeriod.DAY)
+            .boxOfficeArea(BoxOfficeArea.BUSAN)
+            .boxOfficeGenre(BoxOfficeGenre.MIXED_GENRE)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 3);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<BoxOfficeRankResponse> result = performanceService.getBoxOfficeRank(request, pageRequest);
+
+        //then
+        List<BoxOfficeRankResponse> contents = result.getContents();
+        assertThat(contents).hasSize(1);
+        Performance performance = performanceRepository.findById(kopisPerformanceDetailResponse.mt20id())
+            .orElseThrow(NoSuchElementException::new);
+        assertThat(performance.getTitle()).isEqualTo(kopisPerformanceDetailResponse.prfnm());
+    }
+
+    @Test
+    @DisplayName("Performance recommendation 조회 - 데이터 확인")
     void getPerformanceRecommendation() {
         //given
         Genre genre = Genre.CLASSIC;
@@ -428,6 +486,47 @@ class PerformanceServiceTest {
     }
 
     @Test
+    @DisplayName("Performance recommendation 조회 - 데이터가 4개 이하인 경우 있는 개수만큼만 return한다.")
+    void getPerformanceRecommendation_noRecommendationData() {
+        //given
+        Genre genre = Genre.CLASSIC;
+        Area area = Area.SEJONG;
+
+        Performance performance = Performance.builder()
+            .id("id")
+            .title("title")
+            .genre(genre)
+            .area(area)
+            .views(0)
+            .build();
+
+        Performance performance1 = createPerformanceWithGenre("genre1", genre);
+        Performance performance3 = createPerformanceWithArea("area1", area);
+
+        BoxOfficeRank boxOfficeRankGenre = BoxOfficeRank.builder()
+            .boxOfficeGenre(genre.getBoxOfficeGenre())
+            .timePeriod(TimePeriod.WEEK)
+            .performanceIds(performance1.getId())
+            .build();
+
+        BoxOfficeRank boxOfficeRankArea = BoxOfficeRank.builder()
+            .boxOfficeArea(area.getBoxOfficeArea())
+            .timePeriod(TimePeriod.WEEK)
+            .performanceIds(performance3.getId())
+            .build();
+
+        performanceRepository.saveAll(List.of(performance, performance1, performance3));
+        boxOfficeRankRepository.saveAll(List.of(boxOfficeRankGenre, boxOfficeRankArea));
+
+        //when
+        List<PerformanceResponse> result = performanceService.getPerformanceRecommendation(performance.getId());
+
+        //then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting("id").containsOnly(performance1.getId(), performance3.getId());
+    }
+
+    @Test
     @DisplayName("Performance genre 개수 조회 - 장르별 개수순으로 내림차순 정렬")
     void getPerformanceGenreCount() {
         //given
@@ -460,7 +559,7 @@ class PerformanceServiceTest {
 
     @Test
     @DisplayName("Performance filter 조회 - 장르, 가격 조회")
-    void getFilteredPerformances_genre() {
+    void getPerformancesByCondition_withGenre() {
         //given
         Performance performance1 = createPerformanceWithGenre("performance1", Genre.CLASSIC);
         Performance performance2 = createPerformanceWithGenre("performance2", Genre.MUSICAL);
@@ -481,7 +580,8 @@ class PerformanceServiceTest {
         //when
         PerformanceFilterRequest request = PerformanceFilterRequest.builder()
             .genres(List.of(Genre.MUSICAL, Genre.KOREAN_TRADITIONAL_MUSIC))
-            .price(PerformancePriceLevel.PRICE2)
+            .minPrice(10000)
+            .maxPrice(40000)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
@@ -497,10 +597,8 @@ class PerformanceServiceTest {
 
     @Test
     @DisplayName("Performance filter 조회 - 지역, 가격 조회")
-    void getFilteredPerformances_area() {
-
+    void getPerformancesByCondition_withArea() {
         //given
-        System.out.println("2performancePriceRepository.findAll().size() = " + performancePriceRepository.findAll().size());
         Performance performance1 = createPerformanceWithArea("performance1", Area.BUSAN);
         Performance performance2 = createPerformanceWithArea("performance2", Area.BUSAN);
         Performance performance3 = createPerformanceWithArea("performance3", Area.CHUNGBUK);
@@ -517,11 +615,11 @@ class PerformanceServiceTest {
         PerformancePrice price7 = createPerformancePrice(performance4, 110000);
 
         performancePriceRepository.saveAll(List.of(price1, price2, price3, price4, price5, price6, price7));
-        System.out.println("3performancePriceRepository.findAll().size() = " + performancePriceRepository.findAll().size());
+
         //when
         PerformanceFilterRequest request = PerformanceFilterRequest.builder()
             .areas(List.of(Area.CHUNGBUK, Area.JEJU))
-            .price(PerformancePriceLevel.PRICE5)
+            .minPrice(100000)
             .build();
 
         CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
@@ -536,7 +634,63 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("Performance 검색")
+    @DisplayName("Performance filter 조회 - 상태 조회, 시간 순 조회")
+    void getPerformancesByCondition_withStatuses() {
+        //given
+        Performance performance1 = createPerformanceWithStatus("performance1", PerformanceStatus.ONGOING);
+        performanceRepository.save(performance1);
+        Performance performance2 = createPerformanceWithStatus("performance2", PerformanceStatus.COMPLETED);
+        performanceRepository.save(performance2);
+        Performance performance3 = createPerformanceWithStatus("performance3", PerformanceStatus.ONGOING);
+        performanceRepository.save(performance3);
+        Performance performance4 = createPerformanceWithStatus("performance4", PerformanceStatus.UPCOMING);
+        performanceRepository.save(performance4);
+
+        //when
+        PerformanceFilterRequest request = PerformanceFilterRequest.builder()
+            .statuses(List.of(PerformanceStatus.ONGOING, PerformanceStatus.UPCOMING))
+            .sortType(SortType.CREATED_DATE)
+            .sortOrder(SortOrder.DESC)
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getPerformancesByCondition(request, pageRequest);
+
+        //then
+        List<PerformanceResponse> contents = result.getContents();
+        assertThat(contents).hasSize(3);
+        assertThat(contents).extracting("id").containsExactly(performance4.getId(), performance3.getId(), performance1.getId());
+    }
+
+    @Test
+    @DisplayName("Performance filter 조회 - 전체 조회")
+    void getPerformancesByCondition_withNoFilter() {
+        //given
+        Performance performance1 = createPerformanceWithArea("performance1", Area.BUSAN);
+        Performance performance2 = createPerformanceWithArea("performance2", Area.BUSAN);
+        Performance performance3 = createPerformanceWithArea("performance3", Area.CHUNGBUK);
+        Performance performance4 = createPerformanceWithArea("performance4", Area.JEJU);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, performance3, performance4));
+
+        //when
+        PerformanceFilterRequest request = PerformanceFilterRequest.builder()
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getPerformancesByCondition(request, pageRequest);
+
+        //then
+        List<PerformanceResponse> contents = result.getContents();
+        assertThat(contents).hasSize(4);
+    }
+
+    @Test
+    @DisplayName("Performance 검색 - 데이터 확인")
     void searchPerformance() {
         //given
         Performance performance = Performance.builder()
@@ -591,6 +745,16 @@ class PerformanceServiceTest {
             .id(id)
             .title("title")
             .area(area)
+            .views(0)
+            .build();
+    }
+
+    private Performance createPerformanceWithStatus(String id, PerformanceStatus status) {
+        return Performance.builder()
+            .id(id)
+            .title("title")
+            .status(status)
+            .area(Area.CHUNGBUK)
             .views(0)
             .build();
     }

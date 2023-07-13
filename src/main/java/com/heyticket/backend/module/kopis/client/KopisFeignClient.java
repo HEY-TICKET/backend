@@ -1,6 +1,6 @@
 package com.heyticket.backend.module.kopis.client;
 
-import com.heyticket.backend.config.FeignConfiguration;
+import com.heyticket.backend.config.FeignConfig;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeResponse;
 import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceDetailResponse;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "kopisFeignClient", url = "${kopis.performance.url}", configuration = FeignConfiguration.class)
+@FeignClient(name = "kopisFeignClient", url = "${kopis.performance.url}", configuration = FeignConfig.class)
 public interface KopisFeignClient {
 
     @GetMapping(value = "/pblprfr", produces = "application/xml;charset=UTF-8")

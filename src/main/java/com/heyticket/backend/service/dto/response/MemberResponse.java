@@ -1,7 +1,7 @@
 package com.heyticket.backend.service.dto.response;
 
-import com.heyticket.backend.module.kopis.enums.Area;
-import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;

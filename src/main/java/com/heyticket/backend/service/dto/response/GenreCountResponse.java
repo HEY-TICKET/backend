@@ -1,6 +1,6 @@
 package com.heyticket.backend.service.dto.response;
 
-import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.service.enums.Genre;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

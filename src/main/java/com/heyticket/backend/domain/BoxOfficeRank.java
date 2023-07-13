@@ -2,7 +2,7 @@ package com.heyticket.backend.domain;
 
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
-import com.heyticket.backend.module.kopis.enums.TimePeriod;
+import com.heyticket.backend.service.enums.TimePeriod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,5 +37,4 @@ public class BoxOfficeRank extends BaseTimeEntity {
 
     @Column(length = 1000)
     private String performanceIds;
-
 }

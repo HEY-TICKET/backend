@@ -26,8 +26,8 @@ public class GlobalExceptionHandler {
         return CommonResponse.notFound(InternalCode.NOT_FOUND, e.getMessage());
     }
 
-    @ExceptionHandler(value = JwtValidationException.class)
-    public ResponseEntity<?> jwtValidationExceptionHandler(JwtValidationException e) {
+    @ExceptionHandler(value = ValidationFailureException.class)
+    public ResponseEntity<?> jwtValidationExceptionHandler(ValidationFailureException e) {
         log.warn(e.getMessage());
         e.printStackTrace();
         return CommonResponse.serverError(e.getCode(), e.getMessage());
@@ -38,5 +38,19 @@ public class GlobalExceptionHandler {
         log.warn("Invalid user information.");
         e.printStackTrace();
         return CommonResponse.badRequest(InternalCode.INVALID_JWT, "Invalid user information.");
+    }
+
+    @ExceptionHandler(value = LoginFailureException.class)
+    public ResponseEntity<?> loginFailureExceptionHandler(LoginFailureException e) {
+        log.warn("Invalid user information.");
+        e.printStackTrace();
+        return CommonResponse.badRequest(e.getCode(), e.getMessage());
+    }
+
+    @ExceptionHandler(value = NotFoundException.class)
+    public ResponseEntity<?> notFoundExceptionHandler(NotFoundException e) {
+        log.warn("Not found Exception.");
+        e.printStackTrace();
+        return CommonResponse.badRequest(e.getCode(), e.getMessage());
     }
 }

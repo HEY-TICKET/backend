@@ -1,6 +1,6 @@
 package com.heyticket.backend.domain;
 
-import com.heyticket.backend.module.kopis.enums.Area;
+import com.heyticket.backend.service.enums.Area;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,13 +37,12 @@ public class MemberArea extends BaseTimeEntity {
     @JoinColumn(name = "email")
     private Member member;
 
-    public static MemberArea of(Area area, Member member) {
-        return new MemberArea(area, member);
+    public static MemberArea of(Area area) {
+        return new MemberArea(area);
     }
 
-    public MemberArea(Area area, Member member) {
+    public MemberArea(Area area) {
         this.area = area;
-        this.member = member;
     }
 
     @Override
@@ -61,5 +60,9 @@ public class MemberArea extends BaseTimeEntity {
     @Override
     public int hashCode() {
         return Objects.hash(area);
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
     }
 }

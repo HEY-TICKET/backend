@@ -1,6 +1,6 @@
 package com.heyticket.backend.domain;
 
-import com.heyticket.backend.module.kopis.enums.Area;
+import com.heyticket.backend.service.enums.Area;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -37,5 +37,4 @@ public class Place extends BaseTimeEntity {
         this.area = area;
         this.gugunName = gugunName;
     }
-
 }

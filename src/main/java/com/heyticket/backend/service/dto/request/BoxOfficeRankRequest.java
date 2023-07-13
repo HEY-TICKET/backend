@@ -2,7 +2,7 @@ package com.heyticket.backend.service.dto.request;
 
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
-import com.heyticket.backend.module.kopis.enums.TimePeriod;
+import com.heyticket.backend.service.enums.TimePeriod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +18,7 @@ public class BoxOfficeRankRequest {
 
     private TimePeriod timePeriod;
 
-    private BoxOfficeGenre genre;
+    private BoxOfficeGenre boxOfficeGenre;
 
-    private BoxOfficeArea area;
+    private BoxOfficeArea boxOfficeArea;
 }

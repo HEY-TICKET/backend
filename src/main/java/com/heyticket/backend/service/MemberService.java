@@ -4,38 +4,33 @@ import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberArea;
 import com.heyticket.backend.domain.MemberGenre;
 import com.heyticket.backend.domain.MemberKeyword;
-import com.heyticket.backend.domain.MemberLike;
-import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.module.kopis.enums.Area;
-import com.heyticket.backend.module.kopis.enums.Genre;
+import com.heyticket.backend.exception.InternalCode;
+import com.heyticket.backend.exception.NotFoundException;
+import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
-import com.heyticket.backend.module.security.jwt.dto.TokenInfo;
+import com.heyticket.backend.module.security.jwt.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
-import com.heyticket.backend.repository.MemberAreaRepository;
-import com.heyticket.backend.repository.MemberGenreRepository;
-import com.heyticket.backend.repository.MemberKeywordRepository;
-import com.heyticket.backend.repository.MemberLikeRepository;
-import com.heyticket.backend.repository.MemberRepository;
-import com.heyticket.backend.repository.PerformanceRepository;
+import com.heyticket.backend.repository.member.MemberRepository;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
-import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
+import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
+import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
-import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,23 +47,13 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
-    private final MemberGenreRepository memberGenreRepository;
-
-    private final MemberAreaRepository memberAreaRepository;
-
-    private final MemberKeywordRepository memberKeywordRepository;
-
-    private final MemberLikeRepository memberLikeRepository;
-
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
-    private final PerformanceRepository performanceRepository;
 
     private final JwtTokenProvider jwtTokenProvider;
 
     private final PasswordEncoder passwordEncoder;
 
-    private final CacheService cacheService;
+    private final LocalCacheService localCacheService;
 
     private final EmailService emailService;
 
@@ -97,42 +82,74 @@ public class MemberService {
             .build();
     }
 
-    public String signUp(MemberSignUpRequest request) {
+    public TokenInfo signUp(MemberSignUpRequest request) {
         String email = request.getEmail();
         String password = request.getPassword();
 
         PasswordValidator.validatePassword(password);
         checkIfExistingMember(email);
-        validateCode(email, request.getVerificationCode());
+        verifyCode(email, request.getVerificationCode());
 
         Member member = Member.builder()
             .email(email)
             .password(passwordEncoder.encode(password))
             .roles(List.of("USER"))
+            .memberAreas(new ArrayList<>())
+            .memberGenres(new ArrayList<>())
+            .memberKeywords(new ArrayList<>())
+            .memberLikes(new ArrayList<>())
+            .allowKeywordPush(request.isKeywordPush())
             .build();
 
-        Member savedMember = memberRepository.save(member);
+        List<MemberGenre> memberGenres = request.getGenres().stream()
+            .map(MemberGenre::of)
+            .collect(Collectors.toList());
 
-        List<Genre> genres = Genre.getByNames(request.getGenres());
-        List<MemberGenre> memberGenres = getMemberGenres(savedMember, genres);
-        memberGenreRepository.saveAll(memberGenres);
+        List<MemberArea> memberAreas = request.getAreas().stream()
+            .map(MemberArea::of)
+            .collect(Collectors.toList());
 
-        List<Area> areas = Area.getByNames(request.getAreas());
-        List<MemberArea> memberAreas = getMemberAreas(savedMember, areas);
-        memberAreaRepository.saveAll(memberAreas);
+        List<MemberKeyword> memberKeywords = request.getKeywords().stream()
+            .map(MemberKeyword::of)
+            .collect(Collectors.toList());
 
-        List<String> keywords = request.getKeywords();
-        List<MemberKeyword> memberKeywords = getMemberKeywords(savedMember, keywords);
-        memberKeywordRepository.saveAll(memberKeywords);
-        return email;
-    }
+        member.addMemberGenres(memberGenres);
+        member.addMemberAreas(memberAreas);
+        member.addMemberKeywords(memberKeywords);
 
-    public TokenInfo login(MemberLoginRequest request) {
+        memberRepository.save(member);
+
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
-        cacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+        localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+
         return tokenInfo;
+    }
+
+    public TokenInfo login(MemberLoginRequest request) {
+        boolean exists = memberRepository.existsByEmail(request.getEmail());
+        if (!exists) {
+            throw new NotFoundException("No such user.", InternalCode.NOT_FOUND);
+        }
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
+        localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+        return tokenInfo;
+    }
+
+    public void updatePassword(PasswordUpdateRequest request) {
+        String email = SecurityUtil.getCurrentMemberEmail();
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
+        matchPassword(request.getCurrentPassword(), member.getPassword());
+        if (request.getNewPassword().equals(request.getCurrentPassword())) {
+            throw new ValidationFailureException("The new password is identical to the existing password.", InternalCode.BAD_REQUEST);
+        }
+        PasswordValidator.validatePassword(request.getNewPassword());
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        member.updatePassword(encodedPassword);
     }
 
     public boolean validateMember(MemberValidationRequest request) {
@@ -142,7 +159,7 @@ public class MemberService {
     private void checkIfExistingMember(String email) {
         boolean existingEmail = memberRepository.existsByEmail(email);
         if (existingEmail) {
-            throw new InvalidParameterException("Duplicated email exists.");
+            throw new ValidationFailureException("Duplicated email exists.", InternalCode.EXISTING_EMAIL);
         }
     }
 
@@ -150,32 +167,32 @@ public class MemberService {
         String email = request.getEmail();
         String refreshToken = request.getRefreshToken();
         jwtTokenProvider.validateToken(refreshToken);
-        String savedRefreshToken = cacheService.getRefreshTokenIfPresent(email);
+        String savedRefreshToken = localCacheService.getRefreshTokenIfPresent(email);
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
-            throw new NoSuchElementException("No such refresh token information.");
+            throw new NotFoundException("No such refresh token information.", InternalCode.NOT_FOUND);
         }
         Member member = getMemberFromDb(email);
         String authorities = member.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(","));
         TokenInfo tokenInfo = jwtTokenProvider.regenerateToken(email, authorities);
-        cacheService.putRefreshToken(email, tokenInfo.getRefreshToken());
+        localCacheService.putRefreshToken(email, tokenInfo.getRefreshToken());
         return tokenInfo;
     }
 
     public String resetPassword(PasswordResetRequest request) {
         String email = request.getEmail();
         String code = request.getVerificationCode();
-        String savedCode = cacheService.getVerificationCodeIfPresent(email).getCode();
-        if (savedCode == null) {
-            throw new NoSuchElementException("인증 내역이 없습니다");
-        }
-        if (!savedCode.equals(code)) {
-            throw new IllegalStateException("인증 내역이 다릅니다.");
-        }
         Member member = getMemberFromDb(email);
+        verifyCode(email, code);
+
+        PasswordValidator.validatePassword(request.getPassword());
+        boolean matched = passwordEncoder.matches(request.getPassword(), member.getPassword());
+        if (matched) {
+            throw new ValidationFailureException("The new password is identical to the existing password.", InternalCode.BAD_REQUEST);
+        }
         member.updatePassword(passwordEncoder.encode(request.getPassword()));
-        cacheService.invalidateRefreshToken(email);
+        localCacheService.invalidateRefreshToken(email);
         return email;
     }
 
@@ -191,26 +208,16 @@ public class MemberService {
     public String deleteMember(MemberDeleteRequest request) {
         String email = request.getEmail();
         Member member = getMemberFromDb(email);
-        if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
-            throw new InvalidParameterException("Wrong password.");
-        }
+        matchPassword(request.getPassword(), member.getPassword());
         memberRepository.delete(member);
-        cacheService.invalidateRefreshToken(email);
+        localCacheService.invalidateRefreshToken(email);
         return email;
     }
 
-    public void likePerformance(String performanceId) {
-        Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NoSuchElementException("No such performance"));
-
-        Member member = getCurrentMember();
-
-        MemberLike memberLike = MemberLike.builder()
-            .member(member)
-            .performance(performance)
-            .build();
-
-        memberLikeRepository.save(memberLike);
+    private void matchPassword(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new ValidationFailureException("Wrong password.", InternalCode.PW_MISMATCH);
+        }
     }
 
     public void updatePreferredCategory(MemberCategoryUpdateRequest request) {
@@ -220,7 +227,9 @@ public class MemberService {
             List<MemberGenre> memberGenres = member.getMemberGenres();
 
             List<Genre> genres = Genre.getByNames(request.getGenres());
-            List<MemberGenre> newMemberGenres = getMemberGenres(member, genres);
+            List<MemberGenre> newMemberGenres = genres.stream()
+                .map(MemberGenre::of)
+                .collect(Collectors.toList());
 
             memberGenres.removeIf(memberGenre -> !newMemberGenres.contains(memberGenre));
             newMemberGenres.stream()
@@ -232,14 +241,15 @@ public class MemberService {
             List<MemberArea> memberAreas = member.getMemberAreas();
 
             List<Area> areas = Area.getByNames(request.getAreas());
-            List<MemberArea> newMemberAreas = getMemberAreas(member, areas);
+            List<MemberArea> newMemberAreas = areas.stream()
+                .map(MemberArea::of)
+                .collect(Collectors.toList());
 
             memberAreas.removeIf(memberArea -> !newMemberAreas.contains(memberArea));
             newMemberAreas.stream()
                 .filter(newMemberArea -> !memberAreas.contains(newMemberArea))
                 .forEach(memberAreas::add);
         }
-
     }
 
     public void updatePreferredKeyword(MemberKeywordUpdateRequest request) {
@@ -249,7 +259,9 @@ public class MemberService {
             List<MemberKeyword> memberKeywords = member.getMemberKeywords();
 
             List<String> keywords = request.getKeywords();
-            List<MemberKeyword> newMemberKeywords = getMemberKeywords(member, keywords);
+            List<MemberKeyword> newMemberKeywords = keywords.stream()
+                .map(MemberKeyword::of)
+                .collect(Collectors.toList());
 
             memberKeywords.removeIf(memberKeyword -> !newMemberKeywords.contains(memberKeyword));
             newMemberKeywords.stream()
@@ -258,69 +270,31 @@ public class MemberService {
         }
     }
 
-    public void hitLike(MemberLikeSaveRequest request) {
+    public void updateKeywordPushEnabled(MemberPushUpdateRequest request) {
         Member member = getMemberFromDb(request.getEmail());
-        String performanceId = request.getPerformanceId();
-        Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NoSuchElementException("No such performance."));
-        Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
-        if (optionalMemberLike.isPresent()) {
-            return;
-        }
-        MemberLike memberLike = MemberLike.of(member, performance);
-        memberLikeRepository.save(memberLike);
+        member.setAllowKeywordPush(request.isPushEnabled());
     }
 
-    public void cancelLike(MemberLikeSaveRequest request) {
+    public void updateMarketingPushEnabled(MemberPushUpdateRequest request) {
         Member member = getMemberFromDb(request.getEmail());
-        String performanceId = request.getPerformanceId();
-        Performance performance = performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NoSuchElementException("No such performance."));
-        Optional<MemberLike> optionalMemberLike = memberLikeRepository.findMemberLikeByMemberAndPerformance(member, performance);
-        if (optionalMemberLike.isEmpty()) {
-            return;
-        }
-        memberLikeRepository.deleteByMemberAndPerformance(member, performance);
+        member.setAllowMarketing(request.isPushEnabled());
     }
 
     private Member getMemberFromDb(String email) {
         return memberRepository.findById(email)
-            .orElseThrow(() -> new NoSuchElementException("No such member."));
+            .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
     }
 
-    private Member getCurrentMember() {
-        String email = SecurityUtil.getCurrentMemberEmail();
-        return getMemberFromDb(email);
-    }
-
-    private List<MemberGenre> getMemberGenres(Member member, List<Genre> genres) {
-        return genres.stream()
-            .map(genre -> MemberGenre.of(genre, member))
-            .collect(Collectors.toList());
-    }
-
-    private List<MemberArea> getMemberAreas(Member member, List<Area> areas) {
-        return areas.stream()
-            .map(area -> MemberArea.of(area, member))
-            .collect(Collectors.toList());
-    }
-
-    private List<MemberKeyword> getMemberKeywords(Member member, List<String> keywords) {
-        return keywords.stream()
-            .map(keyword -> MemberKeyword.of(keyword, member))
-            .collect(Collectors.toList());
-    }
-
-    private void validateCode(String email, String code) {
+    private void verifyCode(String email, String code) {
         VerificationRequest request = VerificationRequest.builder()
             .email(email)
             .code(code)
             .build();
 
-        boolean validCode = cacheService.isValidCode(request);
+        boolean validCode = localCacheService.isValidCode(request);
         if (!validCode) {
-            throw new IllegalStateException();
+            throw new ValidationFailureException("Validation code failure.", InternalCode.VERIFICATION_FAILURE);
         }
-        cacheService.invalidateCode(email);
+        localCacheService.invalidateCode(email);
     }
 }
