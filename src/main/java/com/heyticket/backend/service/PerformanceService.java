@@ -4,6 +4,7 @@ import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
+import com.heyticket.backend.module.meilesearch.MeiliSearch;
 import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.NotFoundException;
@@ -71,6 +72,8 @@ public class PerformanceService {
     private final PlaceRepository placeRepository;
 
     private final KopisService kopisService;
+
+    private final MeiliSearch meiliSearch;
 
     @Transactional(readOnly = true)
     public PageResponse<PerformanceResponse> getPerformancesByCondition(PerformanceFilterRequest request, Pageable pageable) {
@@ -405,6 +408,16 @@ public class PerformanceService {
         }
         log.info("[Batch] Performance state has been updated. updated count : {}", updateCnt);
         return updateCnt;
+    }
+
+    public void updatePerformanceMeiliData() {
+        log.info("[Batch] Batch update performance data to meili");
+        List<Performance> performances = performanceRepository.findAll();
+        List<PerformanceResponse> performanceResponses = performances.stream()
+            .map(this::getPerformanceResponse)
+            .collect(Collectors.toList());
+
+        meiliSearch.addPerformance(performanceResponses);
     }
 
     @Transactional(readOnly = true)
