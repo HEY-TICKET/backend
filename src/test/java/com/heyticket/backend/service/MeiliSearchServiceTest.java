@@ -34,7 +34,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 @ActiveProfiles("local")
 @Disabled // MeiliSearch 학습 테스트
-public class MeiliSearchTest {
+public class MeiliSearchServiceTest {
 
     @Autowired
     private PerformanceRepository performanceRepository;

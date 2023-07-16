@@ -4,7 +4,7 @@ import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
-import com.heyticket.backend.module.meilesearch.MeiliSearch;
+import com.heyticket.backend.module.meilesearch.MeiliSearchService;
 import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.NotFoundException;
@@ -73,7 +73,7 @@ public class PerformanceService {
 
     private final KopisService kopisService;
 
-    private final MeiliSearch meiliSearch;
+    private final MeiliSearchService meiliSearchService;
 
     @Transactional(readOnly = true)
     public PageResponse<PerformanceResponse> getPerformancesByCondition(PerformanceFilterRequest request, Pageable pageable) {
@@ -417,7 +417,7 @@ public class PerformanceService {
             .map(this::getPerformanceResponse)
             .collect(Collectors.toList());
 
-        meiliSearch.addPerformance(performanceResponses);
+        meiliSearchService.addPerformance(performanceResponses);
     }
 
     @Transactional(readOnly = true)

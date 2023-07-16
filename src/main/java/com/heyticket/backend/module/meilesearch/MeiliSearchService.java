@@ -15,16 +15,16 @@ import com.meilisearch.sdk.model.Settings;
 import com.meilisearch.sdk.model.TypoTolerance;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class MeiliSearch {
+@Service
+public class MeiliSearchService {
 
     private final Client meiliClient;
 
     private final ObjectMapper objectMapper;
 
-    public MeiliSearch(@Value("${meili.url}") String url, @Value("${meili.key}") String key, ObjectMapper objectMapper) {
+    public MeiliSearchService(@Value("${meili.url:url}") String url, @Value("${meili.key:key}") String key, ObjectMapper objectMapper) {
         this.meiliClient = new Client(new Config(url, key));
         this.objectMapper = objectMapper;
     }
