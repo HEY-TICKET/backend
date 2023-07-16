@@ -18,15 +18,16 @@ import com.meilisearch.sdk.model.Searchable;
 import com.meilisearch.sdk.model.Settings;
 import com.meilisearch.sdk.model.TypoTolerance;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -38,9 +39,21 @@ public class MeiliSearchTest {
     @Autowired
     private PerformanceRepository performanceRepository;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    private final Client client = new Client(new Config("http://localhost:7700", "masterKey"));
+    @Value("${meili.url}")
+    private String url;
+
+    @Value("${meili.key}")
+    private String key;
+
+    private  Client client;
+
+    @BeforeEach
+    void init() {
+        client = new Client(new Config(url, key));
+    }
 
     @Test
     @DisplayName("MeiliSearch test")
@@ -87,7 +100,7 @@ public class MeiliSearchTest {
         typoTolerance.setEnabled(false);
 
         Settings settings = new Settings();
-        settings.setSearchableAttributes(new String[]{"title", "crew"});
+        settings.setSearchableAttributes(new String[]{"title", "cast"});
         settings.setTypoTolerance(typoTolerance);
         index.updateSettings(settings);
         index.addDocuments(arrayNode.toString());
@@ -112,8 +125,7 @@ public class MeiliSearchTest {
             .build();
 
         Searchable results = index.search(request);
-        ArrayList<HashMap<String, Object>> hits = results.getHits();
-        System.out.println("results = " + hits);
+        System.out.println("results = " + results);
     }
 
     @Test
