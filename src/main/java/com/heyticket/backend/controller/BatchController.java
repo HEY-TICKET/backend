@@ -45,4 +45,10 @@ public class BatchController {
         int count = placeService.updatePlacesBatch();
         return CommonResponse.ok("Success in batch updating places. Updated performances count in data", count);
     }
+
+    @GetMapping("/performances/search")
+    public ResponseEntity<?> updatePerformanceSearch() {
+        performanceService.updatePerformanceMeiliData();
+        return CommonResponse.ok("Success in batch updating performance search data.", true);
+    }
 }

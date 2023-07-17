@@ -16,6 +16,7 @@ import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceDetailRespo
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.service.KopisService;
+import com.heyticket.backend.module.meilesearch.MeiliSearchService;
 import com.heyticket.backend.repository.performance.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.performance.PerformancePriceRepository;
 import com.heyticket.backend.repository.performance.PerformanceRepository;
@@ -76,12 +77,15 @@ class PerformanceServiceTest {
     @Mock
     private KopisService kopisService;
 
+    @Mock
+    private MeiliSearchService meiliSearchService;
+
     @BeforeEach
     void init() {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("email", "password");
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        performanceService = new PerformanceService(performanceRepository, performancePriceRepository, boxOfficeRankRepository, placeRepository, kopisService);
+        performanceService = new PerformanceService(performanceRepository, performancePriceRepository, boxOfficeRankRepository, placeRepository, kopisService, meiliSearchService);
     }
 
     @AfterEach
