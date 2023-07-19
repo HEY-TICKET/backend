@@ -50,9 +50,10 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             .orderBy(orderCondition(request.getSortType(), request.getSortOrder()))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
+            .distinct()
             .fetch();
 
-        JPAQuery<Long> count = queryFactory.select(performance.count())
+        JPAQuery<Long> count = queryFactory.select(performance.id.countDistinct())
             .from(performance)
             .where(
                 inPrice(request),
