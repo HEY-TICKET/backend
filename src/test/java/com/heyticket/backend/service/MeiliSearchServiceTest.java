@@ -32,7 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 @Disabled // MeiliSearch 학습 테스트
 public class MeiliSearchServiceTest {
 
