@@ -30,7 +30,6 @@ application-local.yml
 application-localnoauth.yml
 application-prod.yml
 application-prodnoauth.yml
-application-test.yml
 **/src/main/generated
 
 ### NetBeans ###
