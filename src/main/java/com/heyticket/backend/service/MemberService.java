@@ -57,7 +57,7 @@ public class MemberService {
 
     private final LocalCacheService localCacheService;
 
-    private final EmailService emailService;
+    private final IEmailService emailService;
 
     public MemberResponse getMemberByEmail(String email) {
         Member member = getMemberFromDb(email);

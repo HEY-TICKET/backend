@@ -2,10 +2,16 @@ package com.heyticket.backend.config;
 
 import com.heyticket.backend.config.properties.SmtpProperties;
 import com.heyticket.backend.config.properties.SmtpProperties.Smtp;
+import com.heyticket.backend.service.DummyEmailService;
+import com.heyticket.backend.service.EmailService;
+import com.heyticket.backend.service.IEmailService;
+import com.heyticket.backend.service.LocalCacheService;
 import java.util.Properties;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
@@ -25,6 +31,18 @@ public class MailConfig {
         javaMailSender.setJavaMailProperties(getMailProperties());
         javaMailSender.setDefaultEncoding("UTF-8");
         return javaMailSender;
+    }
+
+    @Bean
+    @Profile("prod & prodnoauth")
+    public IEmailService emailService(JavaMailSender mailSender, LocalCacheService localCacheService) {
+        return new EmailService(mailSender, localCacheService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(type = "IEmailService")
+    public IEmailService dummyEmailService() {
+        return new DummyEmailService();
     }
 
     private Properties getMailProperties() {

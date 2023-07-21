@@ -1,7 +1,6 @@
 package com.heyticket.backend.controller;
 
 import com.heyticket.backend.module.security.jwt.TokenInfo;
-import com.heyticket.backend.service.EmailService;
 import com.heyticket.backend.service.MemberLikeService;
 import com.heyticket.backend.service.MemberService;
 import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
@@ -51,8 +50,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
 
     private final MemberService memberService;
-
-    private final EmailService emailService;
 
     private final MemberLikeService memberLikeService;
 
