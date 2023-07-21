@@ -12,6 +12,12 @@ spring:
         descriptor:
           sql: trace
 
+jwt:
+  secret: testsecrettestsecrettestsecrettestsecrettestsecret
+  expiration:
+    access: 1800000
+    refresh: 36000000
+
 mail:
   smtp:
     auth: true
@@ -25,3 +31,7 @@ mail:
     port: 465
   admin-id: testid
   admin-pw: testpw
+
+meili:
+  url: http://localhost:7700
+  key: testkey
