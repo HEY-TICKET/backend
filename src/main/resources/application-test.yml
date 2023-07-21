@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: test
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
@@ -33,7 +31,3 @@ mail:
     port: 465
   admin-id: testid
   admin-pw: testpw
-
-meili:
-  url: http://localhost:7700
-  key: testkey

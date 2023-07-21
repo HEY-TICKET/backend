@@ -20,7 +20,7 @@ public class LocalCacheService {
 
     private Cache<String, String> refreshTokenCache;
 
-    @Value("${jwt.expiration.refresh:300000}")
+    @Value("${jwt.expiration.refresh}")
     private long RefreshTokenExpirationMillis;
 
     @PostConstruct
