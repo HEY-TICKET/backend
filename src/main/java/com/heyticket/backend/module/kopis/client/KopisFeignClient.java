@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "kopisFeignClient", url = "${kopis.performance.url}", configuration = FeignConfig.class)
+@FeignClient(name = "kopisFeignClient", url = "${kopis.performance.url:url}", configuration = FeignConfig.class)
 public interface KopisFeignClient {
 
     @GetMapping(value = "/pblprfr", produces = "application/xml;charset=UTF-8")

@@ -35,9 +35,9 @@ public class JwtTokenProvider {
 
     private final long refreshExpirationMillis;
 
-    public JwtTokenProvider(@Value("${jwt.secret:default}") String secretKey,
-        @Value("${jwt.expiration.access:30000}") long accessExpirationMillis,
-        @Value("${jwt.expiration.refresh:300000}") long refreshExpirationMillis) {
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
+        @Value("${jwt.expiration.access}") long accessExpirationMillis,
+        @Value("${jwt.expiration.refresh}") long refreshExpirationMillis) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessExpirationMillis = accessExpirationMillis;
