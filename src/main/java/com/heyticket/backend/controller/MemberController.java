@@ -1,7 +1,6 @@
 package com.heyticket.backend.controller;
 
 import com.heyticket.backend.module.security.jwt.TokenInfo;
-import com.heyticket.backend.service.EmailService;
 import com.heyticket.backend.service.MemberLikeService;
 import com.heyticket.backend.service.MemberService;
 import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
@@ -52,8 +51,6 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    private final EmailService emailService;
-
     private final MemberLikeService memberLikeService;
 
     // Unauthorized
@@ -93,7 +90,7 @@ public class MemberController {
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @PostMapping("/members/verification/verify")
     public ResponseEntity<?> verifyCode(@RequestBody @Valid VerificationRequest request) {
-        String verificationCode = emailService.verifyCode(request);
+        String verificationCode = memberService.verifyCode(request);
         return CommonResponse.ok("Email verification is successful. New verification code issued.", verificationCode);
     }
 
@@ -126,7 +123,7 @@ public class MemberController {
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
     @DeleteMapping("/members/verification/expire")
     public ResponseEntity<?> expireVerificationCode(@RequestBody @Valid VerificationRequest request) {
-        String email = emailService.expireCode(request.getEmail());
+        String email = memberService.expireCode(request.getEmail());
         return CommonResponse.ok("Email verification code has been expired.", email);
     }
 

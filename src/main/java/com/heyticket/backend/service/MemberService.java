@@ -11,7 +11,9 @@ import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
 import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.module.security.jwt.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
+import com.heyticket.backend.module.util.VerificationCodeGenerator;
 import com.heyticket.backend.repository.member.MemberRepository;
+import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
@@ -55,7 +57,7 @@ public class MemberService {
 
     private final LocalCacheService localCacheService;
 
-    private final EmailService emailService;
+    private final IEmailService emailService;
 
     public MemberResponse getMemberByEmail(String email) {
         Member member = getMemberFromDb(email);
@@ -278,6 +280,24 @@ public class MemberService {
     public void updateMarketingPushEnabled(MemberPushUpdateRequest request) {
         Member member = getMemberFromDb(request.getEmail());
         member.setAllowMarketing(request.isPushEnabled());
+    }
+
+    public String expireCode(String email) {
+        localCacheService.invalidateCode(email);
+        return email;
+    }
+
+    public String verifyCode(VerificationRequest request) {
+        boolean validCodeWithTime = localCacheService.isValidCodeWithTime(request);
+        if (!validCodeWithTime) {
+            throw new ValidationFailureException("Verification code is outdated or not matched.", InternalCode.VERIFICATION_FAILURE);
+        }
+
+        String code = VerificationCodeGenerator.createCode();
+        VerificationCode verificationCode = VerificationCode.of(code, System.currentTimeMillis() + 600000);
+        localCacheService.putVerificationCode(request.getEmail(), verificationCode);
+
+        return code;
     }
 
     private Member getMemberFromDb(String email) {
