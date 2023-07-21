@@ -1,11 +1,10 @@
 package com.heyticket.backend.service;
 
 import com.heyticket.backend.exception.InternalCode;
-import com.heyticket.backend.exception.ValidationFailureException;
+import com.heyticket.backend.exception.SmtpFailureException;
 import com.heyticket.backend.module.util.VerificationCodeGenerator;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
-import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -13,10 +12,12 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMessage.RecipientType;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -49,24 +50,6 @@ public class EmailService {
         return email;
     }
 
-    public String expireCode(String email) {
-        localCacheService.invalidateCode(email);
-        return email;
-    }
-
-    public String verifyCode(VerificationRequest request) {
-        boolean validCodeWithTime = localCacheService.isValidCodeWithTime(request);
-        if (!validCodeWithTime) {
-            throw new ValidationFailureException("Verification code is outdated or not matched.", InternalCode.VERIFICATION_FAILURE);
-        }
-
-        String code = VerificationCodeGenerator.createCode();
-        VerificationCode verificationCode = VerificationCode.of(code, System.currentTimeMillis() + 600000);
-        localCacheService.putVerificationCode(request.getEmail(), verificationCode);
-
-        return code;
-    }
-
     private MimeMessage createSignUpMessage(String email, String code) {
         MimeMessage message = emailSender.createMimeMessage();
         try {
@@ -85,10 +68,9 @@ public class EmailService {
             stringBuilder.append("</div>");
             message.setText(stringBuilder.toString(), "utf-8", "html");
             message.setFrom(new InternetAddress("heyticket@gmail.com", "헤이티켓"));
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.error("Failure to send sign up mail", e);
+            throw new SmtpFailureException("Failure to send sign up mail", InternalCode.SERVER_ERROR);
         }
 
         return message;
@@ -112,10 +94,9 @@ public class EmailService {
             stringBuilder.append("</div>");
             message.setText(stringBuilder.toString(), "utf-8", "html");
             message.setFrom(new InternetAddress("heyticket@gmail.com", "헤이티켓"));
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.error("Fail to send password find mail", e);
+            throw new SmtpFailureException("Fail to send password find mail", InternalCode.SERVER_ERROR);
         }
 
         return message;
