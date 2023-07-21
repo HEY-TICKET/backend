@@ -11,3 +11,9 @@ spring:
       type:
         descriptor:
           sql: trace
+
+jwt:
+  secret: TestcodesecretTestcodesecretTestcodesecretTestco
+  expiration:
+    access: 300000
+    refresh: 36000000
