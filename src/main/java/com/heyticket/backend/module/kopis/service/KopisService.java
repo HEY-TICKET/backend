@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class KopisService {
 
-    @Value("${kopis.api-key}")
+    @Value("${kopis.api-key:default}")
     private String apiKey;
 
     private final KopisFeignClient kopisFeignClient;
