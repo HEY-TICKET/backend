@@ -12,8 +12,16 @@ spring:
         descriptor:
           sql: trace
 
-jwt:
-  secret: TestcodesecretTestcodesecretTestcodesecretTestco
-  expiration:
-    access: 300000
-    refresh: 36000000
+mail:
+  smtp:
+    auth: true
+    starttls:
+      required: true
+      enable: true
+    socketFactory:
+      class: javax.net.ssl.SSLSocketFactory
+      fallback: false
+      port: 465
+    port: 465
+  admin-id: testid
+  admin-pw: testpw
