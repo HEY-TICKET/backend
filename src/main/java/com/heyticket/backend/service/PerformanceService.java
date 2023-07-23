@@ -4,8 +4,6 @@ import com.heyticket.backend.domain.BoxOfficeRank;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.domain.PerformancePrice;
 import com.heyticket.backend.domain.Place;
-import com.heyticket.backend.module.meilesearch.MeiliSearchService;
-import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.module.kopis.client.dto.KopisBoxOfficeRequest;
@@ -17,6 +15,7 @@ import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
+import com.heyticket.backend.module.meilesearch.MeiliSearchService;
 import com.heyticket.backend.repository.performance.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.performance.PerformancePriceRepository;
 import com.heyticket.backend.repository.performance.PerformanceRepository;
@@ -31,6 +30,7 @@ import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.TimePeriod;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -44,9 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -293,15 +290,16 @@ public class PerformanceService {
         BoxOfficeArea[] boxOfficeAreas = BoxOfficeArea.values();
         TimePeriod[] timePeriods = TimePeriod.values();
 
-        List<CompletableFuture<BoxOfficeRank>> futures = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+//        List<CompletableFuture<BoxOfficeRank>> futures = new ArrayList<>();
+//        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        List<BoxOfficeRank> boxOfficeRankList = new ArrayList<>();
 
         for (TimePeriod timePeriod : timePeriods) {
             for (BoxOfficeGenre boxOfficeGenre : boxOfficeGenres) {
                 if (boxOfficeGenre == BoxOfficeGenre.ALL) {
                     continue;
                 }
-                CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
+//                CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
                     KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
                         .ststype(timePeriod.getValue())
                         .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
@@ -314,14 +312,14 @@ public class PerformanceService {
                         .map(KopisBoxOfficeResponse::mt20id)
                         .collect(Collectors.joining("|"));
 
-                    return BoxOfficeRank.builder()
-                        .boxOfficeGenre(boxOfficeGenre)
-                        .boxOfficeArea(BoxOfficeArea.ALL)
-                        .timePeriod(timePeriod)
-                        .performanceIds(ids)
-                        .build();
-                }, executorService);
-                futures.add(future);
+                boxOfficeRankList.add(BoxOfficeRank.builder()
+                    .boxOfficeGenre(boxOfficeGenre)
+                    .boxOfficeArea(BoxOfficeArea.ALL)
+                    .timePeriod(timePeriod)
+                    .performanceIds(ids)
+                    .build());
+//                }, executorService);
+//                futures.add(future);
 
             }
 
@@ -329,7 +327,7 @@ public class PerformanceService {
                 if (boxOfficeArea == BoxOfficeArea.ALL) {
                     continue;
                 }
-                CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
+//                CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
                     KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
                         .ststype(timePeriod.getValue())
                         .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
@@ -342,17 +340,17 @@ public class PerformanceService {
                         .map(KopisBoxOfficeResponse::mt20id)
                         .collect(Collectors.joining("|"));
 
-                    return BoxOfficeRank.builder()
-                        .boxOfficeArea(boxOfficeArea)
-                        .boxOfficeGenre(BoxOfficeGenre.ALL)
-                        .timePeriod(timePeriod)
-                        .performanceIds(ids)
-                        .build();
-                }, executorService);
-                futures.add(future);
+                boxOfficeRankList.add(BoxOfficeRank.builder()
+                    .boxOfficeArea(boxOfficeArea)
+                    .boxOfficeGenre(BoxOfficeGenre.ALL)
+                    .timePeriod(timePeriod)
+                    .performanceIds(ids)
+                    .build());
+//                }, executorService);
+//                futures.add(future);
             }
 
-            CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
+//            CompletableFuture<BoxOfficeRank> future = CompletableFuture.supplyAsync(() -> {
                 KopisBoxOfficeRequest kopisBoxOfficeRequest = KopisBoxOfficeRequest.builder()
                     .ststype(timePeriod.getValue())
                     .date(LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")))
@@ -364,20 +362,20 @@ public class PerformanceService {
                     .map(KopisBoxOfficeResponse::mt20id)
                     .collect(Collectors.joining("|"));
 
-                return BoxOfficeRank.builder()
-                    .boxOfficeGenre(BoxOfficeGenre.ALL)
-                    .boxOfficeArea(BoxOfficeArea.ALL)
-                    .timePeriod(timePeriod)
-                    .performanceIds(ids)
-                    .build();
-            }, executorService);
-            futures.add(future);
+            boxOfficeRankList.add(BoxOfficeRank.builder()
+                .boxOfficeGenre(BoxOfficeGenre.ALL)
+                .boxOfficeArea(BoxOfficeArea.ALL)
+                .timePeriod(timePeriod)
+                .performanceIds(ids)
+                .build());
+//            }, executorService);
+//            futures.add(future);
 
         }
 
-        List<BoxOfficeRank> boxOfficeRankList = futures.stream()
-            .map(CompletableFuture::join)
-            .collect(Collectors.toList());
+//        List<BoxOfficeRank> boxOfficeRankList = futures.stream()
+//            .map(CompletableFuture::join)
+//            .collect(Collectors.toList());
 
         boxOfficeRankRepository.saveAll(boxOfficeRankList);
         log.info("[Batch] Box office rank has been updated. size : {}", boxOfficeRankList.size());
