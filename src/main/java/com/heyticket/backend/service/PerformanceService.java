@@ -203,7 +203,7 @@ public class PerformanceService {
                 .filter(id -> !id.equals(performanceId))
                 .collect(Collectors.toList());
 
-            int performanceLimit = Math.min(filteredPerformanceIds.size(), 2);
+            int performanceLimit = Math.min(filteredPerformanceIds.size(), 3);
             for (int i = 0; i < performanceLimit; i++) {
                 recommendedPerformanceIds.add(filteredPerformanceIds.get(i));
             }
@@ -224,7 +224,7 @@ public class PerformanceService {
                 .filter(id -> !recommendedPerformanceIds.contains(id))
                 .collect(Collectors.toList());
 
-            int performanceLimit = Math.min(filteredPerformanceIds.size(), 2);
+            int performanceLimit = Math.min(filteredPerformanceIds.size(), 3);
             for (int i = 0; i < performanceLimit; i++) {
                 recommendedPerformanceIds.add(filteredPerformanceIds.get(i));
             }
