@@ -3,7 +3,6 @@ package com.heyticket.backend.schedule;
 import com.heyticket.backend.service.PerformanceService;
 import com.heyticket.backend.service.PlaceService;
 import java.time.LocalDate;
-import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -30,8 +29,6 @@ public class Scheduler {
     @Scheduled(cron = "0 0 0/3 * * *")
     public void updatePerformances() {
         performanceService.updatePerformancesBatch(LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), performanceBatchCount);
-        Executors.newSingleThreadExecutor();
-        Executors.newFixedThreadPool(1);
     }
 
     @Scheduled(cron = "0 0 12 * * *")

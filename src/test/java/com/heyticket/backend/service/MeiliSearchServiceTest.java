@@ -18,6 +18,7 @@ import com.meilisearch.sdk.model.Searchable;
 import com.meilisearch.sdk.model.Settings;
 import com.meilisearch.sdk.model.TypoTolerance;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,7 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("local")
 @Disabled // MeiliSearch 학습 테스트
 public class MeiliSearchServiceTest {
 
@@ -48,7 +49,7 @@ public class MeiliSearchServiceTest {
     @Value("${meili.key}")
     private String key;
 
-    private  Client client;
+    private Client client;
 
     @BeforeEach
     void init() {
@@ -97,10 +98,26 @@ public class MeiliSearchServiceTest {
         Index index = client.index("performance");
 
         TypoTolerance typoTolerance = new TypoTolerance();
+        typoTolerance.setDisableOnAttributes(new String[] {"cast"});
+        typoTolerance.setMinWordSizeForTypos(
+            new HashMap<>() {
+                {
+                    put("oneTypo", 8);
+                }
+            });
         typoTolerance.setEnabled(false);
 
         Settings settings = new Settings();
+        settings.setTypoTolerance(typoTolerance);
+        settings.setRankingRules(new String[]{
+            "exactness",
+            "proximity",
+            "typo",
+            "attribute",
+            "sort"
+        });
         settings.setSearchableAttributes(new String[]{"title", "cast"});
+        settings.setSortableAttributes(new String[]{"status"});
         settings.setTypoTolerance(typoTolerance);
         index.updateSettings(settings);
         index.addDocuments(arrayNode.toString());
@@ -132,5 +149,57 @@ public class MeiliSearchServiceTest {
     @DisplayName("delete index")
     void deleteIdx() throws MeilisearchException {
         client.deleteIndex("performance");
+    }
+
+    @Test
+    @DisplayName("get ranking rule")
+    void getRankingRule() throws MeilisearchException {
+        Index index = client.index("performance");
+        String[] rankingRulesSettings = index.getRankingRulesSettings();
+        for (String rankingRulesSetting : rankingRulesSettings) {
+            System.out.println("rankingRulesSetting = " + rankingRulesSetting);
+        }
+        TypoTolerance typoToleranceSettings = index.getTypoToleranceSettings();
+        boolean enabled = typoToleranceSettings.isEnabled();
+        System.out.println("enabled = " + enabled);
+    }
+
+    @Test
+    @DisplayName("set ranking rule")
+    void setRankingRule() throws MeilisearchException {
+        Index index = client.index("performance");
+
+        TypoTolerance typoTolerance = new TypoTolerance();
+        typoTolerance.setDisableOnAttributes(new String[] {"cast"});
+        typoTolerance.setMinWordSizeForTypos(
+            new HashMap<String, Integer>() {
+                {
+                    put("oneTypo", 8);
+                }
+            });
+        typoTolerance.setEnabled(false);
+
+        Settings settings = new Settings();
+        settings.setSearchableAttributes(new String[]{"title", "cast"});
+        settings.setTypoTolerance(typoTolerance);
+        settings.setRankingRules(new String[]{
+            "exactness",
+            "proximity",
+            "typo",
+            "attribute",
+            "sort"
+        });
+
+        index.updateSettings(settings);
+    }
+
+    @Test
+    @DisplayName("get searchable attribute")
+    void getSearchableAttribute() throws MeilisearchException {
+        Index index = client.index("performance");
+        String[] searchableAttributes = index.getSettings().getSearchableAttributes();
+        for (String searchableAttribute : searchableAttributes) {
+            System.out.println("searchableAttribute = " + searchableAttribute);
+        }
     }
 }
