@@ -41,7 +41,7 @@ public class Scheduler {
         placeService.updatePlacesBatch();
     }
 
-    @Scheduled(cron = " 0 4 * * *")
+    @Scheduled(cron = "0 0 4 * * *")
     public void updateMeiliData() {
         performanceService.updatePerformanceMeiliData();
     }
