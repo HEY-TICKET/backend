@@ -16,6 +16,11 @@ import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.service.KopisService;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.module.meilesearch.MeiliSearchService;
+import com.heyticket.backend.module.meilesearch.dto.MeiliHilightedPerformanceResponse;
+import com.heyticket.backend.module.meilesearch.dto.MeiliPerformanceResponse;
+import com.heyticket.backend.module.meilesearch.dto.MeiliPerformanceDocument;
+import com.heyticket.backend.module.meilesearch.dto.MeiliPerformanceSaveResponse;
+import com.heyticket.backend.module.meilesearch.dto.MeiliSearchResponse;
 import com.heyticket.backend.repository.performance.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.performance.PerformancePriceRepository;
 import com.heyticket.backend.repository.performance.PerformanceRepository;
@@ -85,13 +90,16 @@ public class PerformanceService {
 
     @Transactional(readOnly = true)
     public PageResponse<PerformanceResponse> searchPerformances(PerformanceSearchRequest request, Pageable pageable) {
-        Page<Performance> performancePageResponse = performanceRepository.findPerformanceBySearchQuery(request, pageable);
-        List<Performance> performanceList = performancePageResponse.getContent();
-        List<PerformanceResponse> performanceResponseList = performanceList.stream()
-            .map(this::getPerformanceResponse)
+        MeiliSearchResponse searchResponse = meiliSearchService.searchPerformance(request.getQuery(), pageable.getPageNumber() + 1, pageable.getPageSize());
+        List<MeiliPerformanceResponse> meiliPerformanceResponses = searchResponse.getPerformanceResponses();
+        List<PerformanceResponse> performanceResponses = meiliPerformanceResponses.stream()
+            .map(meiliPerformanceResponse -> {
+                MeiliHilightedPerformanceResponse formattedResponse = meiliPerformanceResponse.getFormattedResponse();
+                return formattedResponse.toPerformanceResponse();
+            })
             .collect(Collectors.toList());
 
-        return new PageResponse<>(performanceResponseList, pageable.getPageNumber() + 1, performancePageResponse.getNumberOfElements(), performancePageResponse.getTotalPages());
+        return new PageResponse<>(performanceResponses, searchResponse.getPage(), searchResponse.getHitsPerPage(), searchResponse.getTotalPages(), searchResponse.getTotalHits());
     }
 
     @Transactional(readOnly = true)
@@ -410,12 +418,11 @@ public class PerformanceService {
 
     public void updatePerformanceMeiliData() {
         log.info("[Batch] Batch update performance data to meili");
-        List<Performance> performances = performanceRepository.findAll();
-        List<PerformanceResponse> performanceResponses = performances.stream()
-            .map(this::getPerformanceResponse)
+        List<MeiliPerformanceSaveResponse> meiliPerformanceSaveResponses = performanceRepository.findMeiliPerformanceSaveForms();
+        List<MeiliPerformanceDocument> meiliPerformanceDocuments = meiliPerformanceSaveResponses.stream()
+            .map(MeiliPerformanceSaveResponse::toStringForm)
             .collect(Collectors.toList());
-
-        meiliSearchService.addPerformance(performanceResponses);
+        meiliSearchService.addPerformance(meiliPerformanceDocuments);
     }
 
     @Transactional(readOnly = true)
