@@ -1,18 +1,19 @@
 package com.heyticket.backend.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.heyticket.backend.domain.Performance;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.repository.performance.PerformanceRepository;
+import com.heyticket.backend.service.dto.pagable.PageResponse;
+import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.meilisearch.sdk.Client;
 import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.SearchRequest;
 import com.meilisearch.sdk.exceptions.MeilisearchException;
-import com.meilisearch.sdk.model.MatchingStrategy;
 import com.meilisearch.sdk.model.SearchResult;
 import com.meilisearch.sdk.model.Searchable;
 import com.meilisearch.sdk.model.Settings;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
@@ -39,6 +41,9 @@ public class MeiliSearchServiceTest {
 
     @Autowired
     private PerformanceRepository performanceRepository;
+
+    @Autowired
+    private PerformanceService performanceService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -57,8 +62,8 @@ public class MeiliSearchServiceTest {
     }
 
     @Test
-    @DisplayName("MeiliSearch test")
-    void meiliSearchTest() throws JSONException, MeilisearchException {
+    @DisplayName("MeiliSearch - 샘플 document add 테스트")
+    void meiliSampleDocAdd() throws JSONException, MeilisearchException {
         ArrayList<JSONObject> items = new ArrayList<>();
         items.add(new JSONObject().put("id", "1").put("title", "Carol").put("genres", new JSONArray("[\"Romance\",\"Drama\"]")));
         items.add(new JSONObject().put("id", "2").put("title", "Wonder Woman").put("genres", new JSONArray("[\"Action\",\"Adventure\"]")));
@@ -75,7 +80,7 @@ public class MeiliSearchServiceTest {
     }
 
     @Test
-    @DisplayName("Basic search")
+    @DisplayName("MeiliSearch - query로만 검색")
     void basicSearch() throws MeilisearchException {
         Index index = client.index("movies");
         SearchResult results = index.search("carlo");
@@ -83,29 +88,29 @@ public class MeiliSearchServiceTest {
     }
 
     @Test
-    @DisplayName("Add performances")
-    void addDocuments() throws MeilisearchException {
+    @DisplayName("MeiliSearch - typoTolerance, rankingRule setting 테스트")
+    void typoSetting() throws MeilisearchException {
         ArrayNode arrayNode = objectMapper.createArrayNode();
         List<Performance> performances = performanceRepository.findAll();
 
         for (Performance performance : performances) {
             PerformanceResponse performanceResponse = PerformanceMapper.INSTANCE.toPerformanceDto(performance);
-            JsonNode jsonNode = objectMapper.valueToTree(performanceResponse);
-            arrayNode.add(jsonNode);
+            ObjectNode objectNode = objectMapper.valueToTree(performanceResponse);
+            arrayNode.add(objectNode);
         }
 
         client.createIndex("performance", "id");
         Index index = client.index("performance");
 
         TypoTolerance typoTolerance = new TypoTolerance();
-        typoTolerance.setDisableOnAttributes(new String[] {"cast"});
+        typoTolerance.setDisableOnAttributes(new String[]{"cast"});
         typoTolerance.setMinWordSizeForTypos(
             new HashMap<>() {
                 {
                     put("oneTypo", 8);
                 }
             });
-        typoTolerance.setEnabled(false);
+        typoTolerance.setEnabled(true);
 
         Settings settings = new Settings();
         settings.setTypoTolerance(typoTolerance);
@@ -124,35 +129,37 @@ public class MeiliSearchServiceTest {
     }
 
     @Test
-    @DisplayName("Search performances")
+    @DisplayName("MeiliSearch - SearchRequest highlight 필드 테스트")
     void searchDocuments() throws MeilisearchException {
         Index index = client.index("performance");
 
-        TypoTolerance typoTolerance = new TypoTolerance();
-        typoTolerance.setEnabled(false);
-
         Settings settings = new Settings();
         settings.setSearchableAttributes(new String[]{"title", "cast"});
-        settings.setTypoTolerance(typoTolerance);
+
         index.updateSettings(settings);
 
         SearchRequest request = SearchRequest.builder()
             .q("시카")
-            .matchingStrategy(MatchingStrategy.ALL)
+            .highlightPreTag("<em>")
+            .highlightPostTag("</em>")
+            .attributesToHighlight(new String[]{"title", "cast"})
             .build();
 
+        System.out.println("request.toString() = " + request.toString());
+
         Searchable results = index.search(request);
-        System.out.println("results = " + results);
+        ArrayList<HashMap<String, Object>> hits = results.getHits();
+        System.out.println("hits = " + hits);
     }
 
     @Test
-    @DisplayName("delete index")
+    @DisplayName("MeiliSearch - index 삭제")
     void deleteIdx() throws MeilisearchException {
         client.deleteIndex("performance");
     }
 
     @Test
-    @DisplayName("get ranking rule")
+    @DisplayName("MeiliSearch -get ranking rule")
     void getRankingRule() throws MeilisearchException {
         Index index = client.index("performance");
         String[] rankingRulesSettings = index.getRankingRulesSettings();
@@ -165,12 +172,12 @@ public class MeiliSearchServiceTest {
     }
 
     @Test
-    @DisplayName("set ranking rule")
+    @DisplayName("MeiliSearch - set ranking rule")
     void setRankingRule() throws MeilisearchException {
         Index index = client.index("performance");
 
         TypoTolerance typoTolerance = new TypoTolerance();
-        typoTolerance.setDisableOnAttributes(new String[] {"cast"});
+        typoTolerance.setDisableOnAttributes(new String[]{"cast"});
         typoTolerance.setMinWordSizeForTypos(
             new HashMap<String, Integer>() {
                 {
@@ -194,12 +201,27 @@ public class MeiliSearchServiceTest {
     }
 
     @Test
-    @DisplayName("get searchable attribute")
+    @DisplayName("MeiliSearch - get searchable attribute")
     void getSearchableAttribute() throws MeilisearchException {
         Index index = client.index("performance");
         String[] searchableAttributes = index.getSettings().getSearchableAttributes();
         for (String searchableAttribute : searchableAttributes) {
             System.out.println("searchableAttribute = " + searchableAttribute);
         }
+    }
+
+    @Test
+    void addPerformance() {
+        performanceService.updatePerformanceMeiliData();
+    }
+
+    @Test
+    void search() {
+        PerformanceSearchRequest request = PerformanceSearchRequest.builder()
+            .query("시카")
+            .build();
+        PageResponse<PerformanceResponse> performanceResponsePageResponse = performanceService.searchPerformances(request, PageRequest.of(1, 10));
+        List<PerformanceResponse> contents = performanceResponsePageResponse.getContents();
+        System.out.println("contents.size() = " + contents.size());
     }
 }

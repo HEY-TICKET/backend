@@ -2,9 +2,12 @@ package com.heyticket.backend.config;
 
 import feign.Logger;
 import feign.Logger.Level;
+import feign.RequestInterceptor;
 import feign.codec.Decoder;
 import feign.form.FormEncoder;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.cloud.openfeign.support.SpringDecoder;
@@ -37,5 +40,11 @@ public class FeignConfig {
         MappingJackson2XmlHttpMessageConverter c = new MappingJackson2XmlHttpMessageConverter();
         ObjectFactory<HttpMessageConverters> objectFactory = () -> new HttpMessageConverters(c);
         return new ResponseEntityDecoder(new SpringDecoder(objectFactory));
+    }
+
+    @Bean
+    @Qualifier("meiliSearchFeignClient")
+    public RequestInterceptor requestInterceptor(@Value("${meili.key:key}") String key) {
+        return requestTemplate -> requestTemplate.header("Authorization", "Bearer " + key);
     }
 }
