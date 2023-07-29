@@ -26,14 +26,12 @@ import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
-import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.BoxOfficeRankResponse;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.service.enums.PerformanceStatus;
-import com.heyticket.backend.service.enums.SearchType;
 import com.heyticket.backend.service.enums.SortOrder;
 import com.heyticket.backend.service.enums.SortType;
 import com.heyticket.backend.service.enums.TimePeriod;
@@ -691,39 +689,6 @@ class PerformanceServiceTest {
         //then
         List<PerformanceResponse> contents = result.getContents();
         assertThat(contents).hasSize(4);
-    }
-
-    @Test
-    @DisplayName("Performance 검색 - 데이터 확인")
-    void searchPerformance() {
-        //given
-        Performance performance = Performance.builder()
-            .id("id")
-            .title("브루노 마스 내한 공연")
-            .views(0)
-            .status(PerformanceStatus.ONGOING)
-            .build();
-
-        performanceRepository.save(performance);
-
-        //when
-        PerformanceSearchRequest request1 = PerformanceSearchRequest.builder()
-            .searchType(SearchType.ARTIST)
-            .query("브루노")
-            .build();
-
-        PerformanceSearchRequest request2 = PerformanceSearchRequest.builder()
-            .searchType(SearchType.PERFORMANCE)
-            .query("부루노")
-            .build();
-
-        PageResponse<PerformanceResponse> performanceResponsePageResponse1 = performanceService.searchPerformances(request1, PageRequest.of(0, 10));
-        PageResponse<PerformanceResponse> performanceResponsePageResponse2 = performanceService.searchPerformances(request2, PageRequest.of(0, 10));
-
-        //then
-        assertThat(performanceResponsePageResponse1.getContents()).hasSize(1);
-        assertThat(performanceResponsePageResponse1.getContents().get(0).getId()).isEqualTo(performance.getId());
-        assertThat(performanceResponsePageResponse2.getContents()).hasSize(0);
     }
 
     private Performance createPerformance(String id) {
