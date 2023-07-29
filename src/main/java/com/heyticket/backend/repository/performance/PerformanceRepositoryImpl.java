@@ -3,18 +3,19 @@ package com.heyticket.backend.repository.performance;
 
 import static com.heyticket.backend.domain.QPerformance.performance;
 import static com.heyticket.backend.domain.QPerformancePrice.performancePrice;
+import static com.heyticket.backend.domain.QPlace.place;
 
 import com.heyticket.backend.domain.Performance;
-import com.heyticket.backend.service.enums.PerformanceStatus;
-import com.heyticket.backend.service.enums.Area;
-import com.heyticket.backend.service.enums.Genre;
-import com.heyticket.backend.service.enums.SortOrder;
-import com.heyticket.backend.service.enums.SortType;
+import com.heyticket.backend.module.meilesearch.dto.MeiliPerformanceSaveResponse;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
 import com.heyticket.backend.service.dto.request.PerformanceFilterRequest;
-import com.heyticket.backend.service.dto.request.PerformanceSearchRequest;
 import com.heyticket.backend.service.dto.response.GenreCountResponse;
+import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.PerformanceStatus;
 import com.heyticket.backend.service.enums.SearchType;
+import com.heyticket.backend.service.enums.SortOrder;
+import com.heyticket.backend.service.enums.SortType;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
@@ -68,26 +69,6 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
         return PageableExecutionUtils.getPage(performanceList, pageable, count::fetchOne);
     }
 
-    @Override
-    public Page<Performance> findPerformanceBySearchQuery(PerformanceSearchRequest request, Pageable pageable) {
-        List<Performance> performanceList = queryFactory.selectFrom(performance)
-            .where(
-                eqQuery(request.getSearchType(), request.getQuery())
-            )
-            .orderBy(performance.views.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        JPAQuery<Long> count = queryFactory.select(performance.count())
-            .from(performance)
-            .where(
-                eqQuery(request.getSearchType(), request.getQuery())
-            );
-
-        return PageableExecutionUtils.getPage(performanceList, pageable, count::fetchOne);
-    }
-
     private Predicate eqQuery(SearchType searchType, String query) {
         if (ObjectUtils.isEmpty(searchType) || searchType == SearchType.PERFORMANCE) {
             return performance.title.containsIgnoreCase(query);
@@ -134,6 +115,40 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             ))
             .from(performance)
             .groupBy(performance.genre)
+            .fetch();
+    }
+
+    @Override
+    public List<MeiliPerformanceSaveResponse> findMeiliPerformanceSaveForms() {
+        return queryFactory.select(
+            Projections.fields(
+                MeiliPerformanceSaveResponse.class,
+                performance.id.as("id"),
+                place.address.as("address"),
+                performance.title.as("title"),
+                performance.startDate.as("startDate"),
+                performance.endDate.as("endDate"),
+                performance.theater.as("theater"),
+                performance.cast.as("cast"),
+                performance.runtime.as("runtime"),
+                performance.age.as("age"),
+                performance.company.as("company"),
+                performance.price.as("price"),
+                performance.poster.as("poster"),
+                performance.genre.as("genre"),
+                performance.status.as("status"),
+                performance.openRun.as("openRun"),
+                performance.schedule.as("schedule"),
+                performance.views.as("views"),
+                place.latitude.as("latitude"),
+                place.longitude.as("longitude"),
+                place.phoneNumber.as("phoneNumber"),
+                place.area.as("sido"),
+                place.gugunName.as("gugun")
+            ))
+            .from(performance)
+            .leftJoin(place)
+            .on(performance.place.eq(place))
             .fetch();
     }
 
