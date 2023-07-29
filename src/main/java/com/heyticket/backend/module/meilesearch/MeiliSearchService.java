@@ -39,10 +39,10 @@ public class MeiliSearchService {
             settings.setSearchableAttributes(new String[]{"title", "cast"});
             settings.setSortableAttributes(new String[]{"status"});
             settings.setRankingRules(new String[]{
+                "sort",
                 "exactness",
                 "proximity",
-                "attribute",
-                "sort"
+                "attribute"
             });
             index.updateSettings(settings);
 
