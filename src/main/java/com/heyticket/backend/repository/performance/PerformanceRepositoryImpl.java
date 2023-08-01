@@ -88,6 +88,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
         List<Performance> performanceList = queryFactory.selectFrom(performance)
             .where(
                 eqPerformanceGenre(request.getGenre()),
+                performance.status.ne(PerformanceStatus.COMPLETED),
                 performance.createdDate.goe(LocalDateTime.now().minusDays(7))
             )
             .orderBy(orderCondition(request.getSortType(), request.getSortOrder()))
@@ -99,6 +100,7 @@ public class PerformanceRepositoryImpl implements PerformanceCustomRepository {
             .from(performance)
             .where(
                 eqPerformanceGenre(request.getGenre()),
+                performance.status.ne(PerformanceStatus.COMPLETED),
                 performance.createdDate.goe(LocalDateTime.now().minusDays(7))
             );
 
