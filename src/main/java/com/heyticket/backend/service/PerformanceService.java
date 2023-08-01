@@ -394,6 +394,9 @@ public class PerformanceService {
     }
 
     private boolean checkIfNotCompleted(String period) {
+        if (period.contains("오픈런")) {
+            return true;
+        }
         String strEndDate = period.contains("~") ? period.split("~")[1] : period;
         LocalDate endDate = LocalDate.parse(strEndDate, DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         return LocalDate.now().isAfter(endDate);
