@@ -317,6 +317,7 @@ public class PerformanceService {
                     List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
 
                     String ids = kopisBoxOfficeResponseList.stream()
+                        .filter(response -> checkIfNotCompleted(response.prfpd()))
                         .map(KopisBoxOfficeResponse::mt20id)
                         .collect(Collectors.joining("|"));
 
@@ -345,6 +346,7 @@ public class PerformanceService {
                     List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
 
                     String ids = kopisBoxOfficeResponseList.stream()
+                        .filter(response -> checkIfNotCompleted(response.prfpd()))
                         .map(KopisBoxOfficeResponse::mt20id)
                         .collect(Collectors.joining("|"));
 
@@ -367,6 +369,7 @@ public class PerformanceService {
                 List<KopisBoxOfficeResponse> kopisBoxOfficeResponseList = kopisService.getBoxOffice(kopisBoxOfficeRequest);
 
                 String ids = kopisBoxOfficeResponseList.stream()
+                    .filter(response -> checkIfNotCompleted(response.prfpd()))
                     .map(KopisBoxOfficeResponse::mt20id)
                     .collect(Collectors.joining("|"));
 
@@ -388,6 +391,12 @@ public class PerformanceService {
         boxOfficeRankRepository.saveAll(boxOfficeRankList);
         log.info("[Batch] Box office rank has been updated. size : {}", boxOfficeRankList.size());
         return boxOfficeRankList.size();
+    }
+
+    private boolean checkIfNotCompleted(String period) {
+        String strEndDate = period.contains("~") ? period.split("~")[1] : period;
+        LocalDate endDate = LocalDate.parse(strEndDate, DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        return LocalDate.now().isAfter(endDate);
     }
 
     public int updatePerformanceStatusBatch() {
