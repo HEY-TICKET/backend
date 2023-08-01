@@ -152,6 +152,36 @@ class PerformanceServiceTest {
     }
 
     @Test
+    @DisplayName("NewPerformance 조회 - 종료된 공연은 조회하지 않는다.")
+    void getNewPerformance_noCompletedPerformance() {
+        //given
+        Performance performance1 = createPerformanceWithGenre("1", Genre.DANCE);
+        performance1.updateStatus(PerformanceStatus.ONGOING);
+        Performance performance2 = createPerformanceWithGenre("2", Genre.CIRCUS_AND_MAGIC);
+        performance2.updateStatus(PerformanceStatus.UPCOMING);
+
+        Performance completedPerformance1 = createPerformanceWithGenre("3", Genre.MIXED_GENRE);
+        completedPerformance1.updateStatus(PerformanceStatus.COMPLETED);
+        Performance completedPerformance2 = createPerformanceWithGenre("4", Genre.POPULAR_DANCE);
+        completedPerformance2.updateStatus(PerformanceStatus.COMPLETED);
+
+        performanceRepository.saveAll(List.of(performance1, performance2, completedPerformance1, completedPerformance2));
+
+        //when
+        NewPerformanceRequest request = NewPerformanceRequest.builder()
+            .build();
+
+        CustomPageRequest customPageRequest = new CustomPageRequest(1, 10);
+        PageRequest pageRequest = customPageRequest.of();
+
+        PageResponse<PerformanceResponse> result = performanceService.getNewPerformances(request, pageRequest);
+
+        //then
+        assertThat(result.getContents()).hasSize(2);
+        assertThat(result.getContents()).extracting("genre").containsOnly(performance1.getGenre(), performance2.getGenre());
+    }
+
+    @Test
     @DisplayName("NewPerformance 조회 - 조회수 내림차순으로 정렬한다.")
     void getNewPerformance_sortByType() {
         //given
