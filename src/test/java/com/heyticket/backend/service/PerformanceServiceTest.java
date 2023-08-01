@@ -230,6 +230,7 @@ class PerformanceServiceTest {
             .id("id")
             .title("title")
             .storyUrls(firstUrl + "|" + secondUrl)
+            .status(PerformanceStatus.ONGOING)
             .build();
 
         performanceRepository.save(performance);
@@ -734,6 +735,7 @@ class PerformanceServiceTest {
         return Performance.builder()
             .id(id)
             .title("title")
+            .status(PerformanceStatus.ONGOING)
             .genre(genre)
             .views(0)
             .build();
