@@ -399,7 +399,7 @@ public class PerformanceService {
         }
         String strEndDate = period.contains("~") ? period.split("~")[1] : period;
         LocalDate endDate = LocalDate.parse(strEndDate, DateTimeFormatter.ofPattern("yyyy.MM.dd"));
-        return LocalDate.now().isAfter(endDate);
+        return LocalDate.now().isBefore(endDate)|| LocalDate.now().isEqual(endDate);
     }
 
     public int updatePerformanceStatusBatch() {
