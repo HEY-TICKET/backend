@@ -11,6 +11,7 @@ import com.meilisearch.sdk.Config;
 import com.meilisearch.sdk.Index;
 import com.meilisearch.sdk.exceptions.MeilisearchException;
 import com.meilisearch.sdk.model.Settings;
+import com.meilisearch.sdk.model.TypoTolerance;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,9 @@ public class MeiliSearchService {
             meiliClient.createIndex("performance", "id");
             Index index = meiliClient.index("performance");
 
+            TypoTolerance typoTolerance = new TypoTolerance();
+            typoTolerance.setEnabled(false);
+
             Settings settings = new Settings();
             settings.setSearchableAttributes(new String[]{"title", "cast"});
             settings.setSortableAttributes(new String[]{"status"});
@@ -44,6 +48,7 @@ public class MeiliSearchService {
                 "proximity",
                 "attribute"
             });
+            settings.setTypoTolerance(typoTolerance);
             index.updateSettings(settings);
 
             ArrayNode arrayNode = objectMapper.createArrayNode();
