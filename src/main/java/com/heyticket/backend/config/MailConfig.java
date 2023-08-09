@@ -34,7 +34,7 @@ public class MailConfig {
     }
 
     @Bean
-    @Profile("prod & prodnoauth")
+    @Profile({"prod", "prodnoauth"})
     public IEmailService emailService(JavaMailSender mailSender, LocalCacheService localCacheService) {
         return new EmailService(mailSender, localCacheService);
     }
