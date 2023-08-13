@@ -41,3 +41,6 @@ application-prodnoauth.yml
 
 ### VS Code ###
 .vscode/
+
+### FCM key ###
+firebase/
