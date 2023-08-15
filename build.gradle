@@ -16,6 +16,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 ext {
@@ -74,6 +75,9 @@ dependencies {
 
     // FCM
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // KOMORAN
+    implementation 'com.github.shin285:KOMORAN:3.3.9'
 }
 
 dependencyManagement {
