@@ -46,6 +46,7 @@ public class EmailService implements IEmailService {
             es.printStackTrace();
             throw new IllegalArgumentException();
         }
+
         localCacheService.putVerificationCode(email, verificationCode);
 
         return email;

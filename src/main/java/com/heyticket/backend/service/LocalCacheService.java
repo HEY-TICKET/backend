@@ -6,31 +6,24 @@ import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
-import jakarta.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class LocalCacheService {
 
-    private Cache<String, VerificationCode> emailVerificationCache;
+    private final Cache<String, VerificationCode> emailVerificationCache;
 
-    private Cache<String, String> refreshTokenCache;
+    private final Cache<String, String> refreshTokenCache;
 
-    @Value("${jwt.expiration.refresh}")
-    private long RefreshTokenExpirationMillis;
-
-    @PostConstruct
-    public void setUpCache() {
+    public LocalCacheService(@Value("${jwt.expiration.refresh}") long refreshTokenExpirationMillis) {
         emailVerificationCache = CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .build();
 
         refreshTokenCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(RefreshTokenExpirationMillis, TimeUnit.MILLISECONDS)
+            .expireAfterWrite(refreshTokenExpirationMillis, TimeUnit.MILLISECONDS)
             .build();
     }
 
