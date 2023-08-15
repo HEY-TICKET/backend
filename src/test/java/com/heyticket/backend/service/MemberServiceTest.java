@@ -17,6 +17,7 @@ import com.heyticket.backend.repository.member.MemberRepository;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
+import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
@@ -513,7 +514,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("Member 존재 유무 확인 - 존재하지 않는 경우 return true")
-    void validateMember_Invalid() {
+    void validateMember_invalid() {
         //given
 
         //when
@@ -525,6 +526,54 @@ class MemberServiceTest {
 
         //then
         assertThat(valid).isFalse();
+    }
+
+    @Test
+    @DisplayName("Member keywordPushEnable")
+    void keywordPushEnable(){
+        //given
+        String testEmail = "testEmail";
+        Member member = createMember(testEmail);
+        member.setAllowKeywordPush(false);
+
+        memberRepository.save(member);
+
+        //when
+        MemberPushUpdateRequest request = MemberPushUpdateRequest.builder()
+            .email(testEmail)
+            .isPushEnabled(true)
+            .build();
+
+        memberService.updateKeywordPushEnabled(request);
+
+        //then
+        Member foundMember = memberRepository.findByEmail(testEmail)
+            .orElseThrow(() -> new NotFoundException("No such member"));
+        assertThat(foundMember.isAllowKeywordPush()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Member marketingPushEnable")
+    void marketingPushEnable(){
+        //given
+        String testEmail = "testEmail";
+        Member member = createMember(testEmail);
+        member.setAllowMarketing(false);
+
+        memberRepository.save(member);
+
+        //when
+        MemberPushUpdateRequest request = MemberPushUpdateRequest.builder()
+            .email(testEmail)
+            .isPushEnabled(true)
+            .build();
+
+        memberService.updateMarketingPushEnabled(request);
+
+        //then
+        Member foundMember = memberRepository.findByEmail(testEmail)
+            .orElseThrow(() -> new NotFoundException("No such member"));
+        assertThat(foundMember.isAllowMarketing()).isTrue();
     }
 
     private Member createMember(String email) {
