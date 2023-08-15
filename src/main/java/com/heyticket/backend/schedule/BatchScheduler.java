@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 @Component
 @RequiredArgsConstructor
-public class Scheduler {
+public class BatchScheduler {
 
     private final PerformanceService performanceService;
 
