@@ -186,13 +186,14 @@ public class MemberService {
         String email = request.getEmail();
         String code = request.getVerificationCode();
         Member member = getMemberFromDb(email);
-        verifyCode(email, code);
 
         PasswordValidator.validatePassword(request.getPassword());
         boolean matched = passwordEncoder.matches(request.getPassword(), member.getPassword());
         if (matched) {
             throw new ValidationFailureException("The new password is identical to the existing password.", InternalCode.BAD_REQUEST);
         }
+
+        verifyCode(email, code);
         member.updatePassword(passwordEncoder.encode(request.getPassword()));
         localCacheService.invalidateRefreshToken(email);
         return email;
