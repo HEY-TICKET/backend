@@ -428,7 +428,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("Member 비밀번호 변경(로그인 화면) - 데이터 확인")
-    void resetPassword(){
+    void resetPassword() {
         //given
         Member member = createMember("email");
         memberRepository.save(member);
@@ -455,7 +455,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("Member 비밀번호 변경(로그인 화면) - 해당 member가 존재하지 않는 경우 throw NotFoundException")
-    void resetPassword_noSuchMember(){
+    void resetPassword_noSuchMember() {
         //given
 
         //when
@@ -472,8 +472,8 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 비밀번호 변경(로그인 화면) - 데이터 확인")
-    void resetPassword_wrongVerificationCode(){
+    @DisplayName("Member 비밀번호 변경(로그인 화면) - 잘못된 인증코드인 경우")
+    void resetPassword_wrongVerificationCode() {
         //given
         Member member = createMember("email");
         memberRepository.save(member);
@@ -492,6 +492,30 @@ class MemberServiceTest {
 
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
+
+    @Test
+    @DisplayName("Member 비밀번호 변경(로그인 화면) - 기존과 동일한 비밀번호인 경우 throw ValidationFailureException")
+    void resetPassword_samePassword() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        String verificationCode = "verificationCode";
+        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+
+        //when
+        PasswordResetRequest request = PasswordResetRequest.builder()
+            .email(member.getEmail())
+            .password(TEST_PASSWORD)
+            .verificationCode(verificationCode)
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.resetPassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+        assertThat(throwable.getMessage()).isEqualTo("The new password is identical to the existing password.");
     }
 
     @Test
@@ -530,7 +554,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("Member keywordPushEnable")
-    void keywordPushEnable(){
+    void keywordPushEnable() {
         //given
         String testEmail = "testEmail";
         Member member = createMember(testEmail);
@@ -554,7 +578,7 @@ class MemberServiceTest {
 
     @Test
     @DisplayName("Member marketingPushEnable")
-    void marketingPushEnable(){
+    void marketingPushEnable() {
         //given
         String testEmail = "testEmail";
         Member member = createMember(testEmail);
