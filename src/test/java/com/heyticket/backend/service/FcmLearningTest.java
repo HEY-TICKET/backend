@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
 @Disabled // Fcm 학습 테스트
-public class FcmServiceTest {
+public class FcmLearningTest {
 
     private static final String KEY_FILE_PATH = "firebase/key/heyticket-test-firebase-adminsdk-tbp6w-2eb362abb1.json";
 

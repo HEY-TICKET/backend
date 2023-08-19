@@ -37,7 +37,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 @ActiveProfiles("local")
 @Disabled // MeiliSearch 학습 테스트
-public class MeiliSearchServiceTest {
+public class MeiliSearchLearningTest {
 
     @Autowired
     private PerformanceRepository performanceRepository;
@@ -179,7 +179,7 @@ public class MeiliSearchServiceTest {
         TypoTolerance typoTolerance = new TypoTolerance();
         typoTolerance.setDisableOnAttributes(new String[]{"cast"});
         typoTolerance.setMinWordSizeForTypos(
-            new HashMap<String, Integer>() {
+            new HashMap<>() {
                 {
                     put("oneTypo", 8);
                 }

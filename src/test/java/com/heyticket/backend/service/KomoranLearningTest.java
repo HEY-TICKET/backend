@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @Disabled // KOMORAN 학습 테스트
-public class KomoranServiceTest {
+public class KomoranLearningTest {
 
     @Test
     @DisplayName("KOMORAN 기본 테스트1")
