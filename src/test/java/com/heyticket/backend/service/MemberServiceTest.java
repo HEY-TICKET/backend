@@ -22,6 +22,7 @@ import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
 import com.heyticket.backend.service.dto.request.MemberValidationRequest;
 import com.heyticket.backend.service.dto.request.PasswordResetRequest;
 import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
+import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
@@ -516,6 +517,35 @@ class MemberServiceTest {
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
         assertThat(throwable.getMessage()).isEqualTo("The new password is identical to the existing password.");
+    }
+
+    @Test
+    @DisplayName("Member 비밀번호 변경(로그인 화면) - 변경 비밀번호가 기존 비밀번호와 동일한 경우 인증번호를 만료시키지 않는다")
+    void resetPassword_ifSamePasswordMaintainVerificationCode() {
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        String verificationCode = "verificationCode";
+        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+
+        //when
+        PasswordResetRequest request = PasswordResetRequest.builder()
+            .email(member.getEmail())
+            .password(TEST_PASSWORD)
+            .verificationCode(verificationCode)
+            .build();
+
+        Throwable throwable = catchThrowable(() -> memberService.resetPassword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+        VerificationRequest verificationRequest = VerificationRequest.builder()
+            .email(member.getEmail())
+            .code(verificationCode)
+            .build();
+        boolean validCode = localCacheService.isValidCode(verificationRequest);
+        assertThat(validCode).isTrue();
     }
 
     @Test

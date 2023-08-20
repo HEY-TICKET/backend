@@ -17,5 +17,4 @@ public class VerificationRequest {
 
     @NotBlank
     private String code;
-
 }
