@@ -2,12 +2,14 @@ package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.heyticket.backend.config.JpaConfig;
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberKeyword;
 import com.heyticket.backend.repository.keyword.KeywordRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
 import com.heyticket.backend.service.dto.request.KeywordSaveRequest;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,9 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
+@Import(JpaConfig.class)
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 public class KeywordServiceTest {
@@ -44,6 +48,7 @@ public class KeywordServiceTest {
     void deleteAll() {
         memberKeywordRepository.deleteAll();
         keywordRepository.deleteAll();
+        memberRepository.deleteAll();
     }
 
     @Test
@@ -53,6 +58,10 @@ public class KeywordServiceTest {
         Member member = Member.builder()
             .email("email")
             .password("encodedPassword")
+            .memberAreas(new ArrayList<>())
+            .memberGenres(new ArrayList<>())
+            .memberLikes(new ArrayList<>())
+            .memberKeywords(new ArrayList<>())
             .build();
 
         memberRepository.save(member);
