@@ -1,14 +1,14 @@
 package com.heyticket.backend.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberKeyword;
+import com.heyticket.backend.repository.keyword.KeywordRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
+import com.heyticket.backend.service.dto.request.KeywordSaveRequest;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 @DataJpaTest
@@ -38,7 +37,7 @@ public class KeywordServiceTest {
 
     @BeforeEach
     void setUp() {
-        keywordService = new KeywordService(memberRepository, memberKeywordRepository, keywordRepository);
+        keywordService = new KeywordService(keywordRepository, memberKeywordRepository, memberRepository);
     }
 
     @AfterEach
@@ -56,6 +55,8 @@ public class KeywordServiceTest {
             .password("encodedPassword")
             .build();
 
+        memberRepository.save(member);
+
         KeywordSaveRequest request = KeywordSaveRequest.builder()
             .email(member.getEmail())
             .keyword("keyword")
@@ -68,9 +69,7 @@ public class KeywordServiceTest {
         List<MemberKeyword> memberKeywords = memberKeywordRepository.findAll();
         assertThat(memberKeywords).hasSize(1);
         MemberKeyword foundMemberKeyword = memberKeywords.get(0);
-        Member foundMember = foundMemberKeyword.getMember();
-        assertThat(foundMember.getEmail()).isEqualTo(member.getEmail());
-        Keyword foundKeyword = foundMemberKeyword.getKeyword();
-        assertThat(foundKeyword.getContent()).isEqualTo(request.getKeyword());
+        assertThat(foundMemberKeyword.getMember().getEmail()).isEqualTo(member.getEmail());
+        assertThat(foundMemberKeyword.getKeyword().getContent()).isEqualTo(request.getKeyword());
     }
 }
