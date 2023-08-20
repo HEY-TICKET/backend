@@ -8,7 +8,6 @@ import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
-import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
@@ -151,13 +150,13 @@ public class MemberController {
         return CommonResponse.ok("Member category has been updated", true);
     }
 
-    @Operation(summary = "회원 키워드 수정")
-    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
-    @PutMapping("/members/keywords")
-    public ResponseEntity<?> updateKeyword(@RequestBody @Valid MemberKeywordUpdateRequest request) {
-        memberService.updatePreferredKeyword(request);
-        return CommonResponse.ok("Member keyword has been updated", true);
-    }
+//    @Operation(summary = "회원 키워드 수정")
+//    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
+//    @PutMapping("/members/keywords")
+//    public ResponseEntity<?> updateKeyword(@RequestBody @Valid MemberKeywordUpdateRequest request) {
+//        memberService.updatePreferredKeyword(request);
+//        return CommonResponse.ok("Member keyword has been updated", true);
+//    }
 
     @Operation(summary = "회원 찜한 공연 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = PagePerformanceCommonrResponse.class)))})

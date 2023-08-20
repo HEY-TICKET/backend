@@ -1,5 +1,6 @@
 package com.heyticket.backend.service;
 
+import com.heyticket.backend.domain.Keyword;
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberArea;
 import com.heyticket.backend.domain.MemberGenre;
@@ -12,12 +13,12 @@ import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.module.security.jwt.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
 import com.heyticket.backend.module.util.VerificationCodeGenerator;
+import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
-import com.heyticket.backend.service.dto.request.MemberKeywordUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
@@ -49,6 +50,10 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
+    private final KeywordService keywordService;
+
+    private final MemberKeywordRepository memberKeywordRepository;
+
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -71,7 +76,7 @@ public class MemberService {
             .collect(Collectors.toList());
 
         List<String> keywords = member.getMemberKeywords().stream()
-            .map(MemberKeyword::getKeyword)
+            .map(memberKeyword -> memberKeyword.getKeyword().getContent())
             .collect(Collectors.toList());
 
         return MemberResponse.builder()
@@ -112,7 +117,14 @@ public class MemberService {
             .collect(Collectors.toList());
 
         List<MemberKeyword> memberKeywords = request.getKeywords().stream()
-            .map(MemberKeyword::of)
+            .map(content -> {
+                Keyword keyword = keywordService.getOrSave(content);
+
+                return MemberKeyword.builder()
+                    .member(member)
+                    .keyword(keyword)
+                    .build();
+            })
             .collect(Collectors.toList());
 
         member.addMemberGenres(memberGenres);
@@ -120,6 +132,7 @@ public class MemberService {
         member.addMemberKeywords(memberKeywords);
 
         memberRepository.save(member);
+        memberKeywordRepository.saveAll(memberKeywords);
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -255,23 +268,24 @@ public class MemberService {
         }
     }
 
-    public void updatePreferredKeyword(MemberKeywordUpdateRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
-
-        if (request.getKeywords() != null) {
-            List<MemberKeyword> memberKeywords = member.getMemberKeywords();
-
-            List<String> keywords = request.getKeywords();
-            List<MemberKeyword> newMemberKeywords = keywords.stream()
-                .map(MemberKeyword::of)
-                .collect(Collectors.toList());
-
-            memberKeywords.removeIf(memberKeyword -> !newMemberKeywords.contains(memberKeyword));
-            newMemberKeywords.stream()
-                .filter(newMemberKeyword -> !memberKeywords.contains(newMemberKeyword))
-                .forEach(memberKeywords::add);
-        }
-    }
+    // todo keyword update 로직 keywordService 쪽으로 이관 필요
+//    public void updatePreferredKeyword(MemberKeywordUpdateRequest request) {
+//        Member member = getMemberFromDb(request.getEmail());
+//
+//        if (request.getKeywords() != null) {
+//            List<MemberKeyword> memberKeywords = member.getMemberKeywords();
+//
+//            List<String> keywords = request.getKeywords();
+//            List<MemberKeyword> newMemberKeywords = keywords.stream()
+//                .map(MemberKeyword::of)
+//                .collect(Collectors.toList());
+//
+//            memberKeywords.removeIf(memberKeyword -> !newMemberKeywords.contains(memberKeyword));
+//            newMemberKeywords.stream()
+//                .filter(newMemberKeyword -> !memberKeywords.contains(newMemberKeyword))
+//                .forEach(memberKeywords::add);
+//        }
+//    }
 
     public void updateKeywordPushEnabled(MemberPushUpdateRequest request) {
         Member member = getMemberFromDb(request.getEmail());
