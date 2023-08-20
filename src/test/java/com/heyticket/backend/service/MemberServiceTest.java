@@ -3,6 +3,7 @@ package com.heyticket.backend.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+import com.heyticket.backend.domain.Keyword;
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberArea;
 import com.heyticket.backend.domain.MemberGenre;
@@ -10,6 +11,7 @@ import com.heyticket.backend.domain.MemberKeyword;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.security.jwt.TokenInfo;
+import com.heyticket.backend.repository.keyword.KeywordRepository;
 import com.heyticket.backend.repository.member.MemberGenreRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberLikeRepository;
@@ -63,6 +65,9 @@ class MemberServiceTest {
     private MemberKeywordRepository memberKeywordRepository;
 
     @Autowired
+    private KeywordRepository keywordRepository;
+
+    @Autowired
     private MemberService memberService;
 
     @Autowired
@@ -91,20 +96,38 @@ class MemberServiceTest {
         Member member = createMember("email");
         MemberGenre memberGenre = MemberGenre.of(Genre.MUSICAL);
         MemberArea memberArea = MemberArea.of(Area.BUSAN);
-        MemberKeyword memberKeyword = MemberKeyword.of("keyword");
         member.addMemberGenres(List.of(memberGenre));
         member.addMemberAreas(List.of(memberArea));
-        member.addMemberKeywords(List.of(memberKeyword));
+
+        Keyword keyword1 = Keyword.of("keyword1");
+        Keyword keyword2 = Keyword.of("keyword2");
+
         memberRepository.save(member);
+        keywordRepository.saveAll(List.of(keyword1, keyword2));
+
+        MemberKeyword memberKeyword1 = MemberKeyword.builder()
+            .member(member)
+            .keyword(keyword1)
+            .build();
+
+        MemberKeyword memberKeyword2 = MemberKeyword.builder()
+            .member(member)
+            .keyword(keyword2)
+            .build();
+        memberKeywordRepository.saveAll(List.of(memberKeyword1, memberKeyword2));
+
+        entityManager.flush();
+        entityManager.clear();
 
         //when
         MemberResponse memberResponse = memberService.getMemberByEmail(member.getEmail());
 
         //then
         assertThat(memberResponse.getEmail()).isEqualTo(member.getEmail());
-        assertThat(memberResponse.getKeywords()).hasSize(1);
         assertThat(memberResponse.getAreas()).hasSize(1);
         assertThat(memberResponse.getGenres()).hasSize(1);
+        assertThat(memberResponse.getKeywords()).hasSize(2);
+        assertThat(memberResponse.getKeywords()).containsExactlyElementsOf(List.of(keyword1.getContent(), keyword2.getContent()));
     }
 
     @Test
@@ -114,10 +137,8 @@ class MemberServiceTest {
         Member member = createMember("email");
         MemberGenre memberGenre = MemberGenre.of(Genre.MUSICAL);
         MemberArea memberArea = MemberArea.of(Area.BUSAN);
-        MemberKeyword memberKeyword = MemberKeyword.of("keyword");
         member.addMemberGenres(List.of(memberGenre));
         member.addMemberAreas(List.of(memberArea));
-        member.addMemberKeywords(List.of(memberKeyword));
         memberRepository.save(member);
 
         //when
@@ -156,7 +177,11 @@ class MemberServiceTest {
         assertThat(foundMember.getEmail()).isEqualTo(request.getEmail());
         assertThat(foundMember.getMemberGenres()).extracting("genre").containsOnly(Genre.MUSICAL, Genre.THEATER);
         assertThat(foundMember.getMemberAreas()).extracting("area").containsOnly(Area.GYEONGGI, Area.SEOUL);
-        assertThat(foundMember.getMemberKeywords().get(0).getKeyword()).isEqualTo(request.getKeywords().get(0));
+        assertThat(foundMember.getMemberKeywords().get(0).getKeyword().getContent()).isEqualTo(request.getKeywords().get(0));
+        List<Keyword> foundKeywords = keywordRepository.findAll();
+        assertThat(foundKeywords).hasSize(1);
+        Keyword foundKeyword = foundKeywords.get(0);
+        assertThat(foundKeyword.getContent()).isEqualTo(request.getKeywords().get(0));
     }
 
     @Test
