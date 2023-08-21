@@ -43,16 +43,16 @@ public class Member extends BaseTimeEntity implements UserDetails {
     private List<String> roles = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberGenre> memberGenres;
+    private List<MemberGenre> memberGenres = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberArea> memberAreas;
+    private List<MemberArea> memberAreas = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberKeyword> memberKeywords;
+    private List<MemberKeyword> memberKeywords = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberLike> memberLikes;
+    private List<MemberLike> memberLikes = new ArrayList<>();
 
     public void updatePassword(String password) {
         this.password = password;

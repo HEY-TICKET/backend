@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,7 +26,7 @@ public class Keyword extends BaseTimeEntity {
     private String content;
 
     @OneToMany(mappedBy = "keyword", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MemberKeyword> memberKeywords;
+    private List<MemberKeyword> memberKeywords = new ArrayList<>();
 
     public static Keyword of(String content) {
         return new Keyword(content);
