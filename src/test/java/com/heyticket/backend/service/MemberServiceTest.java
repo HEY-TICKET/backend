@@ -182,6 +182,8 @@ class MemberServiceTest {
         assertThat(foundKeywords).hasSize(1);
         Keyword foundKeyword = foundKeywords.get(0);
         assertThat(foundKeyword.getContent()).isEqualTo(request.getKeywords().get(0));
+        List<MemberKeyword> foundMemberKeywords = memberKeywordRepository.findAll();
+        assertThat(foundMemberKeywords).hasSize(1);
     }
 
     @Test

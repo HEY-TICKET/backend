@@ -132,7 +132,6 @@ public class MemberService {
         member.addMemberKeywords(memberKeywords);
 
         memberRepository.save(member);
-        memberKeywordRepository.saveAll(memberKeywords);
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
