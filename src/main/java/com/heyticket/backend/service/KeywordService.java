@@ -5,6 +5,7 @@ import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberKeyword;
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.NotFoundException;
+import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.repository.keyword.KeywordRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
@@ -30,6 +31,13 @@ public class KeywordService {
     public void saveKeyword(KeywordSaveRequest request) {
         Member member = memberRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new NotFoundException("No such member", InternalCode.NOT_FOUND));
+
+        boolean isDuplicated = member.getMemberKeywords().stream()
+            .anyMatch(memberKeyword -> memberKeyword.getKeyword().getContent().equals(request.getKeyword()));
+
+        if (isDuplicated) {
+            throw new ValidationFailureException("Duplicated keyword.", InternalCode.BAD_REQUEST);
+        }
 
         Keyword keyword = getOrSave(request.getKeyword());
 

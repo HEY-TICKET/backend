@@ -1,11 +1,13 @@
 package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.heyticket.backend.config.JpaConfig;
 import com.heyticket.backend.domain.Keyword;
 import com.heyticket.backend.domain.Member;
 import com.heyticket.backend.domain.MemberKeyword;
+import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.repository.keyword.KeywordRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
@@ -110,9 +112,42 @@ public class KeywordServiceTest {
         assertThat(foundMemberKeyword.getMember().getEmail()).isEqualTo(member.getEmail());
         assertThat(foundMemberKeyword.getKeyword().getContent()).isEqualTo(request.getKeyword());
     }
+
+    @Test
+    @DisplayName("Keyword 추가 - 해당 Member가 이미 등록된 키워드일 경우 throw ValidationFailureException")
+    void saveKeyword_duplicatedKeyword() {
+        //given
+        String content = "content";
+
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        Keyword keyword = Keyword.of(content);
+        keywordRepository.save(keyword);
+
+        MemberKeyword memberKeyword = MemberKeyword.builder()
+            .member(member)
+            .keyword(keyword)
+            .build();
+        memberKeywordRepository.save(memberKeyword);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        //when
+        KeywordSaveRequest request = KeywordSaveRequest.builder()
+            .email(member.getEmail())
+            .keyword(content)
+            .build();
+
+        Throwable throwable = catchThrowable(() -> keywordService.saveKeyword(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
     
     @Test
-    @DisplayName("Keyword 삭제 - keyword와 memberKeyword를 삭제하고, keyword가 다른 Member와 연결되어 있으면 삭제하지 않는다")
+    @DisplayName("Keyword 삭제 - Keyword와 MemberKeyword를 삭제하고, keyword가 다른 Member와 연결되어 있으면 삭제하지 않는다")
     void deleteKeyword_keywordHasRef(){
         //given
         Member member1 = createMember("email1");
@@ -153,7 +188,7 @@ public class KeywordServiceTest {
     }
 
     @Test
-    @DisplayName("Keyword 삭제 - keyword와 memberKeyword를 삭제하고, keyword가 더이상 연결되어 있지 않으면 삭제한다")
+    @DisplayName("Keyword 삭제 - Keyword와 MemberKeyword를 삭제하고, keyword가 더이상 연결되어 있지 않으면 삭제한다")
     void deleteKeyword_keywordHasNoRef(){
         //given
         Member member = createMember("email");
