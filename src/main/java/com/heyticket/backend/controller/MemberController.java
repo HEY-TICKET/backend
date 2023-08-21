@@ -1,11 +1,14 @@
 package com.heyticket.backend.controller;
 
 import com.heyticket.backend.module.security.jwt.TokenInfo;
+import com.heyticket.backend.service.KeywordService;
 import com.heyticket.backend.service.MemberLikeService;
 import com.heyticket.backend.service.MemberService;
 import com.heyticket.backend.service.dto.pagable.CustomPageRequest;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
+import com.heyticket.backend.service.dto.request.KeywordDeleteRequest;
+import com.heyticket.backend.service.dto.request.KeywordSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
@@ -51,6 +54,8 @@ public class MemberController {
     private final MemberService memberService;
 
     private final MemberLikeService memberLikeService;
+
+    private final KeywordService keywordService;
 
     // Unauthorized
     @Operation(summary = "로그인")
@@ -150,13 +155,21 @@ public class MemberController {
         return CommonResponse.ok("Member category has been updated", true);
     }
 
-//    @Operation(summary = "회원 키워드 수정")
-//    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
-//    @PutMapping("/members/keywords")
-//    public ResponseEntity<?> updateKeyword(@RequestBody @Valid MemberKeywordUpdateRequest request) {
-//        memberService.updatePreferredKeyword(request);
-//        return CommonResponse.ok("Member keyword has been updated", true);
-//    }
+    @Operation(summary = "회원 키워드 추가")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
+    @PostMapping("/members/keywords")
+    public ResponseEntity<?> saveKeyword(@RequestBody @Valid KeywordSaveRequest request) {
+        keywordService.saveKeyword(request);
+        return CommonResponse.ok("Member keyword has been added", true);
+    }
+
+    @Operation(summary = "회원 키워드 추가")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
+    @DeleteMapping("/members/keywords")
+    public ResponseEntity<?> deleteKeyword(@RequestBody @Valid KeywordDeleteRequest request) {
+        keywordService.deleteKeyword(request);
+        return CommonResponse.ok("Member keyword has been deleted", true);
+    }
 
     @Operation(summary = "회원 찜한 공연 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = PagePerformanceCommonrResponse.class)))})
