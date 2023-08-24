@@ -18,6 +18,7 @@ import com.heyticket.backend.repository.member.MemberLikeRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
+import com.heyticket.backend.service.dto.request.MemberFcmTokenUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
@@ -254,6 +255,54 @@ class MemberServiceTest {
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
     }
+
+    @Test
+    @DisplayName("Member FCM token 업데이트 - 기존에 등록된 token이 없는 경우 등록한다")
+    void updateFcmToken_registerToken(){
+        //given
+        Member member = createMember("email");
+        memberRepository.save(member);
+
+        //when
+        String token = "token";
+
+        MemberFcmTokenUpdateRequest request = MemberFcmTokenUpdateRequest.builder()
+            .email(member.getEmail())
+            .token(token)
+            .build();
+
+        memberService.updateFcmToken(request);
+
+        //then
+        Member foundMember = memberRepository.findById(member.getEmail())
+            .orElseThrow(() -> new NotFoundException("No such member"));
+        assertThat(foundMember.getFcmToken()).isEqualTo(token);
+     }
+
+    @Test
+    @DisplayName("Member FCM token 업데이트 - 기존에 등록된 token이 있는 경우 업데이트한다")
+    void updateFcmToken_updateToken(){
+        //given
+        Member member = createMember("email");
+        member.updateFcmToken("oldToken");
+        memberRepository.save(member);
+
+        //when
+        String token = "token";
+
+        MemberFcmTokenUpdateRequest request = MemberFcmTokenUpdateRequest.builder()
+            .email(member.getEmail())
+            .token(token)
+            .build();
+
+        memberService.updateFcmToken(request);
+
+        //then
+        Member foundMember = memberRepository.findById(member.getEmail())
+            .orElseThrow(() -> new NotFoundException("No such member"));
+        assertThat(foundMember.getFcmToken()).isEqualTo(token);
+    }
+
 
     @Test
     @DisplayName("Member 로그인 - 데이터 확인")
@@ -610,7 +659,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member keywordPushEnable")
+    @DisplayName("Member 키워드 푸시 허용 여부 변경")
     void keywordPushEnable() {
         //given
         String testEmail = "testEmail";
@@ -634,7 +683,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member marketingPushEnable")
+    @DisplayName("Member 마케팅 푸시 허용 여부 변경")
     void marketingPushEnable() {
         //given
         String testEmail = "testEmail";
