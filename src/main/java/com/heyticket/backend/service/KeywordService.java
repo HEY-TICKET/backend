@@ -9,8 +9,11 @@ import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.repository.keyword.KeywordRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
+import com.heyticket.backend.service.dto.PushInfo;
 import com.heyticket.backend.service.dto.request.KeywordDeleteRequest;
 import com.heyticket.backend.service.dto.request.KeywordSaveRequest;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class KeywordService {
+
+    private final FcmService fcmService;
 
     private final KeywordRepository keywordRepository;
 
@@ -47,6 +52,8 @@ public class KeywordService {
             .build();
 
         memberKeywordRepository.save(memberKeyword);
+
+        fcmService.subscribeTopic(member.getFcmToken(), request.getKeyword());
     }
 
     public void deleteKeyword(KeywordDeleteRequest request) {
@@ -61,6 +68,8 @@ public class KeywordService {
         if (keyword.getMemberKeywords().size() == 1) {
             keywordRepository.deleteById(keyword.getId());
         }
+
+        fcmService.unsubscribeTopic(member.getFcmToken(), request.getKeyword());
     }
 
     public Keyword getOrSave(String content) {
@@ -69,5 +78,13 @@ public class KeywordService {
                 Keyword newKeyword = Keyword.of(content);
                 return keywordRepository.save(newKeyword);
             });
+    }
+
+    public void sendKeywordPush(List<String> keywords, PushInfo pushInfo) {
+        CompletableFuture.runAsync(() -> {
+            for (String keyword : keywords) {
+                fcmService.sendTopicMessage(keyword, pushInfo);
+            }
+        });
     }
 }

@@ -14,6 +14,7 @@ import com.heyticket.backend.module.kopis.client.dto.KopisPerformanceResponse;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeArea;
 import com.heyticket.backend.module.kopis.enums.BoxOfficeGenre;
 import com.heyticket.backend.module.kopis.service.KopisService;
+import com.heyticket.backend.module.language.MorphologicalAnalyzer;
 import com.heyticket.backend.module.mapper.PerformanceMapper;
 import com.heyticket.backend.module.meilesearch.MeiliSearchService;
 import com.heyticket.backend.module.meilesearch.dto.MeiliHilightedPerformanceResponse;
@@ -25,6 +26,7 @@ import com.heyticket.backend.repository.performance.BoxOfficeRankRepository;
 import com.heyticket.backend.repository.performance.PerformancePriceRepository;
 import com.heyticket.backend.repository.performance.PerformanceRepository;
 import com.heyticket.backend.repository.place.PlaceRepository;
+import com.heyticket.backend.service.dto.PerformancePushInfo;
 import com.heyticket.backend.service.dto.pagable.PageResponse;
 import com.heyticket.backend.service.dto.request.BoxOfficeRankRequest;
 import com.heyticket.backend.service.dto.request.NewPerformanceRequest;
@@ -79,6 +81,8 @@ public class PerformanceService {
     private final KopisService kopisService;
 
     private final MeiliSearchService meiliSearchService;
+
+    private final KeywordService keywordService;
 
     @Transactional(readOnly = true)
     public PageResponse<PerformanceResponse> getPerformancesByCondition(PerformanceFilterRequest request, Pageable pageable) {
@@ -246,6 +250,25 @@ public class PerformanceService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<GenreCountResponse> getPerformanceGenreCount() {
+        List<GenreCountResponse> performanceGenreCount = performanceRepository.findPerformanceGenreCount();
+        Set<Genre> countedGenreSet = performanceGenreCount.stream()
+            .map(GenreCountResponse::getGenre)
+            .collect(Collectors.toSet());
+
+        Arrays.stream(Genre.values())
+            .filter(genre -> genre != Genre.ALL)
+            .filter(genre -> !countedGenreSet.contains(genre))
+            .map(genre -> new GenreCountResponse(genre, 0L))
+            .forEach(performanceGenreCount::add);
+
+        performanceGenreCount.sort(Comparator.comparing(GenreCountResponse::getCount).reversed()
+            .thenComparing(GenreCountResponse::getGenre));
+
+        return performanceGenreCount;
+    }
+
     public int updatePerformancesBatch(LocalDate from, LocalDate to, int rows) {
         log.info("[Batch] Batch updating performances.");
         KopisPerformanceRequest kopisPerformanceRequest = KopisPerformanceRequest.builder()
@@ -271,7 +294,7 @@ public class PerformanceService {
                 if (StringUtils.hasText(placeId)) {
                     Optional<Place> optionalPlace = placeRepository.findById(placeId);
                     if (optionalPlace.isEmpty()) {
-                        log.info("PlaceId is empty for performance. placeId : {}", placeId);
+                        log.info("PlaceId is empty for the performance. placeId : {}", placeId);
                         continue;
                     }
                     Place place = optionalPlace.get();
@@ -283,6 +306,8 @@ public class PerformanceService {
             }
         }
 
+        keywordsPush(newPerformances);
+
         List<Performance> performances = performanceRepository.saveAll(newPerformances);
         List<PerformancePrice> performancePrices = performances.stream()
             .filter(performance -> StringUtils.hasText(performance.getPrice()))
@@ -292,6 +317,15 @@ public class PerformanceService {
         performancePriceRepository.saveAll(performancePrices);
         log.info("[Batch] Performance has been updated. total size : {}, updated size : {}", kopisPerformanceResponseList.size(), newPerformances.size());
         return performances.size();
+    }
+
+    private void keywordsPush(List<Performance> performances) {
+        performances.forEach(performance -> {
+            ArrayList<String> nouns = new ArrayList<>();
+            nouns.addAll(MorphologicalAnalyzer.getNouns(performance.getTitle()));
+            nouns.addAll(MorphologicalAnalyzer.getNouns(performance.getCast()));
+            keywordService.sendKeywordPush(nouns, PerformancePushInfo.of(performance.getId(), performance.getTitle()));
+        });
     }
 
     public int updateBoxOfficeRankBatch() {
@@ -394,15 +428,6 @@ public class PerformanceService {
         return boxOfficeRankList.size();
     }
 
-    private boolean checkIfNotCompleted(String period) {
-        if (period.contains("오픈런")) {
-            return true;
-        }
-        String strEndDate = period.contains("~") ? period.split("~")[1] : period;
-        LocalDate endDate = LocalDate.parse(strEndDate, DateTimeFormatter.ofPattern("yyyy.MM.dd"));
-        return LocalDate.now().isBefore(endDate) || LocalDate.now().isEqual(endDate);
-    }
-
     public int updatePerformanceStatusBatch() {
         log.info("[Batch] Batch updating performance status.");
         List<Performance> performanceList = performanceRepository.findAll();
@@ -438,25 +463,6 @@ public class PerformanceService {
         meiliSearchService.addPerformance(meiliPerformanceDocuments);
     }
 
-    @Transactional(readOnly = true)
-    public List<GenreCountResponse> getPerformanceGenreCount() {
-        List<GenreCountResponse> performanceGenreCount = performanceRepository.findPerformanceGenreCount();
-        Set<Genre> countedGenreSet = performanceGenreCount.stream()
-            .map(GenreCountResponse::getGenre)
-            .collect(Collectors.toSet());
-
-        Arrays.stream(Genre.values())
-            .filter(genre -> genre != Genre.ALL)
-            .filter(genre -> !countedGenreSet.contains(genre))
-            .map(genre -> new GenreCountResponse(genre, 0L))
-            .forEach(performanceGenreCount::add);
-
-        performanceGenreCount.sort(Comparator.comparing(GenreCountResponse::getCount).reversed()
-            .thenComparing(GenreCountResponse::getGenre));
-
-        return performanceGenreCount;
-    }
-
     private List<PerformancePrice> getPerformancePrice(Performance performance) {
         String price = performance.getPrice();
         String replacedPrice = price.replace(",", "");
@@ -474,5 +480,14 @@ public class PerformanceService {
     private Performance getPerformanceFromDb(String performanceId) {
         return performanceRepository.findById(performanceId)
             .orElseThrow(() -> new NotFoundException("no such performance. performanceId : " + performanceId, InternalCode.NOT_FOUND));
+    }
+
+    private boolean checkIfNotCompleted(String period) {
+        if (period.contains("오픈런")) {
+            return true;
+        }
+        String strEndDate = period.contains("~") ? period.split("~")[1] : period;
+        LocalDate endDate = LocalDate.parse(strEndDate, DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        return LocalDate.now().isBefore(endDate) || LocalDate.now().isEqual(endDate);
     }
 }

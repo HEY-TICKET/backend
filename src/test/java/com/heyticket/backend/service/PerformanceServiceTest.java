@@ -78,12 +78,15 @@ class PerformanceServiceTest {
     @Mock
     private MeiliSearchService meiliSearchService;
 
+    @Mock
+    private KeywordService keywordService;
+
     @BeforeEach
     void init() {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("email", "password");
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        performanceService = new PerformanceService(performanceRepository, performancePriceRepository, boxOfficeRankRepository, placeRepository, kopisService, meiliSearchService);
+        performanceService = new PerformanceService(performanceRepository, performancePriceRepository, boxOfficeRankRepository, placeRepository, kopisService, meiliSearchService, keywordService);
     }
 
     @AfterEach
