@@ -38,6 +38,9 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @Column
     private boolean allowMarketing;
 
+    @Column
+    private String fcmToken;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
@@ -116,5 +119,9 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     public void setAllowMarketing(boolean allowMarketing) {
         this.allowMarketing = allowMarketing;
+    }
+
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }
