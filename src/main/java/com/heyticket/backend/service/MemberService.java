@@ -29,6 +29,7 @@ import com.heyticket.backend.service.dto.request.TokenReissueRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.AuthProvider;
 import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.transaction.Transactional;
@@ -104,6 +105,7 @@ public class MemberService {
             .memberKeywords(new ArrayList<>())
             .memberLikes(new ArrayList<>())
             .allowKeywordPush(request.isKeywordPush())
+            .authProvider(AuthProvider.LOCAL)
             .build();
 
         List<MemberGenre> memberGenres = request.getGenres().stream()

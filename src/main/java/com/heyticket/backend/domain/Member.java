@@ -1,9 +1,12 @@
 package com.heyticket.backend.domain;
 
+import com.heyticket.backend.service.enums.AuthProvider;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -40,6 +43,10 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     @Column
     private String fcmToken;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
