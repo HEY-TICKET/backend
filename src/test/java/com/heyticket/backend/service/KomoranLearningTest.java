@@ -1,5 +1,7 @@
 package com.heyticket.backend.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
 import kr.co.shineware.nlp.komoran.core.Komoran;
@@ -16,7 +18,7 @@ public class KomoranLearningTest {
     @DisplayName("KOMORAN 기본 테스트1")
     void komoran_example1() {
         Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
-        String strToAnalyze = "대한민국은 민주공화국이다.";
+        String strToAnalyze = "동해물과 백두산이 마르고 닳도록";
 
         KomoranResult analyzeResultList = komoran.analyze(strToAnalyze);
 
@@ -44,5 +46,19 @@ public class KomoranLearningTest {
                 System.out.println(token.getMorph());
             }
         }
+    }
+
+    @Test
+    @DisplayName("KOMORAN 명사 추출")
+    void komoran_getNoun() {
+        Komoran komoran = new Komoran(DEFAULT_MODEL.LIGHT);
+        String title = "미래상상마술쇼";
+
+        KomoranResult komoranResult = komoran.analyze(title);
+        List<String> nouns = komoranResult.getNouns();
+        for (String noun : nouns) {
+            System.out.println("noun = " + noun);
+        }
+        assertThat(nouns).hasSize(4);
     }
 }
