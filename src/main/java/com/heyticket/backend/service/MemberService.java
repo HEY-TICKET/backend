@@ -229,6 +229,7 @@ public class MemberService {
         matchPassword(request.getPassword(), member.getPassword());
         memberRepository.delete(member);
         localCacheService.invalidateRefreshToken(email);
+        //todo keyword만 남은 경우 keyword 삭제
         return email;
     }
 

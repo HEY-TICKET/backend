@@ -17,7 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 @Disabled // Fcm 학습 테스트
 public class FcmLearningTest {
 
-    private static final String KEY_FILE_PATH = "firebase/key/heyticket-test-firebase-adminsdk-tbp6w-2eb362abb1.json";
+    private static final String KEY_FILE_PATH = "firebase/key/hey-ticket-firebase-adminsdk-4bp7r-194d242388.json";
 
     private static final String TOPIC = "topic";
 
