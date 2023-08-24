@@ -11,6 +11,7 @@ import com.heyticket.backend.service.dto.request.KeywordDeleteRequest;
 import com.heyticket.backend.service.dto.request.KeywordSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
+import com.heyticket.backend.service.dto.request.MemberFcmTokenUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeListRequest;
 import com.heyticket.backend.service.dto.request.MemberLikeSaveRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
@@ -121,6 +122,14 @@ public class MemberController {
     public ResponseEntity<?> getMember(@PathVariable String id) {
         MemberResponse memberResponse = memberService.getMemberByEmail(id);
         return CommonResponse.ok("User info.", memberResponse);
+    }
+
+    @Operation(summary = "FCM 토큰 업데이트")
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
+    @PutMapping("/members/{id}/fcm-token")
+    public ResponseEntity<?> updateFcmToken(@PathVariable String id, @RequestBody MemberFcmTokenUpdateRequest request) {
+        memberService.updateFcmToken(id, request);
+        return CommonResponse.ok("User info.", true);
     }
 
     @Operation(summary = "인증 번호 만료시키기(화면 이탈 시)")

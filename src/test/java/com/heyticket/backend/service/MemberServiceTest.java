@@ -267,11 +267,10 @@ class MemberServiceTest {
         String token = "token";
 
         MemberFcmTokenUpdateRequest request = MemberFcmTokenUpdateRequest.builder()
-            .email(member.getEmail())
             .token(token)
             .build();
 
-        memberService.updateFcmToken(request);
+        memberService.updateFcmToken(member.getEmail(), request);
 
         //then
         Member foundMember = memberRepository.findById(member.getEmail())
@@ -291,18 +290,16 @@ class MemberServiceTest {
         String token = "token";
 
         MemberFcmTokenUpdateRequest request = MemberFcmTokenUpdateRequest.builder()
-            .email(member.getEmail())
             .token(token)
             .build();
 
-        memberService.updateFcmToken(request);
+        memberService.updateFcmToken(member.getEmail(), request);
 
         //then
         Member foundMember = memberRepository.findById(member.getEmail())
             .orElseThrow(() -> new NotFoundException("No such member"));
         assertThat(foundMember.getFcmToken()).isEqualTo(token);
     }
-
 
     @Test
     @DisplayName("Member 로그인 - 데이터 확인")

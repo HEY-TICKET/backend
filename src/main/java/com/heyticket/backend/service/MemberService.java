@@ -13,12 +13,12 @@ import com.heyticket.backend.module.security.jwt.SecurityUtil;
 import com.heyticket.backend.module.security.jwt.TokenInfo;
 import com.heyticket.backend.module.util.PasswordValidator;
 import com.heyticket.backend.module.util.VerificationCodeGenerator;
-import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberCategoryUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
+import com.heyticket.backend.service.dto.request.MemberFcmTokenUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
 import com.heyticket.backend.service.dto.request.MemberPushUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberSignUpRequest;
@@ -51,8 +51,6 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     private final KeywordService keywordService;
-
-    private final MemberKeywordRepository memberKeywordRepository;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
@@ -139,6 +137,11 @@ public class MemberService {
         localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
 
         return tokenInfo;
+    }
+
+    public void updateFcmToken(String email, MemberFcmTokenUpdateRequest request) {
+        Member member = getMemberFromDb(email);
+        member.updateFcmToken(request.getToken());
     }
 
     public TokenInfo login(MemberLoginRequest request) {
