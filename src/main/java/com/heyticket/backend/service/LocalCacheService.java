@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.heyticket.backend.exception.InternalCode;
 import com.heyticket.backend.exception.NotFoundException;
+import com.heyticket.backend.service.dto.MemberInfo;
 import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +18,8 @@ public class LocalCacheService {
 
     private final Cache<String, String> refreshTokenCache;
 
+    private final Cache<String, MemberInfo> memberInfoCache;
+
     public LocalCacheService(@Value("${jwt.expiration.refresh}") long refreshTokenExpirationMillis) {
         emailVerificationCache = CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
@@ -25,40 +28,56 @@ public class LocalCacheService {
         refreshTokenCache = CacheBuilder.newBuilder()
             .expireAfterWrite(refreshTokenExpirationMillis, TimeUnit.MILLISECONDS)
             .build();
-    }
 
-    public void putVerificationCode(String email, VerificationCode verificationCode) {
-        emailVerificationCache.put(email, verificationCode);
+        memberInfoCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
     }
 
     public VerificationCode getVerificationCodeIfPresent(String email) {
         return emailVerificationCache.getIfPresent(email);
     }
 
-    public void invalidateCode(String email) {
-        emailVerificationCache.invalidate(email);
+    public String getRefreshTokenIfPresent(String token) {
+        return refreshTokenCache.getIfPresent(token);
+    }
+
+    public MemberInfo getMemberInfoIfPresent(String code) {
+        return memberInfoCache.getIfPresent(code);
+    }
+
+    public void putVerificationCode(String email, VerificationCode verificationCode) {
+        emailVerificationCache.put(email, verificationCode);
     }
 
     public void putRefreshToken(String email, String token) {
         refreshTokenCache.put(email, token);
     }
 
-    public String getRefreshTokenIfPresent(String token) {
-        return refreshTokenCache.getIfPresent(token);
+    public void putMemberInfo(String code, MemberInfo memberInfo) {
+        memberInfoCache.put(code, memberInfo);
+    }
+
+    public void invalidateVerificationCode(String email) {
+        emailVerificationCache.invalidate(email);
+    }
+
+    public void invalidateOAuth2IdCode(String oAuth2Id) {
+        memberInfoCache.invalidate(oAuth2Id);
     }
 
     public void invalidateRefreshToken(String email) {
         refreshTokenCache.invalidate(email);
     }
 
-    public boolean isValidCodeWithTime(VerificationRequest request) {
+    public boolean isValidVerificationCodeWithTime(VerificationRequest request) {
         VerificationCode verificationCode = getVerificationCode(request.getEmail());
         boolean isExpired = verificationCode.getExpirationTime() < System.currentTimeMillis();
 
         return !isExpired && verificationCode.getCode().equals(request.getCode());
     }
 
-    public boolean isValidCode(VerificationRequest request) {
+    public boolean isValidVerificationCode(VerificationRequest request) {
         VerificationCode verificationCode = getVerificationCode(request.getEmail());
 
         return verificationCode.getCode().equals(request.getCode());

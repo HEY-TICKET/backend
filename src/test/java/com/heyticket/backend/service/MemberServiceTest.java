@@ -617,7 +617,7 @@ class MemberServiceTest {
             .email(member.getEmail())
             .code(verificationCode)
             .build();
-        boolean validCode = localCacheService.isValidCode(verificationRequest);
+        boolean validCode = localCacheService.isValidVerificationCode(verificationRequest);
         assertThat(validCode).isTrue();
     }
 
