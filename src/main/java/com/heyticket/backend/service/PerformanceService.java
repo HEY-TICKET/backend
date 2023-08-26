@@ -322,8 +322,12 @@ public class PerformanceService {
     private void keywordsPush(List<Performance> performances) {
         performances.forEach(performance -> {
             ArrayList<String> nouns = new ArrayList<>();
-            nouns.addAll(MorphologicalAnalyzer.getNouns(performance.getTitle()));
-            nouns.addAll(MorphologicalAnalyzer.getNouns(performance.getCast()));
+            if (StringUtils.hasText(performance.getTitle())) {
+                nouns.addAll(MorphologicalAnalyzer.getNouns(performance.getTitle()));
+            }
+            if (StringUtils.hasText(performance.getCast())) {
+                nouns.addAll(MorphologicalAnalyzer.getNouns(performance.getCast()));
+            }
             keywordService.sendKeywordPush(nouns, PerformancePushInfo.of(performance.getId(), performance.getTitle()));
         });
     }
@@ -479,7 +483,7 @@ public class PerformanceService {
 
     private Performance getPerformanceFromDb(String performanceId) {
         return performanceRepository.findById(performanceId)
-            .orElseThrow(() -> new NotFoundException("no such performance. performanceId : " + performanceId, InternalCode.NOT_FOUND));
+            .orElseThrow(() -> new NotFoundException("No such performance. performanceId : " + performanceId, InternalCode.NOT_FOUND));
     }
 
     private boolean checkIfNotCompleted(String period) {
