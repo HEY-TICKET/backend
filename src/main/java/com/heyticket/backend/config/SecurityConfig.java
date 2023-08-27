@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.heyticket.backend.module.security.jwt.ExceptionHandlerFilter;
 import com.heyticket.backend.module.security.jwt.JwtAuthenticationFilter;
 import com.heyticket.backend.module.security.jwt.JwtTokenProvider;
+import com.heyticket.backend.module.security.oauth.MyAuthenticationFailureHandler;
+import com.heyticket.backend.module.security.oauth.MyAuthenticationSuccessHandler;
+import com.heyticket.backend.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -25,14 +29,39 @@ public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    private final MyAuthenticationSuccessHandler authenticationSuccessHandler;
+
+    private final MyAuthenticationFailureHandler authenticationFailureHandler;
+
     @Bean
-    @Profile({"!prodnoauth & !localnoauth"})
+    @Profile({"prodnoauth", "localnoauth", "test"})
+    public SecurityFilterChain ignoreFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .cors().disable()
+            .httpBasic().disable()
+            .formLogin().disable()
+            .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
+        return http.build();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(SecurityFilterChain.class)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
             .cors().disable()
             .httpBasic().disable()
             .formLogin().disable()
+            .oauth2Login()
+            .successHandler(authenticationSuccessHandler)
+            .failureHandler(authenticationFailureHandler)
+            .userInfoEndpoint()
+            .userService(customOAuth2UserService);
+
+        http
             .authorizeHttpRequests(authorize ->
                 authorize
                     .requestMatchers("/batch/**").hasRole("ADMIN")
@@ -47,18 +76,6 @@ public class SecurityConfig {
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new ExceptionHandlerFilter(objectMapper), JwtAuthenticationFilter.class);
-        return http.build();
-    }
-
-    @Bean
-    @Profile({"prodnoauth", "localnoauth"})
-    public SecurityFilterChain ignoreFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .cors().disable()
-            .httpBasic().disable()
-            .formLogin().disable()
-            .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
         return http.build();
     }
 

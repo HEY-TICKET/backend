@@ -5,10 +5,10 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@ConfigurationProperties(prefix = "mail")
-@Component
 @Getter
 @Setter
+@ConfigurationProperties(prefix = "mail")
+@Component
 public class SmtpProperties {
 
     private Smtp smtp;

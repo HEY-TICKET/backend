@@ -16,12 +16,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 @Slf4j
-@Service
-public class FcmService {
+public class FcmService implements IFcmService {
 
     private static final String KEY_FILE_PATH = "src/main/resources/firebase/key/hey-ticket-firebase-adminsdk-4bp7r-194d242388.json";
 
@@ -38,6 +36,7 @@ public class FcmService {
         }
     }
 
+    @Override
     public void sendTopicMessage(String topic, PushInfo pushInfo) {
         Notification notification = Notification.builder()
             .setTitle("'" + topic + "' " + pushInfo.getTitle())
@@ -61,6 +60,7 @@ public class FcmService {
         log.info("Successfully sent message: " + response);
     }
 
+    @Override
     public void subscribeTopic(String fcmToken, String topic) {
         if (ObjectUtils.isEmpty(fcmToken)) {
             throw new NotFoundException("Fcm token is not found.");
@@ -73,6 +73,7 @@ public class FcmService {
         }
     }
 
+    @Override
     public void unsubscribeTopic(String registrationToken, String topic) {
         try {
             FirebaseMessaging.getInstance().unsubscribeFromTopic(List.of(registrationToken), topic);

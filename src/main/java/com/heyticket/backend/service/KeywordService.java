@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class KeywordService {
 
-    private final FcmService fcmService;
+    private final IFcmService fcmService;
 
     private final KeywordRepository keywordRepository;
 
