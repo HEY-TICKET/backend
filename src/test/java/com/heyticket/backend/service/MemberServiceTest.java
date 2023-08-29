@@ -15,6 +15,7 @@ import com.heyticket.backend.domain.MemberKeyword;
 import com.heyticket.backend.exception.NotFoundException;
 import com.heyticket.backend.exception.ValidationFailureException;
 import com.heyticket.backend.module.security.jwt.TokenInfo;
+import com.heyticket.backend.module.util.VerificationCodeGenerator;
 import com.heyticket.backend.repository.keyword.KeywordRepository;
 import com.heyticket.backend.repository.member.MemberGenreRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
@@ -694,6 +695,43 @@ class MemberServiceTest {
         Member foundMember = memberRepository.findByEmail(testEmail)
             .orElseThrow(() -> new NotFoundException("No such member"));
         assertThat(foundMember.isAllowMarketing()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Verification code 검증 - verification code 검증 성공하면 새로운 verification code를 발급한다")
+    void verifyCode(){
+        //given
+        VerificationRequest request = VerificationRequest.builder()
+            .email("email")
+            .code("code")
+            .build();
+
+        given(localCacheService.isValidVerificationCodeWithTime(any(VerificationRequest.class))).willReturn(true);
+
+        //when
+        String newCode = memberService.verifyCode(request);
+
+        //then
+        assertThat(newCode).isNotEqualTo(request.getCode());
+        assertThat(newCode.length()).isEqualTo(VerificationCodeGenerator.createCode().length());
+     }
+
+    @Test
+    @DisplayName("Verification code 검증 - verification code 검증 실패하면 throw ValidationFailureException")
+    void verifyCode_noVerificationCode(){
+        //given
+        VerificationRequest request = VerificationRequest.builder()
+            .email("email")
+            .code("code")
+            .build();
+
+        given(localCacheService.isValidVerificationCodeWithTime(any(VerificationRequest.class))).willReturn(false);
+
+        //when
+        Throwable throwable = catchThrowable(() -> memberService.verifyCode(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
     }
 
     private Member createMember(String email) {
