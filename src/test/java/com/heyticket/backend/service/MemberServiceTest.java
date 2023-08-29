@@ -21,6 +21,7 @@ import com.heyticket.backend.repository.member.MemberGenreRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberLikeRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
+import com.heyticket.backend.service.dto.request.EmailSendRequest;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberFcmTokenUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
@@ -33,6 +34,7 @@ import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.enums.Area;
 import com.heyticket.backend.service.enums.Genre;
+import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
@@ -76,14 +78,17 @@ class MemberServiceTest {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @MockBean
     private LocalCacheService localCacheService;
 
+    @MockBean
+    private IEmailService emailService;
+
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     private static final String TEST_PASSWORD = "Password123";
 
@@ -733,6 +738,43 @@ class MemberServiceTest {
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
     }
+
+    @Test
+    @DisplayName("Verification code 전송 - 성공 경우 데이터 확인")
+    void sendVerificationEmail(){
+        //given
+        EmailSendRequest request = EmailSendRequest.builder()
+            .email("email")
+            .verificationType(VerificationType.SIGN_UP)
+            .build();
+
+        //when
+        String email = memberService.sendVerificationEmail(request);
+
+        //then
+        assertThat(email).isEqualTo(request.getEmail());
+        then(emailService).should().sendSimpleMessage(request);
+     }
+
+    @Test
+    @DisplayName("Verification code 전송 - 회원 가입 타입이고 이미 존재하는 member인 경우 throw ValidationFailureException")
+    void sendVerificationEmail_existingMember(){
+        //given
+        EmailSendRequest request = EmailSendRequest.builder()
+            .email("email")
+            .verificationType(VerificationType.SIGN_UP)
+            .build();
+
+        Member existingMember = createMember(request.getEmail());
+        memberRepository.save(existingMember);
+
+        //when
+        Throwable throwable = catchThrowable(() -> memberService.sendVerificationEmail(request));
+
+        //then
+        assertThat(throwable).isInstanceOf(ValidationFailureException.class);
+    }
+
 
     private Member createMember(String email) {
         return Member.builder()
