@@ -61,7 +61,7 @@ class MemberLikeServiceTest {
     }
 
     @Test
-    @DisplayName("MemberLike 등록 - 데이터 확인")
+    @DisplayName("MemberLike 등록 - 성공한 경우 데이터 확인")
     void hitLike() {
         //given
         Member member = createMember("email");
@@ -126,7 +126,7 @@ class MemberLikeServiceTest {
     }
 
     @Test
-    @DisplayName("MemberLike 등록 취소 - 데이터 확인")
+    @DisplayName("MemberLike 등록 취소 - 성공한 경우 데이터 확인")
     void cancelLike() {
         //given
         Member member = createMember("email");
@@ -185,7 +185,7 @@ class MemberLikeServiceTest {
     }
 
     @Test
-    @DisplayName("MemberLike 조회 - 데이터 확인")
+    @DisplayName("MemberLike 조회 - 성공한 경우 데이터 확인")
     void getMemberLikedPerformances() {
         //given
         Place place = Place.builder()

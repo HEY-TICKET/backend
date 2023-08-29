@@ -478,7 +478,7 @@ class PerformanceServiceTest {
     }
 
     @Test
-    @DisplayName("Performance recommendation 조회 - 데이터 확인")
+    @DisplayName("Performance recommendation 조회 - 성공한 경우 데이터 확인")
     void getPerformanceRecommendation() {
         //given
         Genre genre = Genre.CLASSIC;

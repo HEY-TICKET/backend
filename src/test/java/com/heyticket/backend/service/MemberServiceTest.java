@@ -2,6 +2,10 @@ package com.heyticket.backend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 
 import com.heyticket.backend.domain.Keyword;
 import com.heyticket.backend.domain.Member;
@@ -16,7 +20,6 @@ import com.heyticket.backend.repository.member.MemberGenreRepository;
 import com.heyticket.backend.repository.member.MemberKeywordRepository;
 import com.heyticket.backend.repository.member.MemberLikeRepository;
 import com.heyticket.backend.repository.member.MemberRepository;
-import com.heyticket.backend.service.dto.VerificationCode;
 import com.heyticket.backend.service.dto.request.MemberDeleteRequest;
 import com.heyticket.backend.service.dto.request.MemberFcmTokenUpdateRequest;
 import com.heyticket.backend.service.dto.request.MemberLoginRequest;
@@ -40,6 +43,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -71,7 +75,7 @@ class MemberServiceTest {
     @Autowired
     private MemberService memberService;
 
-    @Autowired
+    @MockBean
     private LocalCacheService localCacheService;
 
     @PersistenceContext
@@ -91,7 +95,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 조회 - 데이터 확인")
+    @DisplayName("Member 조회 - 성공한 경우 데이터 확인")
     void getMemberByEmail() {
         //given
         Member member = createMember("email");
@@ -150,7 +154,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 가입 - 데이터 확인")
+    @DisplayName("Member 가입 - 성공한 경우 데이터 확인")
     @Transactional
     void signUp() {
         //given
@@ -163,7 +167,7 @@ class MemberServiceTest {
             .verificationCode("verificationCode")
             .build();
 
-        localCacheService.putVerificationCode("email", VerificationCode.of(request.getVerificationCode()));
+        given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(true);
 
         //when
         memberService.signUp(request);
@@ -200,7 +204,7 @@ class MemberServiceTest {
             .verificationCode("verificationCode")
             .build();
 
-        localCacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+        given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(true);
 
         //when
         Throwable throwable = catchThrowable(() -> memberService.signUp(request));
@@ -225,7 +229,7 @@ class MemberServiceTest {
             .verificationCode("verificationCode")
             .build();
 
-        localCacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+        given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(true);
 
         //when
         Throwable throwable = catchThrowable(() -> memberService.signUp(request));
@@ -247,7 +251,7 @@ class MemberServiceTest {
             .verificationCode("wrongVerificationCode")
             .build();
 
-        localCacheService.putVerificationCode("email", VerificationCode.of("verificationCode"));
+        given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(false);
 
         //when
         Throwable throwable = catchThrowable(() -> memberService.signUp(request));
@@ -302,7 +306,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 로그인 - 데이터 확인")
+    @DisplayName("Member 로그인 - 성공한 경우 데이터 확인")
     void login_success() {
         //given
         Member member = createMember("email");
@@ -360,7 +364,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 비밀번호 변경 - 데이터 확인")
+    @DisplayName("Member 비밀번호 변경 - 성공한 경우 데이터 확인")
     void updatePassword() {
         //given
         Member member = createMember("email");
@@ -445,7 +449,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 탈퇴 - 데이터 확인")
+    @DisplayName("Member 탈퇴 - 성공한 경우 데이터 확인")
     void deleteMember() {
         //given
         Member member = createMember("email");
@@ -501,20 +505,19 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("Member 비밀번호 변경(로그인 화면) - 데이터 확인")
+    @DisplayName("Member 비밀번호 변경(로그인 화면) - 성공한 경우 데이터 확인")
     void resetPassword() {
         //given
         Member member = createMember("email");
         memberRepository.save(member);
 
-        String verificationCode = "verificationCode";
-        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+        given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(true);
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
             .email(member.getEmail())
             .password("newPassword123")
-            .verificationCode(verificationCode)
+            .verificationCode("verificationCode")
             .build();
 
         memberService.resetPassword(request);
@@ -552,8 +555,7 @@ class MemberServiceTest {
         Member member = createMember("email");
         memberRepository.save(member);
 
-        String verificationCode = "verificationCode";
-        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+        given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(false);
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
@@ -575,14 +577,13 @@ class MemberServiceTest {
         Member member = createMember("email");
         memberRepository.save(member);
 
-        String verificationCode = "verificationCode";
-        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
+        given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(true);
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
             .email(member.getEmail())
             .password(TEST_PASSWORD)
-            .verificationCode(verificationCode)
+            .verificationCode("verificationCode")
             .build();
 
         Throwable throwable = catchThrowable(() -> memberService.resetPassword(request));
@@ -599,26 +600,18 @@ class MemberServiceTest {
         Member member = createMember("email");
         memberRepository.save(member);
 
-        String verificationCode = "verificationCode";
-        localCacheService.putVerificationCode(member.getEmail(), VerificationCode.of(verificationCode));
-
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
             .email(member.getEmail())
             .password(TEST_PASSWORD)
-            .verificationCode(verificationCode)
+            .verificationCode("verificationCode")
             .build();
 
         Throwable throwable = catchThrowable(() -> memberService.resetPassword(request));
 
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
-        VerificationRequest verificationRequest = VerificationRequest.builder()
-            .email(member.getEmail())
-            .code(verificationCode)
-            .build();
-        boolean validCode = localCacheService.isValidVerificationCode(verificationRequest);
-        assertThat(validCode).isTrue();
+        then(localCacheService).should(never()).invalidateRefreshToken(member.getEmail());
     }
 
     @Test
