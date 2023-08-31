@@ -37,9 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -133,9 +131,7 @@ public class MemberService {
 
         memberRepository.save(member);
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(member.getEmail(), member.getStrAuthorities());
         localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
 
         return tokenInfo;
@@ -147,13 +143,10 @@ public class MemberService {
     }
 
     public TokenInfo login(MemberLoginRequest request) {
-        boolean exists = memberRepository.existsByEmail(request.getEmail());
-        if (!exists) {
-            throw new NotFoundException("No such user.", InternalCode.NOT_FOUND);
-        }
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
+        Member member = memberRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new NotFoundException("No such user.", InternalCode.NOT_FOUND));
+
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(member.getEmail(), member.getStrAuthorities());
         localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
         return tokenInfo;
     }
@@ -194,7 +187,7 @@ public class MemberService {
         String authorities = member.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(","));
-        TokenInfo tokenInfo = jwtTokenProvider.regenerateToken(email, authorities);
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(email, authorities);
         localCacheService.putRefreshToken(email, tokenInfo.getRefreshToken());
         return tokenInfo;
     }
@@ -273,25 +266,6 @@ public class MemberService {
         }
     }
 
-    // todo keyword update 로직 keywordService 쪽으로 이관 필요
-//    public void updatePreferredKeyword(MemberKeywordUpdateRequest request) {
-//        Member member = getMemberFromDb(request.getEmail());
-//
-//        if (request.getKeywords() != null) {
-//            List<MemberKeyword> memberKeywords = member.getMemberKeywords();
-//
-//            List<String> keywords = request.getKeywords();
-//            List<MemberKeyword> newMemberKeywords = keywords.stream()
-//                .map(MemberKeyword::of)
-//                .collect(Collectors.toList());
-//
-//            memberKeywords.removeIf(memberKeyword -> !newMemberKeywords.contains(memberKeyword));
-//            newMemberKeywords.stream()
-//                .filter(newMemberKeyword -> !memberKeywords.contains(newMemberKeyword))
-//                .forEach(memberKeywords::add);
-//        }
-//    }
-
     public void updateKeywordPushEnabled(MemberPushUpdateRequest request) {
         Member member = getMemberFromDb(request.getEmail());
         member.setAllowKeywordPush(request.isPushEnabled());
@@ -303,12 +277,12 @@ public class MemberService {
     }
 
     public String expireCode(String email) {
-        localCacheService.invalidateCode(email);
+        localCacheService.invalidateVerificationCode(email);
         return email;
     }
 
     public String verifyCode(VerificationRequest request) {
-        boolean validCodeWithTime = localCacheService.isValidCodeWithTime(request);
+        boolean validCodeWithTime = localCacheService.isValidVerificationCodeWithTime(request);
         if (!validCodeWithTime) {
             throw new ValidationFailureException("Verification code is outdated or not matched.", InternalCode.VERIFICATION_FAILURE);
         }
@@ -331,10 +305,10 @@ public class MemberService {
             .code(code)
             .build();
 
-        boolean validCode = localCacheService.isValidCode(request);
+        boolean validCode = localCacheService.isValidVerificationCode(request);
         if (!validCode) {
             throw new ValidationFailureException("Validation code failure.", InternalCode.VERIFICATION_FAILURE);
         }
-        localCacheService.invalidateCode(email);
+        localCacheService.invalidateVerificationCode(email);
     }
 }

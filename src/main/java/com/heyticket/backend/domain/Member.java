@@ -68,6 +68,12 @@ public class Member extends BaseTimeEntity implements UserDetails {
         this.password = password;
     }
 
+    public String getStrAuthorities() {
+        return getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.joining(","));
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()

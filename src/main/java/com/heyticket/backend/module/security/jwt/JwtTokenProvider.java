@@ -70,7 +70,7 @@ public class JwtTokenProvider {
             .build();
     }
 
-    public TokenInfo regenerateToken(String email, String authorities) {
+    public TokenInfo generateToken(String email, String authorities) {
         long now = System.currentTimeMillis();
 
         String accessToken = Jwts.builder()
