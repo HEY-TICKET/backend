@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class MemberPushUpdateRequest {
 
     @NotBlank
-    private String email;
+    private Long id;
 
     @NotNull
     private boolean isPushEnabled;

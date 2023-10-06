@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,14 +54,16 @@ public class MemberService {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
     private final PasswordEncoder passwordEncoder;
 
     private final LocalCacheService localCacheService;
 
     private final IEmailService emailService;
 
-    public MemberResponse getMemberByEmail(String email) {
-        Member member = getMemberFromDb(email);
+    public MemberResponse getMemberById(Long id) {
+        Member member = getMemberFromDb(id);
 
         List<Genre> genres = member.getMemberGenres().stream()
             .map(MemberGenre::getGenre)
@@ -74,7 +78,8 @@ public class MemberService {
             .collect(Collectors.toList());
 
         return MemberResponse.builder()
-            .email(email)
+            .id(member.getId())
+            .email(member.getEmail())
             .allowKeywordPush(member.isAllowKeywordPush())
             .allowMarketing(member.isAllowMarketing())
             .genres(genres)
@@ -100,7 +105,7 @@ public class MemberService {
             .memberKeywords(new ArrayList<>())
             .memberLikes(new ArrayList<>())
             .allowKeywordPush(request.isKeywordPush())
-            .authProvider(AuthProvider.LOCAL)
+            .authProvider(AuthProvider.EMAIL)
             .build();
 
         List<MemberGenre> memberGenres = request.getGenres().stream()
@@ -126,25 +131,28 @@ public class MemberService {
         member.addMemberAreas(memberAreas);
         member.addMemberKeywords(memberKeywords);
 
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
-        TokenInfo tokenInfo = jwtTokenProvider.generateToken(member.getEmail(), member.getStrAuthorities());
-        localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(savedMember.getId(), member.getStrAuthorities());
+        localCacheService.putRefreshToken(savedMember.getId(), tokenInfo.getRefreshToken());
 
         return tokenInfo;
     }
 
-    public void updateFcmToken(String email, MemberFcmTokenUpdateRequest request) {
-        Member member = getMemberFromDb(email);
+    public void updateFcmToken(Long id, MemberFcmTokenUpdateRequest request) {
+        Member member = getMemberFromDb(id);
         member.updateFcmToken(request.getToken());
     }
 
     public TokenInfo login(MemberLoginRequest request) {
-        Member member = memberRepository.findByEmail(request.getEmail())
+        Member member = memberRepository.findByEmailAndAuthProvider(request.getEmail(), AuthProvider.EMAIL)
             .orElseThrow(() -> new NotFoundException("No such user.", InternalCode.NOT_FOUND));
 
-        TokenInfo tokenInfo = jwtTokenProvider.generateToken(member.getEmail(), member.getStrAuthorities());
-        localCacheService.putRefreshToken(request.getEmail(), tokenInfo.getRefreshToken());
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
+        authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(member.getId(), member.getStrAuthorities());
+        localCacheService.putRefreshToken(member.getId(), tokenInfo.getRefreshToken());
         return tokenInfo;
     }
 
@@ -162,37 +170,36 @@ public class MemberService {
     }
 
     public boolean validateMember(MemberValidationRequest request) {
-        return memberRepository.existsByEmail(request.getEmail());
+        return memberRepository.existsByEmailAndAuthProvider(request.getEmail(), AuthProvider.EMAIL);
     }
 
     private void checkIfExistingMember(String email) {
-        boolean existingEmail = memberRepository.existsByEmail(email);
+        boolean existingEmail = memberRepository.existsByEmailAndAuthProvider(email, AuthProvider.EMAIL);
         if (existingEmail) {
             throw new ValidationFailureException("Duplicated email exists.", InternalCode.EXISTING_EMAIL);
         }
     }
 
     public TokenInfo reissueAccessToken(TokenReissueRequest request) {
-        String email = request.getEmail();
+        Long memberId = request.getId();
         String refreshToken = request.getRefreshToken();
         jwtTokenProvider.validateToken(refreshToken);
-        String savedRefreshToken = localCacheService.getRefreshTokenIfPresent(email);
+        String savedRefreshToken = localCacheService.getRefreshTokenIfPresent(memberId);
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
             throw new NotFoundException("No such refresh token information.", InternalCode.NOT_FOUND);
         }
-        Member member = getMemberFromDb(email);
+        Member member = getMemberFromDb(memberId);
         String authorities = member.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(","));
-        TokenInfo tokenInfo = jwtTokenProvider.generateToken(email, authorities);
-        localCacheService.putRefreshToken(email, tokenInfo.getRefreshToken());
+        TokenInfo tokenInfo = jwtTokenProvider.generateToken(memberId, authorities);
+        localCacheService.putRefreshToken(memberId, tokenInfo.getRefreshToken());
         return tokenInfo;
     }
 
-    public String resetPassword(PasswordResetRequest request) {
-        String email = request.getEmail();
+    public Long resetPassword(PasswordResetRequest request) {
         String code = request.getVerificationCode();
-        Member member = getMemberFromDb(email);
+        Member member = getMemberFromDb(request.getId());
 
         PasswordValidator.validatePassword(request.getPassword());
         boolean matched = passwordEncoder.matches(request.getPassword(), member.getPassword());
@@ -200,10 +207,10 @@ public class MemberService {
             throw new ValidationFailureException("The new password is identical to the existing password.", InternalCode.BAD_REQUEST);
         }
 
-        verifyCode(email, code);
+        verifyCode(member.getEmail(), code);
         member.updatePassword(passwordEncoder.encode(request.getPassword()));
-        localCacheService.invalidateRefreshToken(email);
-        return email;
+        localCacheService.invalidateRefreshToken(member.getId());
+        return request.getId();
     }
 
     public String sendVerificationEmail(EmailSendRequest request) {
@@ -215,14 +222,13 @@ public class MemberService {
         return email;
     }
 
-    public String deleteMember(MemberDeleteRequest request) {
-        String email = request.getEmail();
-        Member member = getMemberFromDb(email);
+    public Long deleteMember(MemberDeleteRequest request) {
+        Member member = getMemberFromDb(request.getId());
         matchPassword(request.getPassword(), member.getPassword());
         memberRepository.delete(member);
-        localCacheService.invalidateRefreshToken(email);
+        localCacheService.invalidateRefreshToken(member.getId());
         //todo keyword만 남은 경우 keyword 삭제
-        return email;
+        return member.getId();
     }
 
     private void matchPassword(String rawPassword, String encodedPassword) {
@@ -232,7 +238,7 @@ public class MemberService {
     }
 
     public void updatePreferredCategory(MemberCategoryUpdateRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
+        Member member = getMemberFromDb(request.getId());
 
         if (request.getGenres() != null) {
             List<MemberGenre> memberGenres = member.getMemberGenres();
@@ -264,12 +270,12 @@ public class MemberService {
     }
 
     public void updateKeywordPushEnabled(MemberPushUpdateRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
+        Member member = getMemberFromDb(request.getId());
         member.setAllowKeywordPush(request.isPushEnabled());
     }
 
     public void updateMarketingPushEnabled(MemberPushUpdateRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
+        Member member = getMemberFromDb(request.getId());
         member.setAllowMarketing(request.isPushEnabled());
     }
 
@@ -291,8 +297,8 @@ public class MemberService {
         return code;
     }
 
-    private Member getMemberFromDb(String email) {
-        return memberRepository.findById(email)
+    private Member getMemberFromDb(Long id) {
+        return memberRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
     }
 

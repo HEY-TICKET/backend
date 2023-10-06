@@ -70,11 +70,11 @@ public class JwtTokenProvider {
             .build();
     }
 
-    public TokenInfo generateToken(String email, String authorities) {
+    public TokenInfo generateToken(Long id, String authorities) {
         long now = System.currentTimeMillis();
 
         String accessToken = Jwts.builder()
-            .setSubject(email)
+            .setSubject(String.valueOf(id))
             .claim("auth", authorities)
             .setExpiration(new Date(now + accessExpirationMillis))
             .signWith(key, SignatureAlgorithm.HS256)

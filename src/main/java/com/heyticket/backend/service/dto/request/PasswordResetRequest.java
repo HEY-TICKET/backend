@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class PasswordResetRequest {
 
     @NotBlank
-    private String email;
+    private Long id;
 
     @NotBlank
     private String password;

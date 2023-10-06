@@ -2,6 +2,6 @@ package com.heyticket.backend.service.enums;
 
 public enum AuthProvider {
 
-    LOCAL,
+    EMAIL,
     KAKAO
 }

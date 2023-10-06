@@ -16,7 +16,7 @@ public class LocalCacheService {
 
     private final Cache<String, VerificationCode> emailVerificationCache;
 
-    private final Cache<String, String> refreshTokenCache;
+    private final Cache<Long, String> refreshTokenCache;
 
     private final Cache<String, MemberInfo> memberInfoCache;
 
@@ -38,8 +38,8 @@ public class LocalCacheService {
         return emailVerificationCache.getIfPresent(email);
     }
 
-    public String getRefreshTokenIfPresent(String token) {
-        return refreshTokenCache.getIfPresent(token);
+    public String getRefreshTokenIfPresent(Long id) {
+        return refreshTokenCache.getIfPresent(id);
     }
 
     public MemberInfo getMemberInfoIfPresent(String code) {
@@ -50,8 +50,8 @@ public class LocalCacheService {
         emailVerificationCache.put(email, verificationCode);
     }
 
-    public void putRefreshToken(String email, String token) {
-        refreshTokenCache.put(email, token);
+    public void putRefreshToken(Long id, String token) {
+        refreshTokenCache.put(id, token);
     }
 
     public void putMemberInfo(String code, MemberInfo memberInfo) {
@@ -66,8 +66,8 @@ public class LocalCacheService {
         memberInfoCache.invalidate(oAuth2Id);
     }
 
-    public void invalidateRefreshToken(String email) {
-        refreshTokenCache.invalidate(email);
+    public void invalidateRefreshToken(Long id) {
+        refreshTokenCache.invalidate(id);
     }
 
     public boolean isValidVerificationCodeWithTime(VerificationRequest request) {

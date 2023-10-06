@@ -619,7 +619,7 @@ class MemberServiceTest {
 
         //then
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
-        then(localCacheService).should(never()).invalidateRefreshToken(member.getEmail());
+        then(localCacheService).should(never()).invalidateRefreshToken(savedMember.getId());
     }
 
     @Test

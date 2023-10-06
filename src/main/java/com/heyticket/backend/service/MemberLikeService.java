@@ -36,7 +36,7 @@ public class MemberLikeService {
     private final PerformanceRepository performanceRepository;
 
     public void hitLike(MemberLikeSaveRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
+        Member member = getMemberFromDb(request.getId());
         String performanceId = request.getPerformanceId();
         Performance performance = performanceRepository.findById(performanceId)
             .orElseThrow(() -> new NotFoundException("No such performance.", InternalCode.NOT_FOUND));
@@ -49,7 +49,7 @@ public class MemberLikeService {
     }
 
     public void cancelLike(MemberLikeSaveRequest request) {
-        Member member = getMemberFromDb(request.getEmail());
+        Member member = getMemberFromDb(request.getId());
         String performanceId = request.getPerformanceId();
         Performance performance = performanceRepository.findById(performanceId)
             .orElseThrow(() -> new NotFoundException("No such performance.", InternalCode.NOT_FOUND));
@@ -86,8 +86,8 @@ public class MemberLikeService {
         return performanceResponse;
     }
 
-    private Member getMemberFromDb(String email) {
-        return memberRepository.findById(email)
+    private Member getMemberFromDb(Long id) {
+        return memberRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("No such member.", InternalCode.NOT_FOUND));
     }
 }

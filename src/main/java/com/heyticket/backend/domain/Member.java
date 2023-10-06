@@ -58,15 +58,19 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @Builder.Default
     private List<String> roles = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberGenre> memberGenres = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberArea> memberAreas = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberKeyword> memberKeywords = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberLike> memberLikes = new ArrayList<>();
 

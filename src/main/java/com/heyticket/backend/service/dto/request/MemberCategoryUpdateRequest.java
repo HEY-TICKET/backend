@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class MemberCategoryUpdateRequest {
 
     @NotBlank
-    private String email;
+    private Long id;
 
     @Builder.Default
     private List<String> genres = new ArrayList<>();

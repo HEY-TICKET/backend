@@ -26,6 +26,7 @@ import com.heyticket.backend.service.dto.response.CommonResponse;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.dto.response.PerformanceResponse;
 import com.heyticket.backend.service.dto.swaggerresponse.BooleanCommonResponse;
+import com.heyticket.backend.service.dto.swaggerresponse.LongCommonResponse;
 import com.heyticket.backend.service.dto.swaggerresponse.MemberCommonResponse;
 import com.heyticket.backend.service.dto.swaggerresponse.PagePerformanceCommonrResponse;
 import com.heyticket.backend.service.dto.swaggerresponse.StringCommonResponse;
@@ -108,26 +109,26 @@ public class MemberController {
     }
 
     @Operation(summary = "비밀번호 변경(로그인 화면)")
-    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = LongCommonResponse.class)))})
     @PutMapping("/members/password/reset")
     public ResponseEntity<?> resetPassword(@RequestBody @Valid PasswordResetRequest request) {
-        String email = memberService.resetPassword(request);
-        return CommonResponse.ok("Password change successful.", email);
+        Long id = memberService.resetPassword(request);
+        return CommonResponse.ok("Password change successful.", id);
     }
 
     // Authorized
     @Operation(summary = "회원 정보 조회")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = MemberCommonResponse.class)))})
     @GetMapping("/members/{id}")
-    public ResponseEntity<?> getMember(@PathVariable String id) {
-        MemberResponse memberResponse = memberService.getMemberByEmail(id);
+    public ResponseEntity<?> getMember(@PathVariable Long id) {
+        MemberResponse memberResponse = memberService.getMemberById(id);
         return CommonResponse.ok("User info.", memberResponse);
     }
 
     @Operation(summary = "FCM 토큰 업데이트")
     @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = BooleanCommonResponse.class)))})
     @PutMapping("/members/{id}/fcm-token")
-    public ResponseEntity<?> updateFcmToken(@PathVariable String id, @RequestBody MemberFcmTokenUpdateRequest request) {
+    public ResponseEntity<?> updateFcmToken(@PathVariable Long id, @RequestBody MemberFcmTokenUpdateRequest request) {
         memberService.updateFcmToken(id, request);
         return CommonResponse.ok("User info.", true);
     }
@@ -149,11 +150,11 @@ public class MemberController {
     }
 
     @Operation(summary = "회원 탈퇴")
-    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = StringCommonResponse.class)))})
+    @ApiResponses(value = {@ApiResponse(content = @Content(schema = @Schema(implementation = LongCommonResponse.class)))})
     @DeleteMapping("/members")
     public ResponseEntity<?> deleteMember(@RequestBody @Valid MemberDeleteRequest request) {
-        String deletedEmail = memberService.deleteMember(request);
-        return CommonResponse.ok("Member has been deleted", deletedEmail);
+        Long id = memberService.deleteMember(request);
+        return CommonResponse.ok("Member has been deleted", id);
     }
 
     @Operation(summary = "회원 카테고리 수정")

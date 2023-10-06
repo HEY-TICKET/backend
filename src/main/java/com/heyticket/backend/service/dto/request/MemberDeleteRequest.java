@@ -15,7 +15,7 @@ import lombok.Setter;
 public class MemberDeleteRequest {
 
     @NotBlank
-    private String email;
+    private Long id;
 
     @NotBlank
     private String password;

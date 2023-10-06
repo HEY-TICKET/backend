@@ -7,9 +7,8 @@ import lombok.Getter;
 public class TokenReissueRequest {
 
     @NotBlank
-    private String email;
+    private Long id;
 
     @NotBlank
     private String refreshToken;
-
 }

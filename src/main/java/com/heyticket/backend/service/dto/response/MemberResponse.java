@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MemberResponse {
 
+    private Long id;
+
     private String email;
 
     private boolean allowKeywordPush;
