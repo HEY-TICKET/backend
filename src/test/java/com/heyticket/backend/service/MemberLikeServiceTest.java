@@ -65,14 +65,14 @@ class MemberLikeServiceTest {
     void hitLike() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         Performance performance = createPerformance("performanceId");
         performanceRepository.save(performance);
 
         //when
         MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .performanceId(performance.getId())
             .build();
 
@@ -94,7 +94,7 @@ class MemberLikeServiceTest {
     void hitLike_alreadyHit() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         Performance performance = createPerformance("performanceId");
         performanceRepository.save(performance);
@@ -108,7 +108,7 @@ class MemberLikeServiceTest {
 
         //when
         MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .performanceId(performance.getId())
             .build();
 
@@ -130,7 +130,7 @@ class MemberLikeServiceTest {
     void cancelLike() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         Performance performance = createPerformance("performanceId");
         performanceRepository.save(performance);
@@ -144,7 +144,7 @@ class MemberLikeServiceTest {
 
         //when
         MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .performanceId(performance.getId())
             .build();
 
@@ -163,14 +163,14 @@ class MemberLikeServiceTest {
     void cancelLike_noMemberLike() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         Performance performance = createPerformance("performanceId");
         performanceRepository.save(performance);
 
         //when
         MemberLikeSaveRequest request = MemberLikeSaveRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .performanceId(performance.getId())
             .build();
 
