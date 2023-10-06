@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,8 +49,6 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     private final KeywordService keywordService;
-
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final JwtTokenProvider jwtTokenProvider;
 
