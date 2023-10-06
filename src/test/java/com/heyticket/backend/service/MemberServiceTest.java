@@ -33,6 +33,7 @@ import com.heyticket.backend.service.dto.request.PasswordUpdateRequest;
 import com.heyticket.backend.service.dto.request.VerificationRequest;
 import com.heyticket.backend.service.dto.response.MemberResponse;
 import com.heyticket.backend.service.enums.Area;
+import com.heyticket.backend.service.enums.AuthProvider;
 import com.heyticket.backend.service.enums.Genre;
 import com.heyticket.backend.service.enums.VerificationType;
 import jakarta.persistence.EntityManager;
@@ -113,7 +114,7 @@ class MemberServiceTest {
         Keyword keyword1 = Keyword.of("keyword1");
         Keyword keyword2 = Keyword.of("keyword2");
 
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
         keywordRepository.saveAll(List.of(keyword1, keyword2));
 
         MemberKeyword memberKeyword1 = MemberKeyword.builder()
@@ -131,7 +132,7 @@ class MemberServiceTest {
         entityManager.clear();
 
         //when
-        MemberResponse memberResponse = memberService.getMemberByEmail(member.getEmail());
+        MemberResponse memberResponse = memberService.getMemberById(savedMember.getId());
 
         //then
         assertThat(memberResponse.getEmail()).isEqualTo(member.getEmail());
@@ -150,10 +151,10 @@ class MemberServiceTest {
         MemberArea memberArea = MemberArea.of(Area.BUSAN);
         member.addMemberGenres(List.of(memberGenre));
         member.addMemberAreas(List.of(memberArea));
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
-        Throwable throwable = catchThrowable(() -> memberService.getMemberByEmail("wrongEmail"));
+        Throwable throwable = catchThrowable(() -> memberService.getMemberById(savedMember.getId() + 1000L));
 
         //then
         assertThat(throwable).isInstanceOf(NotFoundException.class);
@@ -182,8 +183,9 @@ class MemberServiceTest {
         entityManager.clear();
 
         //then
-        Member foundMember = memberRepository.findById(request.getEmail())
-            .orElseThrow(() -> new NoSuchElementException("No such user."));
+        List<Member> foundMembers = memberRepository.findAll();
+        assertThat(foundMembers).hasSize(1);
+        Member foundMember = foundMembers.get(0);
 
         assertThat(foundMember.getEmail()).isEqualTo(request.getEmail());
         assertThat(foundMember.getMemberGenres()).extracting("genre").containsOnly(Genre.MUSICAL, Genre.THEATER);
@@ -271,7 +273,7 @@ class MemberServiceTest {
     void updateFcmToken_registerToken(){
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
         String token = "token";
@@ -280,10 +282,10 @@ class MemberServiceTest {
             .token(token)
             .build();
 
-        memberService.updateFcmToken(member.getEmail(), request);
+        memberService.updateFcmToken(savedMember.getId(), request);
 
         //then
-        Member foundMember = memberRepository.findById(member.getEmail())
+        Member foundMember = memberRepository.findById(savedMember.getId())
             .orElseThrow(() -> new NotFoundException("No such member"));
         assertThat(foundMember.getFcmToken()).isEqualTo(token);
      }
@@ -294,7 +296,7 @@ class MemberServiceTest {
         //given
         Member member = createMember("email");
         member.updateFcmToken("oldToken");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
         String token = "token";
@@ -303,10 +305,10 @@ class MemberServiceTest {
             .token(token)
             .build();
 
-        memberService.updateFcmToken(member.getEmail(), request);
+        memberService.updateFcmToken(savedMember.getId(), request);
 
         //then
-        Member foundMember = memberRepository.findById(member.getEmail())
+        Member foundMember = memberRepository.findById(savedMember.getId())
             .orElseThrow(() -> new NotFoundException("No such member"));
         assertThat(foundMember.getFcmToken()).isEqualTo(token);
     }
@@ -374,7 +376,7 @@ class MemberServiceTest {
     void updatePassword() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(member.getEmail(), member.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -388,7 +390,7 @@ class MemberServiceTest {
         memberService.updatePassword(request);
 
         //then
-        Member foundMember = memberRepository.findByEmail(member.getEmail())
+        Member foundMember = memberRepository.findById(savedMember.getId())
             .orElseThrow(() -> new NoSuchElementException("No such member."));
         assertThat(passwordEncoder.matches(request.getNewPassword(), foundMember.getPassword())).isTrue();
     }
@@ -459,18 +461,18 @@ class MemberServiceTest {
     void deleteMember() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
         MemberDeleteRequest request = MemberDeleteRequest.builder()
-            .email(member.getEmail())
+            .id(member.getId())
             .password(TEST_PASSWORD)
             .build();
 
         memberService.deleteMember(request);
 
         //then
-        Optional<Member> optionalMember = memberRepository.findByEmail(member.getEmail());
+        Optional<Member> optionalMember = memberRepository.findById(savedMember.getId());
         assertThat(optionalMember).isNotPresent();
     }
 
@@ -481,7 +483,7 @@ class MemberServiceTest {
 
         //when
         MemberDeleteRequest request = MemberDeleteRequest.builder()
-            .email("wrongEmail")
+            .id(111L)
             .password(TEST_PASSWORD)
             .build();
 
@@ -496,11 +498,11 @@ class MemberServiceTest {
     void deleteMember_wrongPassword() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
         MemberDeleteRequest request = MemberDeleteRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .password("wrongPassword")
             .build();
 
@@ -515,13 +517,13 @@ class MemberServiceTest {
     void resetPassword() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(true);
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .password("newPassword123")
             .verificationCode("verificationCode")
             .build();
@@ -529,7 +531,7 @@ class MemberServiceTest {
         memberService.resetPassword(request);
 
         //then
-        Member foundMember = memberRepository.findByEmail(member.getEmail())
+        Member foundMember = memberRepository.findById(savedMember.getId())
             .orElseThrow(() -> new NoSuchElementException("No such member"));
         String password = foundMember.getPassword();
         boolean matched = passwordEncoder.matches(request.getPassword(), password);
@@ -543,7 +545,7 @@ class MemberServiceTest {
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
-            .email("wrongEmail")
+            .id(111L)
             .password("newPassword123")
             .verificationCode("verificationCode")
             .build();
@@ -559,13 +561,13 @@ class MemberServiceTest {
     void resetPassword_wrongVerificationCode() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(false);
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .password("newPassword123")
             .verificationCode("wrongVerificationCode")
             .build();
@@ -581,13 +583,13 @@ class MemberServiceTest {
     void resetPassword_samePassword() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         given(localCacheService.isValidVerificationCode(any(VerificationRequest.class))).willReturn(true);
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .password(TEST_PASSWORD)
             .verificationCode("verificationCode")
             .build();
@@ -604,11 +606,11 @@ class MemberServiceTest {
     void resetPassword_ifSamePasswordMaintainVerificationCode() {
         //given
         Member member = createMember("email");
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
         PasswordResetRequest request = PasswordResetRequest.builder()
-            .email(member.getEmail())
+            .id(savedMember.getId())
             .password(TEST_PASSWORD)
             .verificationCode("verificationCode")
             .build();
@@ -662,18 +664,18 @@ class MemberServiceTest {
         Member member = createMember(testEmail);
         member.setAllowKeywordPush(false);
 
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
         MemberPushUpdateRequest request = MemberPushUpdateRequest.builder()
-            .email(testEmail)
+            .id(savedMember.getId())
             .isPushEnabled(true)
             .build();
 
         memberService.updateKeywordPushEnabled(request);
 
         //then
-        Member foundMember = memberRepository.findByEmail(testEmail)
+        Member foundMember = memberRepository.findById(savedMember.getId())
             .orElseThrow(() -> new NotFoundException("No such member"));
         assertThat(foundMember.isAllowKeywordPush()).isTrue();
     }
@@ -686,18 +688,18 @@ class MemberServiceTest {
         Member member = createMember(testEmail);
         member.setAllowMarketing(false);
 
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
         //when
         MemberPushUpdateRequest request = MemberPushUpdateRequest.builder()
-            .email(testEmail)
+            .id(savedMember.getId())
             .isPushEnabled(true)
             .build();
 
         memberService.updateMarketingPushEnabled(request);
 
         //then
-        Member foundMember = memberRepository.findByEmail(testEmail)
+        Member foundMember = memberRepository.findById(savedMember.getId())
             .orElseThrow(() -> new NotFoundException("No such member"));
         assertThat(foundMember.isAllowMarketing()).isTrue();
     }
@@ -775,10 +777,10 @@ class MemberServiceTest {
         assertThat(throwable).isInstanceOf(ValidationFailureException.class);
     }
 
-
     private Member createMember(String email) {
         return Member.builder()
             .email(email)
+            .authProvider(AuthProvider.EMAIL)
             .password(passwordEncoder.encode(TEST_PASSWORD))
             .memberAreas(new ArrayList<>())
             .memberGenres(new ArrayList<>())
